@@ -19,7 +19,7 @@ $currentDir = Get-ScriptDirectory
 $parent = (get-Item $currentDir).Parent
 $files = Get-ChildItem $currentDir -Filter *.ui
 
-echo "Found $($files.Length) files"
+echo "`n`n`n`nFound $($files.Length) files"
 $processed = 0
 
 foreach($file in $files) {
@@ -28,21 +28,22 @@ foreach($file in $files) {
         $output =  "$($parent.Fullname)\ui\$outputFile"
 
         $command = "pyuic5 $($file.FullName)"
-        echo "Writing $output"
+        write-host "Writing $output" -NoNewline
         iex $command | Out-File -FilePath "$output" -Encoding "utf8"
         $processed++
+        write-host "`t...OK" -ForegroundColor Green
     }
     catch [system.exception]
     {
-        echo "WARNING: Could not process file $outputFile"
+        write-host "`t...FAILED" -ForegroundColor Yellow
     }
 }
 
 if($processed -eq $files.Length) 
 {    
-    echo "`n`nSUCCESS: Finished $processed files"
+    write-host "`n`nSUCCESS: Finished $processed files" -ForegroundColor Green
 }
 else 
 {
-    echo "`n`WARNING: Only finished $processed/$($files.Length) files"
+    write-host "`n`WARNING: Only finished $processed/$($files.Length) files" -ForegroundColor Red
 }

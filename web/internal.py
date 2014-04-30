@@ -15,6 +15,9 @@ class InternalController(object):
         
         return True
     
+    def index(self):
+        return "OK"
+    
     def getTermById(self, termId):
         termService = TermService()
         term = termService.findOne(termId)
@@ -125,6 +128,10 @@ class InternalController(object):
             cherrypy.response.status = 200
             cherrypy.response.headers["Content-Type"] = "text/plain"
             
+    def markAllAsKnown(self):
+        cherrypy.response.status = "501 - not implemented"
+        cherrypy.response.headers["Content-Type"] = "text/plain"
+        
     def __notFound(self):
         cherrypy.response.status = 404
         cherrypy.response.headers["Content-Type"] = "text/plain"

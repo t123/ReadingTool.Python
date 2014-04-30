@@ -1,6 +1,5 @@
 import cherrypy
 
 class ApiV1Controller(object):
-    @cherrypy.expose
-    def index(self):
-        return "apiv1"
+    def __init__(self):
+        pass
