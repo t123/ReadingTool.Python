@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <link href='http://fonts.googleapis.com/css?family=Droid+Sans' rel='stylesheet' type='text/css'>
+    <link href="<!-- webapi -->/api/v1/resource/local/common.css" rel="stylesheet" />
+    <link href="<!-- webapi -->/api/v1/resource/local/reading.css" rel="stylesheet" />
+    <link href="<!-- webapi -->/api/v1/resource/local/bootstrap.min.css" rel="stylesheet" />
+    <link href="<!-- webapi -->/api/v1/resource/local/jplayer.blue.monday.css" rel="stylesheet" />
+    <script src="<!-- webapi -->/api/v1/resource/local/jquery-2.10.min.js"></script>
+    <script src="<!-- webapi -->/api/v1/resource/local/jquery.signalR-2.0.3.min.js"></script>
+    <script src="<!-- signalr -->/signalr/hubs"></script>
+    <script src="<!-- webapi -->/api/v1/resource/local/bootstrap.min.js"></script>
+    <script src="<!-- webapi -->/api/v1/resource/local/jquery.jplayer.min.js"></script>
+    <script src="<!-- webapi -->/api/v1/resource/local/ui.js"></script>
+    <script src="<!-- webapi -->/api/v1/resource/local/reading.js"></script>
+    <title></title>
+</head>
+    <body>
+        <div id="modalOverlay"></div>
+        <div id="modalContent"></div>
+        <div style="display:none" id="popup">
+            <table width="100%">
+                <tr class="top">
+                    <td colspan="2"><span id="dPhrase"></span></td>
+                    <td colspan="3">
+                        <span id="dHeader"></span>
+                        <a href="#" id="dClose" span="Esc to close">close</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>State</td>
+                    <td><input id="dInitial" tabindex="1" type="radio" value="known" name="State" title="Ctrl-1 changes to Known" />Known</td>
+                    <td><input tabindex="2" type="radio" value="unknown" name="State" title="Ctrl-2 changes to Unknown" />Unknown</td>
+                    <td><input tabindex="3" type="radio" value="ignored" name="State" title="Ctrl-3 changes to Ignored" />Ignore</td>
+                    <!--<td><input tabindex="4" type="radio" value="notseen" name="State" title="Ctrl-4 changes to Not Seen" />Not Seen</td>-->
+                </tr>
+                <tr>
+                    <td><span title="Ctrl-S or Ctrl-Q to focus">Sentence</span></td>
+                    <td colspan="4"><input tabindex="5" type="text" value="" id="dSentence" /><a href="#" id="dRefresh" title="use this new sentence"><img src="<!-- webapi -->/api/v1/resource/local/iconmonstr-refresh-3-icon-24.png" width="24" height="24" /></a></td>
+                </tr>
+                <tr>
+                    <td><span title="Ctrl-B or Ctrl-A to focus">Base</span></td>
+                    <td colspan="4"><input tabindex="6" type="text" value="" id="dBase" /><a href="#" id="dCopy" title="copy the phrase to here"><img src="<!-- webapi -->/api/v1/resource/local/iconmonstr-copy-7-icon-24.png" width="24" height="24" /></a></td>
+                </tr>
+                <tr>
+                    <td><span title="Ctrl-D or Ctrl-Z to focus">Definition</span></td>
+                    <td colspan="4"><textarea tabindex="7" id="dDefinition"></textarea></td>
+                </tr>
+                <tr class="bottom">
+                    <td colspan="4"><span id="dMessage"></span></td>
+                    <td>
+                        <input tabindex="8" type="button" id="dSave" value="Save" class="blue" title="Ctrl-Enter to save and close" />
+                        <input tabindex="9" type="button" id="dReset" value="Reset" title="Ctrl-R to reset term" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <!-- table -->
+
+        <div id="jquery_jplayer_1" class="jp-jplayer"></div>
+        <div id="jp_container_1" class="jp-audio">
+            <div class="jp-type-single">
+                <div class="jp-gui jp-interface">
+                    <ul class="jp-controls">
+                        <li><a href="javascript:;" class="jp-play">play</a></li>
+                        <li><a href="javascript:;" class="jp-pause">pause</a></li>
+                        <li><a href="javascript:;" class="jp-stop">stop</a></li>
+                        <li><a href="javascript:;" class="jp-mute" title="mute">mute</a></li>
+                        <li><a href="javascript:;" class="jp-unmute" title="unmute">unmute</a></li>
+                        <li><a href="javascript:;" class="jp-volume-max" title="max volume">max volume</a></li>
+                    </ul>
+                    <div class="jp-progress">
+                        <div class="jp-seek-bar">
+                            <div class="jp-play-bar"></div>
+                        </div>
+                    </div>
+                    <div class="jp-volume-bar">
+                        <div class="jp-volume-bar-value"></div>
+                    </div>
+                    <div class="jp-time-holder">
+                        <div class="jp-current-time"></div>
+                        <div class="jp-duration"></div>
+                    </div>
+                </div>
+                <div class="jp-no-solution">
+                    <span>Update Required</span>
+                    To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>.
+                </div>
+            </div>
+        </div>
+        <!-- plugins -->
+    </body>
+</html>
