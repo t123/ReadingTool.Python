@@ -123,8 +123,6 @@ class InternalController(object):
                 term.sentence = sentence
                 term.itemSourceId = itemId
             
-            termService.save(term)
-            
             cherrypy.response.status = 200
             cherrypy.response.headers["Content-Type"] = "text/plain"
             

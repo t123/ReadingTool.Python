@@ -4,8 +4,15 @@ from web.internal import InternalController
 from web.resources import ResourceController
 from web.apiv1 import ApiV1Controller
 
+def CORS():
+        if "Origin" in cherrypy.request.headers:
+            if cherrypy.request.headers["Origin"].lower()=="null" or cherrypy.request.headers["Origin"].lower().startswith("http://localhost"):
+                cherrypy.response.headers["Access-Control-Allow-Origin"] = cherrypy.request.headers["Origin"]
+        
 class Controller():
     def start(self):
+        cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS) 
+        
         ic = InternalController()
         rc = ResourceController()
 
@@ -27,7 +34,7 @@ class Controller():
         d.connect(name="r4", route='/resource/v1/item/:id', controller=ResourceController(), action="getItem", conditions=dict(method=["GET"]))
         d.connect(name="r5", route='/resource/v1/local/:name', controller=ResourceController(), action="getLocalResource", conditions=dict(method=["GET"]))
             
-        conf = {'/': {'request.dispatch': d}}
+        conf = {'/': {'request.dispatch': d, 'tools.CORS.on': True}}
         #cherrypy.config.update({'environment': 'embedded'})
         cherrypy.tree.mount(root=None, config=conf)
         cherrypy.engine.start()
