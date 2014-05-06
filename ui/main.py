@@ -18,7 +18,7 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWindow = Ui_MainWindow()
         self.mainWindow.setupUi(self)
         self.mainWindow.verticalLayout.setStretch(2, 1)
-        self.changeView("plugins")
+        self.changeView("languages")
         self.updateItems()
         self.updateProfiles()
         

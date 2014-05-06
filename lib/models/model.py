@@ -53,7 +53,7 @@ class User():
         
 class Language():
     TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ȳ\\'-]+)"
-    SENTENCE_REGEX = "[^\\.!\\?]+[\\.!\\?\n]+"
+    SENTENCE_REGEX = "[^\\.!\\?]+[\\.!\\?\\n]+"
     
     def __init__(self):
         self.languageId = 0
@@ -71,7 +71,14 @@ class LanguageCode():
     def __init__(self):
         self.code = ""
         self.name = ""
-    
+
+class LanguagePlugin():
+    def __init__(self):
+        self.pluginId = 0
+        self.name = ""
+        self.description = ""
+        self.enabled = False
+            
 class Term():
     def __init__(self):
         self.termId = 0

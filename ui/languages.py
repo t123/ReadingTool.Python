@@ -50,6 +50,21 @@ class LanguagesForm(QtGui.QDialog):
             self.ui.rbLTR.setChecked(False)
             self.ui.rbRTL.setChecked(True)
             
+        self.ui.lvPlugins.clear()
+        plugins = self.languageService.findAllPlugins(language.languageId)
+            
+        for plugin in plugins:
+            p = QtGui.QListWidgetItem(plugin.name)
+            p.setFlags(QtCore.Qt.ItemIsUserCheckable | QtCore.Qt.ItemIsEnabled)
+            
+            if plugin.enabled:
+                p.setCheckState(QtCore.Qt.Checked)
+            else:
+                p.setCheckState(QtCore.Qt.Unchecked)
+                
+            p.setData(QtCore.Qt.UserRole, plugin)
+            self.ui.lvPlugins.addItem(p)
+            
     def saveLanguage(self):
         if self.ui.lvLanguages.currentItem() is None:
             return
@@ -62,7 +77,16 @@ class LanguagesForm(QtGui.QDialog):
         language.direction = LanguageDirection.LeftToRight if self.ui.rbLTR.isChecked() else LanguageDirection.RightToLeft
         language.languageCode = self.ui.cbLanguageCodes.itemData(self.ui.cbLanguageCodes.currentIndex())
         
-        self.languageService.save(language)
+        plugins = []
+        
+        for index in range(0, self.ui.lvPlugins.count()):
+            item = self.ui.lvPlugins.item(index)
+            
+            if item.checkState()==QtCore.Qt.Checked:
+                data = item.data(QtCore.Qt.UserRole)
+                plugins.append(data.pluginId)
+                
+        self.languageService.save(language, plugins)
         self.updateLanguages()
         
     def deleteLanguage(self):
@@ -96,7 +120,7 @@ class LanguagesForm(QtGui.QDialog):
             item = QtGui.QListWidgetItem(language.name)
             item.setData(QtCore.Qt.UserRole, language)
             self.ui.lvLanguages.addItem(item)
-        
+            
         if self.ui.lvLanguages.currentItem() is None:
             self.ui.lvLanguages.setCurrentItem(self.ui.lvLanguages.item(0))
             

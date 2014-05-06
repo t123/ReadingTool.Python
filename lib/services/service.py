@@ -1,5 +1,5 @@
 import time, uuid
-from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, TermType, Plugin
+from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, TermType, Plugin, LanguagePlugin
 from lib.db import Db
 from lib.misc import Application
 
@@ -58,7 +58,7 @@ class LanguageService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
-    def save(self, language):
+    def save(self, language, plugins=None):
         if(language.languageId==0):
             language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, sentenceRegex, termRegex, direction) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :sentenceRegex, :termRegex, :direction )",
                             languageId = None,
@@ -84,7 +84,22 @@ class LanguageService:
                             direction = language.direction
                             )
             
+        if plugins is not None:
+            self.db.execute("DELETE FROM language_plugin WHERE languageId=:languageId", language.languageId)
+            
+            for pluginId in plugins:
+                self.db.execute("INSERT INTO language_plugin ( languageId, pluginId ) VALUES ( :languageId, :pluginId )", language.languageId, pluginId)
+                
         return self.findOne(language.languageId)
+        
+    def findAllPlugins(self, languageId, active=True):
+        return self.db.many(LanguagePlugin, """SELECT a.PluginId, a.Name, a.Description, b.PluginId as enabled 
+                                                FROM Plugin a 
+                                                LEFT OUTER JOIN language_plugin b ON a.pluginid=b.pluginid AND b.languageid=:languageId 
+                                                ORDER BY a.Name COLLATE NOCASE
+                                                """,
+                                                languageId=languageId
+                                                )
         
     def findOne(self, languageId):
         return self.db.one(Language, "SELECT * FROM language WHERE languageId=:languageId AND userId=:userId", 
@@ -374,3 +389,4 @@ class PluginService:
     
     def delete(self, pluginId):
         self.db.execute("DELETE FROM Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
+        self.db.execute("DELETE FROM Language_Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
