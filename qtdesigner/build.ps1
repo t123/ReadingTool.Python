@@ -19,15 +19,15 @@ $currentDir = Get-ScriptDirectory
 $parent = (get-Item $currentDir).Parent
 $files = Get-ChildItem $currentDir -Filter *.ui
 
-echo "`n`n`n`nFound $($files.Length) files"
+write-host "`nFound $($files.Count) files`n" -BackgroundColor Red -ForegroundColor White
 $processed = 0
 
 foreach($file in $files) {
     try {
         $outputFile = [io.path]::GetFileNameWithoutExtension($file) + ".py"
-        $output =  "$($parent.Fullname)\ui\$outputFile"
+        $output =  "$($parent.Fullname)\ui\views\$outputFile"
 
-        $command = "pyuic5 $($file.FullName)"
+        $command = "pyuic4 $($file.FullName)"
         write-host "Writing $output" -NoNewline
         iex $command | Out-File -FilePath "$output" -Encoding "utf8"
         $processed++
@@ -39,11 +39,11 @@ foreach($file in $files) {
     }
 }
 
-if($processed -eq $files.Length) 
+if($processed -eq $files.Count) 
 {    
-    write-host "`n`nSUCCESS: Finished $processed files" -ForegroundColor Green
+    write-host "`nSUCCESS: Finished $processed files" -ForegroundColor Green
 }
 else 
 {
-    write-host "`n`WARNING: Only finished $processed/$($files.Length) files" -ForegroundColor Red
+    write-host "`nWARNING: Only finished $processed/$($files.Length) files" -ForegroundColor Red
 }

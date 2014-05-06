@@ -1,10 +1,10 @@
 class TermState:
-    Unknown, Known, Unknown, Ignored, NotSeen = range(5)
+    Invalid, Known, Unknown, Ignored, NotSeen = range(5)
     
     @staticmethod
     def ToString(state):
         if state==0:
-            return "Unknown"
+            return "Invalid"
         elif state==1:
             return "Known"
         elif state==2:
@@ -20,7 +20,7 @@ class TermState:
     def ToEnum(state):
         state = state.lower()
         
-        if state=="unknown":
+        if state=="invalid":
             return 0
         elif state=="known":
             return 1
@@ -61,7 +61,7 @@ class Language():
         self.created = None
         self.modified = None
         self.isArchived = False
-        self.languageCode = ""
+        self.languageCode = "--"
         self.userId = None
         self.sentenceRegex = Language.SENTENCE_REGEX
         self.termRegex = Language.TERM_REGEX
@@ -138,3 +138,27 @@ class Item():
         self.listenedTimes = 0
         self.l1Language = None
         self.l2Language = None
+        
+    def isParallel(self):
+        return not self.l2Content.isspace()
+    
+    def name(self):
+        name = ""
+        if self.collectionNo:
+            name += str(self.collectionNo) + ". "
+            
+        if not self.collectionName.isspace():
+            name += self.collectionName + "  - "
+            
+        name += self.l1Title
+        
+        return name
+    
+class Plugin():
+    def __init__(self):
+        self.pluginId = 0
+        self.description = ""
+        self.name = ""
+        self.content = ""
+        self.uuid = ""
+    

@@ -1,10 +1,11 @@
-import time
-from lib.misc import Application
-from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, TermType
+import time, uuid
+from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, TermType, Plugin
 from lib.db import Db
+from lib.misc import Application
 
 class UserService:
     def __init__(self):
+        
         self.db = Db(Application.connectionString)
         
     def save(self, user):
@@ -18,7 +19,7 @@ class UserService:
                             syncData=user.syncData
                             )
         else:        
-            self.db.execute("UPDATE user SET userId=:userId, username=:username, syncData=:syncData WHERE userId=:userId",
+            self.db.execute("UPDATE user SET username=:username, accessKey=:accessKey, accessSecret=:accessSecret, syncData=:syncData WHERE userId=:userId",
                             userId=user.userId,
                             username=user.username,
                             accessKey=user.accessKey,
@@ -34,12 +35,16 @@ class UserService:
     def findOneByUsername(self, username):
         return self.db.one(User, "SELECT * FROM user WHERE username=:username", username=username)
     
+    def findAll(self, orderBy="lastLogin", maxResults=10):
+        if orderBy=="lastLogin":
+            return self.db.many(User, "SELECT * FROM user ORDER BY lastLogin LIMIT :limit", limit=maxResults)
+        elif orderBy=="username":
+            return self.db.many(User, "SELECT * FROM user ORDER BY username LIMIT :limit", limit=maxResults)
+        else:
+            return self.db.many(User, "SELECT * FROM user ORDER BY username LIMIT :limit", limit=maxResults)
+    
     def loginUser(self, userId):
-        user = self.findOne(userId)
-        
-        if user:
-            user.lastLogin = time.time()
-            self.save(user)
+        self.db.execute("UPDATE user SET lastLogin=:lastLogin WHERE userId=:userId", lastLogin=time.time(), userId=userId)
             
     def delete(self, userId):
         languageService = LanguageService()
@@ -68,7 +73,7 @@ class LanguageService:
                             direction = language.direction
                             )
         else:        
-            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, sentenceRegex=:sentenceRegex, termRegex=:termRegex WHERE languageId=:languageId",
+            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, sentenceRegex=:sentenceRegex, termRegex=:termRegex, direction=:direction WHERE languageId=:languageId",
                             languageId= language.languageId,
                             name = language.name,
                             modified = time.time(),
@@ -84,6 +89,10 @@ class LanguageService:
     def findOne(self, languageId):
         return self.db.one(Language, "SELECT * FROM language WHERE languageId=:languageId AND userId=:userId", 
                            languageId=languageId, userId=Application.user.userId)
+        
+    def findOneByName(self, name):
+        return self.db.one(Language, "SELECT * FROM language WHERE name=:name AND userId=:userId", 
+                           name=name, userId=Application.user.userId)
     
     def findAll(self):
         return self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY Name COLLATE NOCASE", Application.user.userId)
@@ -112,7 +121,7 @@ class LanguageCodeService:
         return self.db.one(LanguageCode, "SELECT * FROM languagecode WHERE code=:code", code=code)
     
     def findAll(self):
-        return self.db.many(LanguageCode, "SELECT * FROM LanguageCode ORDER BY name")
+        return self.db.many(LanguageCode, "SELECT * FROM LanguageCode ORDER BY name COLLATE NOCASE")
     
 class TermService:
     def __init__(self):
@@ -176,7 +185,6 @@ class TermService:
         
     def delete(self, termId):
         term = self.findOne(termId)
-        
         if term is None:
             return
         
@@ -253,9 +261,116 @@ class ItemService:
     def findAll(self):
         return self.db.many(Item, 
                             """
-                           SELECT item.*, B.Name as l1Language, C.Name as l2Language FROM item item
+                           SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
+                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
+                           item.readTimes, item.listenedTimes, B.Name as l1Language, C.Name as l2Language FROM item item
                            LEFT JOIN language B on item.l1LanguageId=B.LanguageId
                            LEFT JOIN language C on item.l2LanguageId=C.LanguageId
                            WHERE item.userId=:userId
                            """, 
                            userId=Application.user.userId)
+        
+    def findRecentlyRead(self, maxItems=5):
+        return self.db.many(Item, 
+                            """
+                           SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
+                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
+                           item.readTimes, item.listenedTimes, B.Name as l1Language, C.Name as l2Language FROM item item
+                           LEFT JOIN language B on item.l1LanguageId=B.LanguageId
+                           LEFT JOIN language C on item.l2LanguageId=C.LanguageId
+                           WHERE item.userId=:userId
+                           ORDER BY item.lastRead DESC
+                           LIMIT :maxItems
+                           """, 
+                           userId=Application.user.userId, maxItems=maxItems)
+        
+    def findRecentlyCreated(self, maxItems=5):
+        return self.db.many(Item, 
+                            """
+                           SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
+                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
+                           item.readTimes, item.listenedTimes, B.Name as l1Language, C.Name as l2Language FROM item item
+                           LEFT JOIN language B on item.l1LanguageId=B.LanguageId
+                           LEFT JOIN language C on item.l2LanguageId=C.LanguageId
+                           WHERE item.userId=:userId
+                           ORDER BY item.created DESC
+                           LIMIT :maxItems
+                           """, 
+                           userId=Application.user.userId, maxItems=maxItems)
+        
+    def findPrevious(self, item, itemId=0, limit=1):
+        if item is None:
+            item = self.findOne(itemId)
+        
+        if item is None:
+            return []
+        
+        return self.db.many(Item, 
+                            """
+                           SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
+                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
+                           item.readTimes, item.listenedTimes, B.Name as l1Language, C.Name as l2Language FROM item item
+                           LEFT JOIN language B on item.l1LanguageId=B.LanguageId
+                           LEFT JOIN language C on item.l2LanguageId=C.LanguageId
+                           WHERE item.userId=:userId AND item.l1LanguageId=:l1LanguageId AND item.collectionName=:collectionName AND item.collectionNo<:collectionNo
+                           ORDER BY item.collectionNo DESC
+                           LIMIT :limit 
+                           """, 
+                           userId=Application.user.userId, l1LanguageId=item.l1LanguageId, collectionName=item.collectionName, collectionNo=item.collectionNo, limit=limit
+                           )
+        
+    def findNext(self, item, itemId=0, limit=1):
+        if item is None:
+            item = self.findOne(itemId)
+            
+        if item is None:
+            return []
+        
+        return self.db.many(Item, 
+                            """
+                           SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
+                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
+                           item.readTimes, item.listenedTimes, B.Name as l1Language, C.Name as l2Language FROM item item
+                           LEFT JOIN language B on item.l1LanguageId=B.LanguageId
+                           LEFT JOIN language C on item.l2LanguageId=C.LanguageId
+                           WHERE item.userId=:userId AND item.l1LanguageId=:l1LanguageId AND item.collectionName=:collectionName AND item.collectionNo>:collectionNo
+                           ORDER BY item.collectionNo
+                           LIMIT :limit 
+                           """, 
+                           userId=Application.user.userId, l1LanguageId=item.l1LanguageId, collectionName=item.collectionName, collectionNo=item.collectionNo, limit=limit
+                           )
+        
+class PluginService:
+    def __init__(self):
+        self.db = Db(Application.connectionString)
+        
+    def save(self, plugin):
+        if(plugin.pluginId==0):
+            plugin.pluginId= self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid) VALUES ( :pluginId, :name, :description, :content, :uuid)",
+                            pluginId = None,
+                            name = plugin.name,
+                            description = plugin.description,
+                            content = plugin.content,
+                            uuid = str(uuid.uuid1())
+                            )
+        else:        
+            self.db.execute("UPDATE plugin SET name=:name, description=:description, content=:content WHERE pluginId=:pluginId",
+                            pluginId = plugin.pluginId,
+                            name = plugin.name,
+                            content = plugin.content,
+                            description = plugin.description
+                            )
+            
+        return self.findOne(plugin.pluginId)
+        
+    def findOne(self, pluginId):
+        return self.db.one(Plugin, "SELECT * FROM Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
+        
+    def findOneByName(self, name):
+        return self.db.one(Plugin, "SELECT * FROM Plugin WHERE name=:name", name=name)
+    
+    def findAll(self):
+        return self.db.many(Plugin, "SELECT * FROM Plugin ORDER BY name     COLLATE NOCASE")
+    
+    def delete(self, pluginId):
+        self.db.execute("DELETE FROM Plugin WHERE pluginId=:pluginId", pluginId=pluginId)

@@ -14,7 +14,8 @@ class BaseParser:
         self.htmlFile = None
     
     def splitIntoTerms(self, sentence, regex):
-        matches = regex.findall(sentence)
+        matches = regex.split(sentence)
+            
         return matches
     
     def splitIntoSentences(self, paragraph, regex):
@@ -24,7 +25,7 @@ class BaseParser:
             paragraph += '\n'
             
         matches = regex.findall(paragraph)
-        
+      
         if len(matches)==0:
             return [paragraph.strip()]
         
@@ -37,7 +38,8 @@ class BaseParser:
         return content.splitlines()
     
     def createContentNode(self):
-        content = etree.Element("content", 
+        content = etree.Element("content",
+                                webApi=Application.apiServer, 
                                 isParallel=str(self.pi.asParallel), 
                                 collectionName=self.pi.item.collectionName or "",
                                 collectionNo=str(self.pi.item.collectionNo) if self.pi.item.collectionNo else "",
@@ -94,7 +96,7 @@ class BaseParser:
             termNode.attrib["isTerm"] = "False"
             
             if term.isspace():
-                termNode.attr["isWhitespace"] = "True"
+                termNode.attrib["isWhitespace"] = "True"
                 
         return termNode
     
@@ -152,6 +154,8 @@ class TextParser(BaseParser):
         
     def parse(self, parserInput):
         self.pi = parserInput
+        self.po.item = parserInput.item
+        
         l1Paragraphs = self.splitIntoParagraphs(self.pi.item.l1Content)
         l2Paragraphs = self.splitIntoParagraphs(self.pi.item.l2Content)
         
@@ -192,11 +196,25 @@ class TextParser(BaseParser):
         self.addFrequencyData(root)
         self.calculateUniqueTerms(root)
                 
-        self.po.xml = etree.tostring(root, pretty_print=False) 
+        self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8") 
         
         htmlContent = None
         
         with open (os.path.join(Application.pathParsing, self.htmlFile), "r") as htmlFile:
             htmlContent = htmlFile.read()
             
-        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root)))
+        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace("<!-- webapi -->", Application.apiServer)
+        
+        return self.po
+
+class VideoParser(BaseParser):
+    def __init__(self):
+        super().__init__()
+        self.xsltFile = "video.xslt"
+        self.htmlFile = "watching.html"
+        
+    def parse(self, parserInput):
+        self.pi = parserInput
+        self.po.item = parserInput.item
+        
+        return self.po

@@ -4,6 +4,7 @@ from lib.models.model import User
 
 class Application:
     user = User()
+    
     path = os.path.abspath(
                            os.path.join(
                                         os.path.dirname(os.path.realpath(__file__)),
@@ -17,7 +18,8 @@ class Application:
     pathDatabase = os.path.join(path, "database")
 
     connectionString = os.path.join(pathDatabase, "rtwin.sqlite")
-    #connectionString = "C:/gitrepository/ReadingTool.Python/database/rtwin.sqlite"
+    
+    apiServer = "http://localhost:8080"
         
 class Time:
     @staticmethod

@@ -9,9 +9,6 @@
       <xsl:attribute name="data-webapi">
         <xsl:value-of select="/root/content/@webApi"/>
       </xsl:attribute>
-      <xsl:attribute name="data-signalr">
-        <xsl:value-of select="/root/content/@signalR"/>
-      </xsl:attribute>
       <xsl:attribute name="data-languageid">
         <xsl:value-of select="/root/content/@l1Id"/>
       </xsl:attribute>
@@ -33,7 +30,7 @@
 
       <tr class="header">
         <xsl:choose>
-          <xsl:when test="/root/content/@isParallel='true'">
+          <xsl:when test="/root/content/@isParallel='True'">
             <td colspan="2">
               <!--BLANK-->
             </td>
@@ -47,7 +44,7 @@
       </tr>
 
       <xsl:choose>
-        <xsl:when test="/root/content/@isParallel='true'">
+        <xsl:when test="/root/content/@isParallel='True'">
           <tr>
             <td class="__active" width="49%">
               <xsl:value-of select="/root/content/@collectionNo"/> -
@@ -72,7 +69,7 @@
       <xsl:apply-templates select="join"/>
       <tr class="footer">
         <xsl:choose>
-          <xsl:when test="/root/content/@isParallel='true'">
+          <xsl:when test="/root/content/@isParallel='True'">
             <td colspan="2">
               <!--BLANK-->
             </td>
@@ -90,7 +87,7 @@
     <tr>
       <xsl:apply-templates select="paragraph" />
       <xsl:choose>
-        <xsl:when test="/root/content/@isParallel='true'">
+        <xsl:when test="/root/content/@isParallel='True'">
           <td class="disabled" width="50%">
             <xsl:value-of select="translation"/>
           </td>
@@ -104,7 +101,7 @@
         <xsl:value-of select="@direction"/>
       </xsl:attribute>
       <xsl:choose>
-        <xsl:when test="/root/content/@isParallel='true'">
+        <xsl:when test="/root/content/@isParallel='True'">
           <xsl:attribute name="width">49%</xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
@@ -123,7 +120,7 @@
   </xsl:template>
   <xsl:template match="term">
     <xsl:choose>
-      <xsl:when test="@isTerm='true'">
+      <xsl:when test="@isTerm='True'">
         <span>
           <xsl:attribute name="class">
             <xsl:text>__term</xsl:text>
@@ -171,7 +168,7 @@
       <xsl:otherwise>
         <span>
           <xsl:attribute name="class">__punctuation
-            <xsl:if test="@isWhitespace='true'"> __whitespace</xsl:if>
+            <xsl:if test="@isWhitespace='True'"> __whitespace</xsl:if>
           </xsl:attribute>
           <xsl:value-of select="."/>
         </span>

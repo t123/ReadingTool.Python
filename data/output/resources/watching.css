@@ -1,0 +1,78 @@
+﻿body {
+    margin: 0 20px 200px 20px;
+    background: black;
+    color: white;
+}
+
+#reading {
+    width: 70%;
+    margin-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    background: black;
+    font-size: 20px;
+}
+
+#popup {
+    color: black;
+}
+
+#reading span.__term.__known {
+    background-color: black;
+}
+
+#reading span.__term.__current {
+    -webkit-border-radius: 5px;
+    border-bottom: 2px solid #357ebd;
+}
+
+#reading span.__term.__unknown {
+    background-color: #AC193D;
+}
+
+#reading span.__term.__notseen {
+    background-color: #8C0095;
+}
+
+#reading span.__term.__ignored {
+    background-color: black;
+}
+
+#reading span.__term.__temp {
+        background-color: #68B781;
+    }
+
+#video {
+    width: 730px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#l1Main {
+    width: 100%;
+    height: 50px;
+    padding-bottom: 10px;
+}
+
+#l2Main {
+    width: 100%;
+    height: 50px;
+}
+
+div.jp-video-270p {
+    width: 720px !important;
+}
+
+#modalContent {
+    color: black;
+}
+
+.tooltip-inner {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+.tooltip.top .tooltip-arrow {
+    border-top-color: #ffffff !important;
+}

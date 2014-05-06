@@ -1,8 +1,11 @@
+import os
+from lib.misc import Application
+
 class ParserInput:
     def __init__(self):
         self._terms = None
         
-        self.html = ""
+        #self.html = ""
         self.item = None
         self.language1 = None
         self.language2 = None
@@ -20,9 +23,23 @@ class ParserInput:
         
 class ParserOutput:
     def __init__(self):
+        self.item = None
         self.xml = ""
         self.html = ""
         self.stats = ParseStats()
+        
+    def save(self):
+        if self.item is None:
+            return
+        
+        xmlPath = os.path.join(Application.pathOutput, str(self.item.itemId) + ".xml")
+        htmlPath = os.path.join(Application.pathOutput, str(self.item.itemId) + ".html")
+        
+        with open(xmlPath, 'wb') as f:
+            f.write(self.xml)
+
+        with open(htmlPath, 'wt', encoding="utf8") as f:
+            f.write(self.html)        
         
 class ParseStats:
     def __init__(self):
