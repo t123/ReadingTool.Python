@@ -4,6 +4,7 @@ from lib.misc import Application, Time
 from lib.models.model import Item, ItemType
 from lib.services.service import ItemService
 from ui.views.items import Ui_Items
+from ui.itemdialog import ItemDialogForm
 from ui.reader import ReaderWindow
 
 class ItemsForm(QtGui.QDialog):
@@ -24,7 +25,9 @@ class ItemsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.tItems, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), lambda: self.readItem(asParallel=None))        
         
     def addItem(self):
-        print("addItem")
+        dialog = ItemDialogForm()
+        dialog.setItem(0)
+        dialog.show()
         
     def editItem(self):
         item = self.ui.tItems.item(self.ui.tItems.currentRow(), 0)
@@ -32,7 +35,9 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
         
-        print("editItem")
+        dialog = ItemDialogForm()
+        dialog.setItem(item.data(QtCore.Qt.UserRole).itemId)
+        dialog.show()
         
     def copyItem(self):
         item = self.ui.tItems.item(self.ui.tItems.currentRow(), 0)
