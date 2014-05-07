@@ -16,7 +16,7 @@ class ItemsForm(QtGui.QDialog):
         self.itemService = ItemService()
         self.updateItems();
         
-        QtCore.QObject.connect(self.ui.pbAdd, QtCore.SIGNAL("clicked()"), self.addItem)
+        QtCore.QObject.connect(self.ui.pbAdd, QtCore.SIGNAL("clicked()"), lambda: self.addItem())
         QtCore.QObject.connect(self.ui.pbEdit, QtCore.SIGNAL("clicked()"), self.editItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteItem)
@@ -25,9 +25,9 @@ class ItemsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.tItems, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), lambda: self.readItem(asParallel=None))        
         
     def addItem(self):
-        dialog = ItemDialogForm()
-        dialog.setItem(0)
-        dialog.show()
+        self.dialog = ItemDialogForm()
+        self.dialog.setItem(0)
+        self.dialog.show()
         
     def editItem(self):
         item = self.ui.tItems.item(self.ui.tItems.currentRow(), 0)
@@ -35,9 +35,9 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
         
-        dialog = ItemDialogForm()
-        dialog.setItem(item.data(QtCore.Qt.UserRole).itemId)
-        dialog.show()
+        self.dialog = ItemDialogForm()
+        self.dialog.setItem(item.data(QtCore.Qt.UserRole).itemId)
+        self.dialog.show()
         
     def copyItem(self):
         item = self.ui.tItems.item(self.ui.tItems.currentRow(), 0)

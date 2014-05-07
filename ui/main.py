@@ -9,6 +9,7 @@ from ui.languages import LanguagesForm
 from ui.plugins import PluginsForm
 from ui.items import ItemsForm
 from ui.terms import TermsForm
+from ui.itemdialog import ItemDialogForm
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -28,6 +29,7 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.mainWindow.tbProfiles, QtCore.SIGNAL("clicked()"), lambda view = "profiles": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.pbPlugins, QtCore.SIGNAL("clicked()"), lambda view = "plugins": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.tbItems, QtCore.SIGNAL("clicked()"), lambda view = "items": self.changeView(view))
+        QtCore.QObject.connect(self.mainWindow.pbTerms, QtCore.SIGNAL("clicked()"), lambda view = "terms": self.changeView(view))
 
     def updateItems(self):
         readItems = self.itemService.findRecentlyRead()
@@ -62,7 +64,9 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWindow.tbItems.setMenu(menu)
         
     def addItem(self):
-        print("addItem")
+        self.dialog = ItemDialogForm()
+        self.dialog.setItem(0)
+        self.dialog.show()
         
     def readItem(self, item):
         reader = ReaderWindow()

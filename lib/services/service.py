@@ -1,4 +1,4 @@
-import time, uuid
+import time, uuid, re
 from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, TermType, Plugin, LanguagePlugin
 from lib.db import Db
 from lib.misc import Application
@@ -273,7 +273,7 @@ class ItemService:
                             listenedTimes = item.listenedTimes
                             )
         else:        
-            item.itemId = self.db.execute("UPDATE item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo=:collectionNo, mediaUri=:mediaUri, lastRead=:lastRead, l1Title=:l1Title, l2Title=:l2Title, l1LanguageId=:l1LanguageId, l2LanguageId=:l2LanguageId, l1Content=:l1Content, l2Content=:l2Content, readTimes=:readTimes, listenedTimes=:listenedTimes WHERE itemId=:itemId",
+            self.db.execute("UPDATE item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo=:collectionNo, mediaUri=:mediaUri, lastRead=:lastRead, l1Title=:l1Title, l2Title=:l2Title, l1LanguageId=:l1LanguageId, l2LanguageId=:l2LanguageId, l1Content=:l1Content, l2Content=:l2Content, readTimes=:readTimes, listenedTimes=:listenedTimes WHERE itemId=:itemId",
                             itemId = item.itemId,
                             modified = time.time(),
                             itemType = item.itemType, 
@@ -409,6 +409,27 @@ class ItemService:
         copy.mediaUri = item.mediaUri
         
         return copy
+    
+    def splitItem(self, itemId):
+        item = self.findOne(itemId)
+        
+        if item is None:
+            return
+        
+        l1Split = re.split("===", item.l1Content)
+        l2Split = re.split("===", item.l2Content)
+        
+        for i in range(0, len(l1Split)):
+            copy = self.copyItem(item.itemId)
+            copy.l1Content = l1Split[i].strip()
+            copy.l2Content = l2Split[i].strip() if i<len(l2Split) else ""
+            
+            if item.collectionNo is not None:
+                copy.collectionNo = item.collectionNo+i
+            else:
+                copy.collectionNo = None
+                
+            self.save(copy)
      
 class PluginService:
     def __init__(self):
