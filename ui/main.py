@@ -7,6 +7,8 @@ from ui.reader import ReaderWindow
 from ui.profiles import ProfilesForm
 from ui.languages import LanguagesForm
 from ui.plugins import PluginsForm
+from ui.items import ItemsForm
+from ui.terms import TermsForm
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -18,19 +20,26 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWindow = Ui_MainWindow()
         self.mainWindow.setupUi(self)
         self.mainWindow.verticalLayout.setStretch(2, 1)
-        self.changeView("languages")
+        self.changeView("items")
         self.updateItems()
         self.updateProfiles()
         
         QtCore.QObject.connect(self.mainWindow.pbLanguages, QtCore.SIGNAL("clicked()"), lambda view = "languages": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.tbProfiles, QtCore.SIGNAL("clicked()"), lambda view = "profiles": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.pbPlugins, QtCore.SIGNAL("clicked()"), lambda view = "plugins": self.changeView(view))
+        QtCore.QObject.connect(self.mainWindow.tbItems, QtCore.SIGNAL("clicked()"), lambda view = "items": self.changeView(view))
 
     def updateItems(self):
         readItems = self.itemService.findRecentlyRead()
         newItems = self.itemService.findRecentlyCreated()
         
         menu = QtGui.QMenu()
+        
+        action = QtGui.QAction(self)
+        action.setText("Add item")
+        action.connect(action, QtCore.SIGNAL("triggered()"), self.addItem)
+        menu.addAction(action)
+            
         readMenu = QtGui.QMenu("Recently Read", self)
         newMenu = QtGui.QMenu("Recently Created", self)
         
@@ -51,6 +60,9 @@ class MainWindow(QtGui.QMainWindow):
         menu.addMenu(readMenu)
         menu.addMenu(newMenu)
         self.mainWindow.tbItems.setMenu(menu)
+        
+    def addItem(self):
+        print("addItem")
         
     def readItem(self, item):
         reader = ReaderWindow()
@@ -104,3 +116,13 @@ class MainWindow(QtGui.QMainWindow):
             self._removeChild()
             pluginsForm = PluginsForm()
             self.mainWindow.verticalLayout.addWidget(pluginsForm)
+            
+        elif viewName=="items":
+            self._removeChild()
+            itemsForm = ItemsForm()
+            self.mainWindow.verticalLayout.addWidget(itemsForm)
+            
+        elif viewName=="terms":
+            self._removeChild()
+            termsForm = TermsForm()
+            self.mainWindow.verticalLayout.addWidget(termsForm)

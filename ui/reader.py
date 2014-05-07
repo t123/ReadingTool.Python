@@ -1,4 +1,4 @@
-import threading, datetime
+import threading, datetime, time
 
 from PyQt4 import QtCore, QtGui, Qt
 
@@ -23,8 +23,8 @@ class ReaderWindow(QtGui.QDialog):
         
     def readItem(self, itemId, asParallel=None):
         self.item = self.itemService.findOne(itemId)
-        
-        if (asParallel is None and self.item.isParallel()) or asParallel==True:
+
+        if ((asParallel is None and self.item.isParallel()) or asParallel==True) and self.item.l2LanguageId is not None:
             asParallel = True
         else:
             asParallel = False
@@ -37,7 +37,7 @@ class ReaderWindow(QtGui.QDialog):
         pi = ParserInput()
         pi.item = self.item
         pi.language1 = self.languageService.findOne(self.item.l1LanguageId)
-        pi.language2 = self.languageService.findOne(self.item.l2LanguageId) if self.item.isParallel() else None
+        pi.language2 = self.languageService.findOne(self.item.l2LanguageId) if asParallel else None
         pi.asParallel = asParallel
         pi.terms = self.termService.findAllByLanguage(self.item.itemId)
         
@@ -49,6 +49,9 @@ class ReaderWindow(QtGui.QDialog):
         self.__readTime = datetime.datetime.now()
         self.__updateTitle()
         self._updateNextPreviousMenu()
+        
+        self.item.lastRead = time.time()
+        self.itemService.save(self.item)
         
     def _updateNextPreviousMenu(self):
         prev = reversed(self.itemService.findPrevious(self.item, limit=5))
@@ -64,8 +67,13 @@ class ReaderWindow(QtGui.QDialog):
             self.ui.tbItems.enabled = False
             return
             
-        self.ui.tbItems.setText(nextItem.name())
+        action = QtGui.QAction(self)
+        action.setText(nextItem.name())
+        action.setData(nextItem.itemId)
+        action.connect(action, QtCore.SIGNAL("triggered()"), lambda item=action.data(): self.readItem(item))
+        
         self.ui.tbItems.enabled = True
+        self.ui.tbItems.setDefaultAction(action)
             
         menu = QtGui.QMenu()
         for item in prev:

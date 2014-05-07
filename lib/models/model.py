@@ -94,6 +94,8 @@ class Term():
         self.state = TermState.Unknown
         self.userId = None
         self.itemSourceId = None
+        self.language = ""
+        self.itemSource = ""
         
     def fullDefinition(self):
         fullDef = ""
@@ -146,8 +148,27 @@ class Item():
         self.l1Language = None
         self.l2Language = None
         
+    def hasMedia(self):
+        if self.mediaUri is None:
+            return False
+        
+        test = self.mediaUri.strip()
+        
+        if test.isspace() or len(test)==0:
+            return False
+        
+        return True
+    
     def isParallel(self):
-        return not self.l2Content.isspace()
+        if self.l2Content is None:
+            return False
+        
+        test = self.l2Content.strip()
+        
+        if test.isspace() or len(test)==0:
+            return False
+        
+        return True
     
     def name(self):
         name = ""

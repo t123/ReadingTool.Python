@@ -160,7 +160,7 @@ class TextParser(BaseParser):
         l2Paragraphs = self.splitIntoParagraphs(self.pi.item.l2Content)
         
         l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
-        l1TermRegex = re.compile(self.pi.language2.termRegex)
+        l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         root = etree.Element("root")
         contentNode = self.createContentNode()

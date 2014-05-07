@@ -185,17 +185,50 @@ class TermService:
             
         return term
         
+    def findAll(self):
+        return self.db.many(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
+                                        FROM term term
+                                        LEFT JOIN language b on term.languageId=b.LanguageId
+                                        LEFT JOIN item c on term.itemSourceId=c.itemId
+                                        WHERE term.userId=:userId
+                                        ORDER BY term.lowerPhrase
+                                        """, 
+                                        userId=Application.user.userId
+                            )
+        
     def findOne(self, termId):
-        return self.db.one(Term, "SELECT * FROM term WHERE termId=:termId", termId=termId)
+        return self.db.one(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
+                                        FROM term term
+                                        LEFT JOIN language b on term.languageId=b.LanguageId
+                                        LEFT JOIN item c on term.itemSourceId=c.itemId
+                                        WHERE term.userId=:userId AND term.termId=:termId
+                                        ORDER BY term.lowerPhrase
+                                        """, 
+                                        userId=Application.user.userId,
+                                        termId=termId
+                            )
     
     def fineOneByPhraseAndLanguage(self, phrase, languageId):
         lowerPhrase = (phrase or "").lower()
-        return self.db.one(Term, "SELECT * FROM term WHERE lowerPhrase=:lowerPhrase AND languageId=:languageId AND userId=:userId", 
-                           lowerPhrase=lowerPhrase, languageId=languageId, userId=Application.user.userId)
+        return self.db.one(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
+                                        FROM term term
+                                        LEFT JOIN language b on term.languageId=b.LanguageId
+                                        LEFT JOIN item c on term.itemSourceId=c.itemId
+                                        WHERE term.lowerPhrase=:lowerPhrase AND term.languageId=:languageId AND term.userId=:userId
+                                        ORDER BY term.lowerPhrase
+                                        """, 
+                                        lowerPhrase=lowerPhrase, languageId=languageId, userId=Application.user.userId
+                            )
     
     def findAllByLanguage(self, languageId):
-        return self.db.many(Term, "SELECT * FROM term WHERE languageId=:languageId AND userId=:userId",
-                            languageId=languageId, userId=Application.user.userId
+        return self.db.many(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
+                                        FROM term term
+                                        LEFT JOIN language b on term.languageId=b.LanguageId
+                                        LEFT JOIN item c on term.itemSourceId=c.itemId
+                                        WHERE term.languageId=:languageId AND term.userId=:userId
+                                        ORDER BY term.lowerPhrase
+                                        """, 
+                                        languageId=languageId, userId=Application.user.userId
                             )
         
     def delete(self, termId):
@@ -240,7 +273,7 @@ class ItemService:
                             listenedTimes = item.listenedTimes
                             )
         else:        
-            item.itemId = self.db.execute("UPDATE INTO item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo:=collectionNo, mediaUri:=mediaUri, lastRead:=lastRead, l1Title:=l1Title, l2Title:=l2Title, l1LanguageId:=l1LanguageId, l2LanguageId:=l2LanguageId, l1Content:=l1Content, l2Content:=l2Content, readTimes:=readTimes, listenedTimes:=listenedTimes WHERE itemId=:itemId",
+            item.itemId = self.db.execute("UPDATE item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo=:collectionNo, mediaUri=:mediaUri, lastRead=:lastRead, l1Title=:l1Title, l2Title=:l2Title, l1LanguageId=:l1LanguageId, l2LanguageId=:l2LanguageId, l1Content=:l1Content, l2Content=:l2Content, readTimes=:readTimes, listenedTimes=:listenedTimes WHERE itemId=:itemId",
                             itemId = item.itemId,
                             modified = time.time(),
                             itemType = item.itemType, 
@@ -277,11 +310,13 @@ class ItemService:
         return self.db.many(Item, 
                             """
                            SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
-                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
+                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content,
+                           CASE WHEN length(item.l2Content) > 0 THEN substr(item.l2Content,0,20) ELSE '' END AS l2Content, 
                            item.readTimes, item.listenedTimes, B.Name as l1Language, C.Name as l2Language FROM item item
                            LEFT JOIN language B on item.l1LanguageId=B.LanguageId
                            LEFT JOIN language C on item.l2LanguageId=C.LanguageId
                            WHERE item.userId=:userId
+                           ORDER BY l1Language, item.collectionName, item.collectionNo, item.l1Title
                            """, 
                            userId=Application.user.userId)
         
@@ -354,7 +389,27 @@ class ItemService:
                            """, 
                            userId=Application.user.userId, l1LanguageId=item.l1LanguageId, collectionName=item.collectionName, collectionNo=item.collectionNo, limit=limit
                            )
+    
+    def copyItem(self, itemId):
+        item = self.findOne(itemId)
         
+        if item is None:
+            return None
+        
+        copy = Item()
+        copy.collectionName = item.collectionName
+        copy.collectionNo = item.collectionNo
+        copy.itemType = item.itemType
+        copy.l1Content = item.l1Content
+        copy.l2Content = item.l2Content
+        copy.l1LanguageId = item.l1LanguageId
+        copy.l2LanguageId = item.l2LanguageId
+        copy.l1Title = item.l1Title + " (copy)"
+        copy.l2Title = item.l2Title
+        copy.mediaUri = item.mediaUri
+        
+        return copy
+     
 class PluginService:
     def __init__(self):
         self.db = Db(Application.connectionString)
