@@ -44,7 +44,7 @@ class Server():
         d.connect(name="r4", route='/resource/v1/item/:id', controller=rc, action="getItem", conditions=dict(method=["GET"]))
         d.connect(name="r5", route='/resource/v1/local/:name', controller=rc, action="getLocalResource", conditions=dict(method=["GET"]))
         
-        d.connect(name="a1", route='/api/v1/encode/:phrase', controller=ac, action="encodePhrase", conditions=dict(method=["GET"]))
+        d.connect(name="a1", route='/api/v1/encode', controller=ac, action="encodePhrase", conditions=dict(method=["GET"]))
             
         conf = {'/': {
                       'request.dispatch': d, 
