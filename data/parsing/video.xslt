@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   <xsl:output method="xml" omit-xml-declaration="yes" />
   <xsl:template match="/root">
@@ -8,9 +8,6 @@
     <table id="reading">
       <xsl:attribute name="data-webapi">
         <xsl:value-of select="/root/content/@webApi"/>
-      </xsl:attribute>
-      <xsl:attribute name="data-signalr">
-        <xsl:value-of select="/root/content/@signalR"/>
       </xsl:attribute>
       <xsl:attribute name="data-languageid">
         <xsl:value-of select="/root/content/@l1Id"/>
@@ -49,7 +46,7 @@
     <tr>
       <xsl:apply-templates select="paragraph" />
       <xsl:choose>
-        <xsl:when test="/root/content/@isParallel='true'">
+        <xsl:when test="/root/content/@isParallel='True'">
           <td>
             <xsl:attribute name="id">l2_<xsl:value-of select="@line"/></xsl:attribute>
             <xsl:value-of select="translation"/>
@@ -71,7 +68,7 @@
   </xsl:template>
   <xsl:template match="term">
     <xsl:choose>
-      <xsl:when test="@isTerm='true'">
+      <xsl:when test="@isTerm='True'">
         <span>
           <xsl:attribute name="class">
             <xsl:text>__term</xsl:text>
@@ -121,7 +118,7 @@
         <span>
           <xsl:attribute name="class">
             __punctuation
-            <xsl:if test="@isWhitespace='true'"> __whitespace</xsl:if>
+            <xsl:if test="@isWhitespace='True'"> __whitespace</xsl:if>
           </xsl:attribute>
           <xsl:value-of select="."/>
         </span>

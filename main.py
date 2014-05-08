@@ -1,8 +1,6 @@
 import sys
-import PyQt4.QtGui
 from PyQt4 import QtGui
 from ui.main import MainWindow
-from ui.reader import ReaderWindow
 from lib.misc import Application
 from lib.services.service import UserService
 from lib.models.model import User
@@ -24,7 +22,7 @@ def checkUser():
     
 if __name__=="__main__":
     checkUser()
-    
+     
     Application.server = Server(embed=False)
     app = QtGui.QApplication(sys.argv)
     myapp = MainWindow()

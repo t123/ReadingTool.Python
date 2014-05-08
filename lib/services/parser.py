@@ -1,9 +1,10 @@
-import os, re
+import os, re, datetime
 from lxml import etree
 from lib.services.service import UserService, ItemService, LanguageService, TermService
 from lib.models.model import User, Item, Language, LanguageDirection, TermState, ItemType
-from lib.models.parser import ParserInput, ParserOutput
+from lib.models.parser import ParserInput, ParserOutput, SRT
 from lib.misc import Time, Application
+from lib.stringutil import StringUtil
         
 class BaseParser:
     def __init__(self):
@@ -50,7 +51,7 @@ class BaseParser:
                                 l2Title=self.pi.item.l2Title,
                                 l1Id=str(self.pi.language1.languageId),
                                 l2Id=str(self.pi.language2.languageId) if self.pi.language2 else "",
-                                itemType=str(self.pi.item.itemType),
+                                itemType=ItemType.ToString(self.pi.item.itemType).lower(),
                                 itemId=str(self.pi.item.itemId),
                                 l1Direction=str(self.pi.language1.direction),
                                 l2Direction=str(self.pi.language2.direction) if self.pi.language2 else "",
@@ -203,7 +204,7 @@ class TextParser(BaseParser):
         with open (os.path.join(Application.pathParsing, self.htmlFile), "r") as htmlFile:
             htmlContent = htmlFile.read()
             
-        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace("<!-- webapi -->", Application.apiServer)
+        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>").replace("<!-- webapi -->", Application.apiServer)
         
         return self.po
 
@@ -213,8 +214,114 @@ class VideoParser(BaseParser):
         self.xsltFile = "video.xslt"
         self.htmlFile = "watching.html"
         
+    def parseSrt(self, content):
+        srtList = []
+        
+        lines = content.splitlines()
+        
+        srt = None
+        
+        for line in lines:
+            if StringUtil.isEmpty(line):
+                continue
+            
+            if line.isdigit():
+                if srt is not None:
+                    srtList.append(srt)
+                    
+                srt = SRT()
+                srt.lineNo = int(line)
+            elif "-->" in line:
+                times = line.split(" --> ")
+                start = datetime.datetime.strptime(times[0], "%H:%M:%S,%f")
+                end = datetime.datetime.strptime(times[1], "%H:%M:%S,%f")
+                srt.start = start.hour*60*60 + start.minute*60 + start.second + start.microsecond/1000000
+                srt.end = end.hour*60*60 + end.minute*60 + end.second + end.microsecond/1000000
+                
+                print(srt.end)
+            else:
+                if srt is None:
+                    continue
+                
+                if StringUtil.isEmpty(srt.content):
+                    srt.content = line
+                else:
+                    srt.content += " " + line
+
+        return srtList
+    
     def parse(self, parserInput):
         self.pi = parserInput
         self.po.item = parserInput.item
+        self.po.l1Srt = self.parseSrt(self.po.item.l1Content)
+        self.po.l2Srt = self.parseSrt(self.po.item.l2Content) if self.pi.asParallel else []
+        
+        l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
+        l1TermRegex = re.compile(self.pi.language1.termRegex)
+        
+        root = etree.Element("root")
+        contentNode = self.createContentNode()
+        
+        for i in range(0,len(self.po.l1Srt)):
+            l1Paragraph = self.po.l1Srt[i]
+            l2Paragraph = self.po.l2Srt[i] if self.po.l2Srt is not None and i<len(self.po.l2Srt) and self.pi.asParallel else None
+             
+            joinNode = etree.Element("join")
+            joinNode.attrib["line"] = str(l1Paragraph.lineNo)
+            
+            l1ParagraphNode = etree.Element("paragraph")
+            l2ParagraphNode = etree.Element("translation")
+            
+            l1ParagraphNode.attrib["start"] = str(l1Paragraph.start)
+            l1ParagraphNode.attrib["end"] = str(l1Paragraph.end)
+            
+            l2ParagraphNode.text = l2Paragraph.content if l2Paragraph is not None else ""
+            l1ParagraphNode.attrib["direction"] = "ltr" if self.pi.language1.direction==LanguageDirection.LeftToRight else "rtl"            
+            l2ParagraphNode.attrib["direction"] = "ltr" if self.pi.language2 and self.pi.language2.direction==LanguageDirection.LeftToRight else "rtl"
+            
+            sentences = self.splitIntoSentences(l1Paragraph.content, l1SentenceRegex)
+            
+            for sentence in sentences:
+                sentenceNode = etree.Element("sentence")
+                terms = self.splitIntoTerms(sentence, l1TermRegex)
+                
+                for term in terms:
+                    sentenceNode.append(self.createTermNode(term, l1TermRegex))
+                    
+                l1ParagraphNode.append(sentenceNode)
+                
+            joinNode.append(l1ParagraphNode) 
+            joinNode.append(l2ParagraphNode)
+            contentNode.append(joinNode)
+        
+        root.append(contentNode)
+        self.addFrequencyData(root)
+        self.calculateUniqueTerms(root)
+                
+        self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8") 
+        
+        htmlContent = None
+        
+        with open (os.path.join(Application.pathParsing, self.htmlFile), "r") as htmlFile:
+            htmlContent = htmlFile.read()
+            
+        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>").replace("<!-- webapi -->", Application.apiServer)
         
         return self.po
+    
+
+#===============================================================================
+# itemService = ItemService()
+# languageService = LanguageService()
+# userService = UserService()
+# Application.user = userService.findOne(216)
+# item = itemService.findOne(60)
+# pi = ParserInput()
+# pi.item = item
+# pi.language1 = languageService.findOne(item.l1LanguageId)
+# pi.language2 = languageService.findOne(item.l2LanguageId)
+#  
+# vp = VideoParser()
+# po = vp.parse(pi)
+# po.save()
+#===============================================================================

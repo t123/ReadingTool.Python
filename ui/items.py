@@ -22,7 +22,7 @@ class ItemsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteItem)
         QtCore.QObject.connect(self.ui.pbRead, QtCore.SIGNAL("clicked()"), lambda asParallel = False: self.readItem(asParallel))        
         QtCore.QObject.connect(self.ui.pbReadParallel, QtCore.SIGNAL("clicked()"), lambda asParallel = True: self.readItem(asParallel))        
-        QtCore.QObject.connect(self.ui.tItems, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), lambda: self.readItem(asParallel=None))        
+        QtCore.QObject.connect(self.ui.tItems, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), lambda: self.readItem(asParallel=None))
         
     def addItem(self):
         self.dialog = ItemDialogForm()

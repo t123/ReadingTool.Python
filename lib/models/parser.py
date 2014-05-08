@@ -27,6 +27,8 @@ class ParserOutput:
         self.xml = ""
         self.html = ""
         self.stats = ParseStats()
+        self.l1Srt = None
+        self.l2Srt = None
         
     def save(self):
         if self.item is None:
@@ -53,3 +55,10 @@ class ParseStats:
         self.uniqueUnknown = 0
         self.uniqueIgnored = 0
         self.uniqueNotSeen = 0
+        
+class SRT:
+    def __init__(self):
+        self.lineNo = None
+        self.content = ""
+        self.start = 0.0
+        self.end = 0.0

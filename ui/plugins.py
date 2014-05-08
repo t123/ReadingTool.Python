@@ -19,6 +19,10 @@ class PluginsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.savePlugin)
         QtCore.QObject.connect(self.ui.pbAdd, QtCore.SIGNAL("clicked()"), self.addPlugin)
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deletePlugin)
+        QtCore.QObject.connect(self.ui.pbCancel, QtCore.SIGNAL("clicked()"), self.cancel)
+        QtCore.QObject.connect(self.ui.leName, QtCore.SIGNAL("textChanged()"), self.changed)
+        QtCore.QObject.connect(self.ui.teDescription, QtCore.SIGNAL("textChanged()"), self.changed)
+        QtCore.QObject.connect(self.ui.teCode, QtCore.SIGNAL("textChanged()"), self.changed)
         
         self.pluginService = PluginService()
         self.updatePlugins();
@@ -43,7 +47,6 @@ class PluginsForm(QtGui.QDialog):
         lexer = QsciLexerJavaScript()
         lexer.setDefaultFont(font)
         self.ui.teCode.setLexer(lexer)
-        #self.ui.teCode.SendScintilla(QsciScintilla.SCI_STYLESETFONT, 1, 'Courier')     
 
     def _currentPlugin(self):
         if self.ui.lvPlugins.currentItem() is None:
@@ -51,6 +54,15 @@ class PluginsForm(QtGui.QDialog):
         
         return self.pluginService.findOne(self.ui.lvPlugins.currentItem().data(QtCore.Qt.UserRole).pluginId)
     
+    def changed(self):
+        self.ui.pbCancel.setEnabled(True)
+        self.ui.pbSave.setEnabled(True)
+        
+    def cancel(self):
+        currentRow = self.ui.lvPlugins.currentRow()
+        self.ui.lvPlugins.setCurrentRow(-1)
+        self.ui.lvPlugins.setCurrentRow(currentRow)
+        
     def populateItem(self, current, previous):
         if current is None:
             return
@@ -59,6 +71,9 @@ class PluginsForm(QtGui.QDialog):
         self.ui.leName.setText(plugin.name)
         self.ui.teDescription.setPlainText(plugin.description)
         self.ui.teCode.setText(plugin.content)
+        
+        self.ui.pbCancel.setEnabled(False)
+        self.ui.pbSave.setEnabled(False)
         
     def savePlugin(self):
         if self.ui.lvPlugins.currentItem() is None:

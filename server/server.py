@@ -48,7 +48,8 @@ class Server():
             
         conf = {'/': {
                       'request.dispatch': d, 
-                      'tools.CORS.on': True
+                      'tools.CORS.on': True,
+                      'request.stream': True
                       }
                 }
         

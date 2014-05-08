@@ -1,7 +1,8 @@
-import cherrypy, json, urllib, os
+import cherrypy, json, urllib, os, time
 from lib.models.model import TermState, Term, Item
-from lib.services.service import TermService, ItemService
-from lib.misc import Application
+from lib.services.service import TermService, ItemService, PluginService, LanguageService
+from lib.misc import Application, Time
+from lib.stringutil import StringUtil
 
 class InternalController(object):
     def __isValidId(self, id):
@@ -142,17 +143,67 @@ class ResourceController(object):
         if not self.__isValidId(id):
             raise cherrypy.HTTPError(404)
         
+        languageService = LanguageService()
+        plugins = languageService.findAllPlugins(id, True)
+        output = "//Generated at " + Time.toLocal(time.time()) + "\n"
+        
+        if len(plugins)>0:
+            output += "$(document).on('pluginReady', function() {\n"
+            
+            for plugin in plugins:
+                output += "\n"
+                output += "/*\n"
+                output += "* " + plugin.name + "\n"
+                output += "* " + plugin.uuid + "\n"
+                output += "* " + plugin.description + "\n"
+                output += "*/"
+                output += plugin.content
+                output += "\n"
+                
+            output += "$(document).trigger('pluginInit');\n"
+            output += "});"
+            
         cherrypy.response.status = 200
-        cherrypy.response.headers["Content-Type"] = "text/plain"
-        return "TODO" + id
+        cherrypy.response.headers["Content-Type"] = "application/javascript"
+        return output.encode()
         
     def getMedia(self, id):
         if not self.__isValidId(id):
             raise cherrypy.HTTPError(404)
         
+        itemService = ItemService()
+        item = itemService.findOne(id)
+        
+        if item is None:
+            raise cherrypy.HTTPError(404)
+        
+        if not os.path.isfile(item.mediaUri):
+            raise cherrypy.HTTPError(404)
+        
+        fileName, fileExtension = os.path.splitext(item.mediaUri)
+        content = ""
+        size = os.path.getsize(item.mediaUri)
+        
+        file = open (item.mediaUri, "rb")
+                
         cherrypy.response.status = 200
-        cherrypy.response.headers["Content-Type"] = "text/plain"
-        return "TODO" + id
+        cherrypy.response.headers["Content-Length"] = size
+             
+        if fileExtension.lower()==".mp3":
+            cherrypy.response.headers["Content-Type"] = "audio/mpeg3"
+        elif fileExtension.lower()==".mp4":
+            cherrypy.response.headers["Content-Type"] = "video/mp4"
+        else:
+            raise cherrypy.HTTPError(404)
+        
+        def stream():
+            data = file.read(65000)
+            
+            while len(data)>0:
+                yield data
+                data = file.read(65000)
+                
+        return stream()
         
     def getItem(self, id):
         if not self.__isValidId(id):

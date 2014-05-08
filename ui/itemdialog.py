@@ -21,7 +21,7 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.saveItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbSplit, QtCore.SIGNAL("clicked()"), self.splitItem)
-        
+         
     def splitItem(self):
         if self.item is None:
             return
@@ -108,7 +108,7 @@ class ItemDialogForm(QtGui.QDialog):
             
     def _setupContent(self):
         font = QtGui.QFont()
-        font.setFamily('Courier')
+        font.setFamily("Arial Unicode MS")
         font.setFixedPitch(True)
         font.setPointSize(10)
         self.ui.teL1Content.setFont(font)

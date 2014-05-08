@@ -75,7 +75,12 @@
     self.copyToClipboard = function (toCopy) {
         $(document).trigger('preCopyToClipboard');
 
-        console.log("TODO - copy to clipboard")
+        if(rtjscript==undefined) {
+        	console.log("rtjscript undefined")
+        	return
+        } 
+        
+        rtjscript.copyToClipboard(toCopy);
 
         $(document).trigger('postCopyToClipboard');
     };
@@ -101,10 +106,8 @@
         self.setDMessage('');
         self._removeChanged();
 
-        url = self.options.url + '/internal/v1/term';
-        console.log(url)
         $.ajax({
-            url: url,
+            url: self.options.url + '/internal/v1/term',
             type: 'GET',
             data: {
             	phrase: text,
@@ -523,8 +526,37 @@
     };
 
     if (self.getItemType() == 'video') {
+    	lastL1 = -2
+    	lastL2 = -2
+    	
         self.jplayer.bind($.jPlayer.event.timeupdate, function (event) {
-            console.log("TODO - send jplayer time")
+            l1 = rtjscript.getSrtL1(event.jPlayer.status.currentTime);
+            l2 = rtjscript.getSrtL2(event.jPlayer.status.currentTime);
+            
+            console.log(l1);
+            
+            if(l1!=lastL1) {
+            	console.log("l1!=last");
+            	
+            	if(l1==-1) {
+            		$('#l1Main').html('');
+            	} else {
+            		console.log("l1Maon");
+            		$('#l1Main').html($('#l1_' + l1).html());
+            	}
+            	
+            	lastL1 = l1;
+            }
+            
+            if(l2!=lastL2) {
+            	if(l2==-1) {
+            		$('#l2Main').html('');
+            	} else {
+            		$('#l2Main').html($('#l2_' + l2).html());
+            	}
+            	
+            	lastL2 = l2;
+            }
         });
     }
 }

@@ -92,8 +92,18 @@ class LanguageService:
                 
         return self.findOne(language.languageId)
         
-    def findAllPlugins(self, languageId, active=True):
-        return self.db.many(LanguagePlugin, """SELECT a.PluginId, a.Name, a.Description, b.PluginId as enabled 
+    def findAllPlugins(self, languageId, active=None):
+        if active:
+            return self.db.many(LanguagePlugin, """SELECT a.PluginId, a.Name, a.Description, b.PluginId as enabled, a.content, a.uuid 
+                                                FROM Plugin a 
+                                                LEFT OUTER JOIN language_plugin b ON a.pluginid=b.pluginid AND b.languageid=:languageId
+                                                WHERE b.PluginId IS NOT NULL 
+                                                ORDER BY a.Name COLLATE NOCASE
+                                                """,
+                                                languageId=languageId
+                                                )
+        else:
+            return self.db.many(LanguagePlugin, """SELECT a.PluginId, a.Name, a.Description, b.PluginId as enabled, a.content, a.uuid
                                                 FROM Plugin a 
                                                 LEFT OUTER JOIN language_plugin b ON a.pluginid=b.pluginid AND b.languageid=:languageId 
                                                 ORDER BY a.Name COLLATE NOCASE

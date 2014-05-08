@@ -9,6 +9,42 @@ from lib.services.parser import TextParser, VideoParser
 from lib.services.service import ItemService, LanguageService, TermService
 from ui.views.reader import Ui_ReadingWindow
 
+class Javascript(QtCore.QObject):
+    def __init__(self, po=None):
+        super().__init__()
+        self.po = po
+        
+    @QtCore.pyqtSlot(str)
+    def copyToClipboard(self, message):
+        clipboard = QtGui.QApplication.clipboard()
+        clipboard.setText(message)
+        
+    @QtCore.pyqtSlot(float, result=int)
+    def getSrtL1(self, message):
+        if self.po is None or self.po.l1Srt is None:
+            return -1
+        
+        srt = [srt for srt in self.po.l1Srt if srt.start<message and srt.end>message]
+        
+        if srt is None or len(srt)==0:
+            return -1
+        
+        first = srt[0]
+        return first.lineNo
+    
+    @QtCore.pyqtSlot(float, result=int)
+    def getSrtL2(self, message, result=int):
+        if self.po is None or self.po.l2Srt is None:
+            return -1
+        
+        srt = [srt for srt in self.po.l2Srt if srt.start<message and srt.end>message]
+        
+        if srt is None or len(srt)==0:
+            return -1
+        
+        first = srt[0]
+        return first.lineNo
+        
 class ReaderWindow(QtGui.QDialog):
     def __init__(self, parent=None):
         self.itemService = ItemService()
@@ -20,7 +56,19 @@ class ReaderWindow(QtGui.QDialog):
         self.ui.setupUi(self)
         self.__openTime = datetime.datetime.now()
         self.setWindowFlags(QtCore.Qt.Window)
+        self.showMaximized()
         
+        QtCore.QObject.connect(self.ui.btnMarkKnown, QtCore.SIGNAL("clicked()"), self.markKnown)
+        QtCore.QObject.connect(self.ui.webView, QtCore.SIGNAL("loadFinished(bool)"), self.onLoadComplete)
+        QtCore.QObject.connect(self.ui.webView, QtCore.SIGNAL("javaScriptWindowObjectCleared()"), self.onJsCleared)
+        
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.DeveloperExtrasEnabled, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.PluginsEnabled, True)
+        
+    def markKnown(self):
+        frame = self.ui.webView.page().mainFrame()
+        frame.evaluateJavaScript("window.reading.markRemainingAsKnown();")
+    
     def readItem(self, itemId, asParallel=None):
         self.item = self.itemService.findOne(itemId)
 
@@ -41,10 +89,10 @@ class ReaderWindow(QtGui.QDialog):
         pi.asParallel = asParallel
         pi.terms = self.termService.findAllByLanguage(self.item.itemId)
         
-        po = parser.parse(pi)
-        po.save()
+        self.po = parser.parse(pi)
+        self.po.save()
         
-        self.ui.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(po.item.itemId)))
+        self.ui.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(self.po.item.itemId)))
         self.setWindowTitle(self.item.name())
         self.__readTime = datetime.datetime.now()
         self.__updateTitle()
@@ -53,14 +101,25 @@ class ReaderWindow(QtGui.QDialog):
         self.item.lastRead = time.time()
         self.itemService.save(self.item)
         
+    def onLoadComplete(self, result):
+        self.loadJs()
+    
+    def onJsCleared(self):
+        self.loadJs()
+        
+    def loadJs(self):
+        self.js = Javascript(self.po)
+        frame = self.ui.webView.page().mainFrame()
+        frame.addToJavaScriptWindowObject("rtjscript", self.js)
+        
     def _updateNextPreviousMenu(self):
-        prev = reversed(self.itemService.findPrevious(self.item, limit=5))
+        prev = self.itemService.findPrevious(self.item, limit=5)
         next = self.itemService.findNext(self.item, limit=5)
         
-        nextItem = next[0] if len(next)>0 else None
+        nextItem = next[0] if next is not None and len(next)>0 else None
         
         if nextItem is None:
-            nextItem = prev[0] if len(prev)>0 else None         
+            nextItem = reversed(prev)[0] if prev is not None and len(prev)>0 else None         
          
         if nextItem is None:
             self.ui.tbItems.setText('No items')
@@ -76,7 +135,7 @@ class ReaderWindow(QtGui.QDialog):
         self.ui.tbItems.setDefaultAction(action)
             
         menu = QtGui.QMenu()
-        for item in prev:
+        for item in reversed(prev):
             action = QtGui.QAction(menu)
             action.setText(item.name())
             action.setData(item.itemId)
@@ -107,7 +166,10 @@ class ReaderWindow(QtGui.QDialog):
             
             return
         
-        return QtGui.QDialog.eventFilter(self, event)
+        if event.key()==QtCore.Qt.Key_Escape:
+            return
+        
+        return QtGui.QDialog.keyPressEvent(self, event)
         
     def __updateTitle(self):
         delta = (datetime.datetime.now()-self.__openTime)

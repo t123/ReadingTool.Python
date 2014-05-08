@@ -1,3 +1,5 @@
+from lib.stringutil import StringUtil
+
 class TermState:
     Invalid, Known, Unknown, Ignored, NotSeen = range(5)
     
@@ -36,6 +38,17 @@ class TermState:
 class ItemType:
     Unknown, Text, Video = range(3)
     
+    @staticmethod
+    def ToString(itemType):
+        if itemType==0:
+            return "Invalid"
+        elif itemType==1:
+            return "Text"
+        elif itemType==2:
+            return "Video"
+        
+        raise Exception("Unknown int itemType")
+    
 class TermType:
     Unknown, Create, Modify, Delete = range(4)
     
@@ -52,7 +65,7 @@ class User():
         self.syncData = False
         
 class Language():
-    TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ȳ\\'-]+)"
+    TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\\'-]+)"
     SENTENCE_REGEX = "[^\\.!\\?]+[\\.!\\?\\n]+"
     
     def __init__(self):
@@ -78,6 +91,8 @@ class LanguagePlugin():
         self.name = ""
         self.description = ""
         self.enabled = False
+        self.content = ""
+        self.uuid = None
             
 class Term():
     def __init__(self):
@@ -100,10 +115,10 @@ class Term():
     def fullDefinition(self):
         fullDef = ""
         
-        if not self.basePhrase.isspace():
+        if not StringUtil.isEmpty(self.basePhrase):
             fullDef += self.basePhrase + "<br/>" 
             
-        if not self.definition.isspace():
+        if not StringUtil.isEmpty(self.definition):
             fullDef += self.definition
          
         return fullDef
@@ -149,33 +164,17 @@ class Item():
         self.l2Language = None
         
     def hasMedia(self):
-        if self.mediaUri is None:
-            return False
-        
-        test = self.mediaUri.strip()
-        
-        if test.isspace() or len(test)==0:
-            return False
-        
-        return True
+        return not StringUtil.isEmpty(self.mediaUri)
     
     def isParallel(self):
-        if self.l2Content is None:
-            return False
-        
-        test = self.l2Content.strip()
-        
-        if test.isspace() or len(test)==0:
-            return False
-        
-        return True
+        return not StringUtil.isEmpty(self.l2Content)
     
     def name(self):
         name = ""
         if self.collectionNo:
             name += str(self.collectionNo) + ". "
             
-        if not self.collectionName.isspace():
+        if not StringUtil.isEmpty(self.collectionName):
             name += self.collectionName + "  - "
             
         name += self.l1Title
