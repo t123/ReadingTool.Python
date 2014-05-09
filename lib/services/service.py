@@ -1,7 +1,8 @@
 import time, uuid, re
-from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, TermType, Plugin, LanguagePlugin
+from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, ItemType, TermType, Plugin, LanguagePlugin, TermState
 from lib.db import Db
 from lib.misc import Application
+from lib.stringutil import StringUtil, FilterParser
 
 class UserService:
     def __init__(self):
@@ -39,17 +40,18 @@ class UserService:
         if orderBy=="lastLogin":
             return self.db.many(User, "SELECT * FROM user ORDER BY lastLogin LIMIT :limit", limit=maxResults)
         elif orderBy=="username":
-            return self.db.many(User, "SELECT * FROM user ORDER BY username LIMIT :limit", limit=maxResults)
+            return self.db.many(User, "SELECT * FROM user ORDER BY username COLLATE NOCASE LIMIT :limit", limit=maxResults)
         else:
-            return self.db.many(User, "SELECT * FROM user ORDER BY username LIMIT :limit", limit=maxResults)
+            return self.db.many(User, "SELECT * FROM user ORDER BY username COLLATE NOCASE LIMIT :limit", limit=maxResults)
     
     def loginUser(self, userId):
         self.db.execute("UPDATE user SET lastLogin=:lastLogin WHERE userId=:userId", lastLogin=time.time(), userId=userId)
             
     def delete(self, userId):
+        languages = self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY Name COLLATE NOCASE", userId=userId)
         languageService = LanguageService()
         
-        for language in languageService.findAll():
+        for language in languages:
             languageService.delete(language.languageId)
             
         self.db.execute("DELETE FROM user WHERE userId=:userId", userId)
@@ -119,14 +121,17 @@ class LanguageService:
         return self.db.one(Language, "SELECT * FROM language WHERE name=:name AND userId=:userId", 
                            name=name, userId=Application.user.userId)
     
-    def findAll(self):
-        return self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY Name COLLATE NOCASE", Application.user.userId)
+    def findAll(self, orderBy="name"):
+        if orderBy=="archived":
+            return self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY isArchived, Name COLLATE NOCASE", userId=Application.user.userId)
+        
+        return self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY Name COLLATE NOCASE", userId=Application.user.userId)
     
     def delete(self, languageId):
-        self.db.execute("DELETE FROM term WHERE languageId=:languageId AND userId=:userId", languageId=languageId, userId=Application.user.userId)
-        self.db.execute("DELETE FROM item WHERE l1LanguageId=:languageId AND userId=:userId", languageId=languageId, userId=Application.user.userId)
-        self.db.execute("DELETE FROM termLog WHERE languageId=:languageId AND userId=:userId", languageId=languageId, userId=Application.user.userId)
-        self.db.execute("DELETE FROM language WHERE languageId=:languageId AND userId=:userId", languageId=languageId, userId=Application.user.userId)
+        self.db.execute("DELETE FROM term WHERE languageId=:languageId", languageId=languageId)
+        self.db.execute("DELETE FROM item WHERE l1LanguageId=:languageId", languageId=languageId)
+        self.db.execute("DELETE FROM termLog WHERE languageId=:languageId", languageId=languageId)
+        self.db.execute("DELETE FROM language WHERE languageId=:languageId", languageId=languageId)
     
 class LanguageCodeService:
     def __init__(self):
@@ -257,6 +262,38 @@ class TermService:
         
         self.db.execute("DELETE FROM term WHERE termId=:termId and userId=:userId", termId=termId, userId=Application.user.userId)
         
+    def search(self, filter):
+        query = """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
+                                        FROM term term
+                                        LEFT JOIN language b on term.languageId=b.LanguageId
+                                        LEFT JOIN item c on term.itemSourceId=c.itemId
+                                        WHERE term.userId=:userId
+                                        """
+                                        
+        args = {"userId": Application.user.userId}
+        
+        fp = FilterParser()
+        fp.filter(filter)
+        
+        for tag in fp.tags:
+            if tag=="know" or tag=="known":
+                query += " AND term.state=" + str(TermState.Known)
+            elif tag=="unknown" or tag=="notknown":
+                query += " AND term.state=" + str(TermState.Unknown)
+            elif tag=="ignore" or tag=="ignored":
+                query += " AND term.state=" + str(TermState.Ignored)
+                
+        counter = 0
+        for exp in fp.normal:
+            query += " AND (term.phrase LIKE :p{0} OR term.basePhrase LIKE :bp{0} OR language LIKE :l{0}) ".format(counter)
+            args["p%d"%counter] = exp + "%"
+            args["bp%d"%counter] = exp + "%"
+            args["l%d"%counter] = exp
+            counter += 1
+                
+        query += " ORDER BY term.lowerPhrase"
+        return self.db.many(Term, query, **args)
+       
 class ItemService:
     def __init__(self):
         self.db = Db(Application.connectionString)
@@ -440,7 +477,56 @@ class ItemService:
                 copy.collectionNo = None
                 
             self.save(copy)
-     
+            
+    def collectionsByLanguage(self, languageId):
+        return self.db.list("SELECT DISTINCT(CollectionName) as X FROM item WHERE X<>'' AND userId=:userId AND l1LanguageId=:languageId ORDER BY x COLLATE NOCASE", userId=Application.user.userId, languageId=languageId)
+        
+    def search(self, filter):
+        query = """
+                           SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
+                           item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content,
+                           CASE WHEN length(item.l2Content) > 0 THEN substr(item.l2Content,0,20) ELSE '' END AS l2Content, 
+                           item.readTimes, item.listenedTimes, B.Name as l1Language, C.Name as l2Language FROM item item
+                           LEFT JOIN language B on item.l1LanguageId=B.LanguageId
+                           LEFT JOIN language C on item.l2LanguageId=C.LanguageId
+                           WHERE item.userId=:userId 
+                           """
+        
+        fp = FilterParser()
+        fp.filter(filter)
+                           
+        args = {
+                "userId": Application.user.userId
+                }
+        
+        for exp in fp.tags:
+            if exp=="parallel":
+                query += " AND (item.L2Content IS NOT NULL AND item.L2Content<>'') "
+            elif exp=="media":
+                query += " AND (item.mediaUri IS NOT NULL AND item.mediaUri<>'') "
+                pass
+            elif exp=="text":
+                query += " AND item.itemType=%d" % ItemType.Text
+            elif exp=="video":
+                query += " AND item.itemType=%d" % ItemType.Video
+        
+        if len(fp.normal)>0:
+            query += " AND ( "
+            counter = 0
+            for exp in fp.normal:
+                query += " (item.collectionName LIKE :cn{0} OR item.l1Title LIKE :t{0} OR l1Language LIKE :l{0}) AND ".format(counter)
+                args["cn%d"%counter] = exp + "%"
+                args["t%d"%counter] = exp + "%"
+                args["l%d"%counter] = exp
+                counter += 1
+                
+            query = query[0:-4]
+            query += " ) "
+        
+        query += " ORDER BY l1Language, item.collectionName, item.collectionNo, item.l1Title"
+        
+        return self.db.many(Item, query,**args)
+
 class PluginService:
     def __init__(self):
         self.db = Db(Application.connectionString)

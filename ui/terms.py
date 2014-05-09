@@ -2,7 +2,7 @@ from PyQt4 import QtCore, QtGui, Qt
 
 from lib.misc import Application
 from lib.models.model import Term, TermState
-from lib.services.service import TermService
+from lib.services.service import TermService, LanguageService
 from ui.views.terms import Ui_Terms
 
 class TermsForm(QtGui.QDialog):
@@ -12,9 +12,35 @@ class TermsForm(QtGui.QDialog):
         self.ui.setupUi(self)
         
         self.termService = TermService()
-        self.updateTerms();        
+        self.updateCombo()
+        self.updateTerms()        
         
-    def updateTerms(self):
+        QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.updateTerms)
+        QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("editingFinished()"), self.updateTerms)
+        QtCore.QObject.connect(self.ui.cbCollections, QtCore.SIGNAL("currentIndexChanged(int)"), self.onComboItem)
+        
+    def onComboItem(self, index):
+        item = self.ui.cbCollections.itemData(index)
+        
+        if item is None:
+            return
+        
+        self.ui.leFilter.setText(self.ui.leFilter.text() + " " + item)
+        self.updateTerms()
+            
+    def updateCombo(self):
+        self.ui.cbCollections.addItem("Known", "#known")
+        self.ui.cbCollections.addItem("Not known", "#unknown")
+        self.ui.cbCollections.addItem("Ignored", "#ignored")
+        
+        ls = LanguageService()
+        for l in ls.findAll(orderBy="archived"):
+            self.ui.cbCollections.addItem(l.name, '"' + l.name + '"')
+                
+    def updateTerms(self, filter=None):
+        if filter is not None and filter!="":
+            return
+        
         self.ui.tTerms.clear()
         headers = ["State", "Language", "Phrase", "Base Phrase", "Sentence"]
         self.ui.tTerms.setColumnCount(len(headers))
@@ -22,7 +48,7 @@ class TermsForm(QtGui.QDialog):
         self.ui.tTerms.setSortingEnabled(False)
         
         index = 0
-        terms = self.termService.findAll()
+        terms = self.termService.search(self.ui.leFilter.text())
         self.ui.tTerms.setRowCount(len(terms))
         
         for term in terms:

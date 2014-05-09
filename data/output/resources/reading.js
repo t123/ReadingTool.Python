@@ -76,8 +76,8 @@
         $(document).trigger('preCopyToClipboard');
 
         if(rtjscript==undefined) {
-        	console.log("rtjscript undefined")
-        	return
+        	console.log("rtjscript undefined");
+        	return;
         } 
         
         rtjscript.copyToClipboard(toCopy);

@@ -9,8 +9,8 @@ from server.server import Server
 def checkUser():
     userService = UserService()
     users = userService.findAll(1)
-    
-    if len(users)==0:
+
+    if len(users) == 0:
         user = User()
         user.username = "New Profile"
         user = userService.save(user)
@@ -19,15 +19,15 @@ def checkUser():
     else:
         Application.user = users[0]
         userService.loginUser(users[0].userId)
-    
+
 if __name__=="__main__":
     checkUser()
-     
+
     Application.server = Server(embed=False)
     app = QtGui.QApplication(sys.argv)
     myapp = MainWindow()
     myapp.show()
-    Application.server.start()    
+    Application.server.start()
     ret = app.exec_()
     Application.server.stop()
     sys.exit(ret)

@@ -45,6 +45,46 @@ class Javascript(QtCore.QObject):
         first = srt[0]
         return first.lineNo
         
+class CustomWebPage(Qt.QWebPage):
+    def __init__(self, parent = None):
+        Qt.QWebPage.__init__(self, parent)
+    
+    ###
+    #http://stackoverflow.com/questions/14804326/qt-pyqt-how-do-i-act-on-qwebview-qwebpages-open-in-new-window-action
+    ###
+    def acceptNavigationRequest(self, frame, request, navigationType):
+        print("accept: %d" % navigationType)
+        if navigationType==Qt.QWebPage.NavigationTypeLinkClicked:
+            url = request.url().toString() 
+            if url.startswith("http://localhost"):
+                return True
+            
+            if url.startswith("about:"):
+                return True
+            
+            Qt.QDesktopServices.openUrl(request.url());
+            return False
+        
+        return Qt.QWebPage.acceptNavigationRequest(self, frame, request, navigationType)
+    
+    def createWindow(self, windowType):
+        print("windowType: %d" % windowType)
+        pass
+    
+class CustomWebView(Qt.QWebView):
+    def __init__(self, parent = None):
+        Qt.QWebView.__init__(self, parent)
+        #self.setPage(CustomWebPage())
+        
+    def createWindow(self, webWindowType):
+        if webWindowType == Qt.QWebPage.WebBrowserWindow:
+            self.webView = CustomWebView()
+            self.webView.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+ 
+            return self.webView
+ 
+        return super(CustomWebView, self).createWindow(webWindowType)
+    
 class ReaderWindow(QtGui.QDialog):
     def __init__(self, parent=None):
         self.itemService = ItemService()
@@ -54,19 +94,29 @@ class ReaderWindow(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_ReadingWindow()
         self.ui.setupUi(self)
+        
+        self.webView = CustomWebView(self)
+        self.webView.setUrl(QtCore.QUrl("about:blank"))
+        self.webView.setRenderHints(QtGui.QPainter.Antialiasing|QtGui.QPainter.HighQualityAntialiasing|QtGui.QPainter.SmoothPixmapTransform|QtGui.QPainter.TextAntialiasing)
+        self.webView.setObjectName("webView")
+        self.ui.verticalLayout.addWidget(self.webView)
+        
         self.__openTime = datetime.datetime.now()
         self.setWindowFlags(QtCore.Qt.Window)
         self.showMaximized()
         
+        self.webView.page().setLinkDelegationPolicy(Qt.QWebPage.DelegateAllLinks)
         QtCore.QObject.connect(self.ui.btnMarkKnown, QtCore.SIGNAL("clicked()"), self.markKnown)
-        QtCore.QObject.connect(self.ui.webView, QtCore.SIGNAL("loadFinished(bool)"), self.onLoadComplete)
-        QtCore.QObject.connect(self.ui.webView, QtCore.SIGNAL("javaScriptWindowObjectCleared()"), self.onJsCleared)
+        QtCore.QObject.connect(self.webView, QtCore.SIGNAL("loadFinished(bool)"), self.onLoadComplete)
+        QtCore.QObject.connect(self.webView, QtCore.SIGNAL("javaScriptWindowObjectCleared()"), self.onJsCleared)
+        QtCore.QObject.connect(self.webView, QtCore.SIGNAL("linkClicked(QUrl)"), self.onLinkClicked)
         
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.DeveloperExtrasEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.PluginsEnabled, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.JavascriptCanOpenWindows, True)
         
     def markKnown(self):
-        frame = self.ui.webView.page().mainFrame()
+        frame = self.webView.page().mainFrame()
         frame.evaluateJavaScript("window.reading.markRemainingAsKnown();")
     
     def readItem(self, itemId, asParallel=None):
@@ -87,12 +137,12 @@ class ReaderWindow(QtGui.QDialog):
         pi.language1 = self.languageService.findOne(self.item.l1LanguageId)
         pi.language2 = self.languageService.findOne(self.item.l2LanguageId) if asParallel else None
         pi.asParallel = asParallel
-        pi.terms = self.termService.findAllByLanguage(self.item.itemId)
+        pi.terms = self.termService.findAllByLanguage(self.item.l1LanguageId)
         
         self.po = parser.parse(pi)
         self.po.save()
         
-        self.ui.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(self.po.item.itemId)))
+        self.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(self.po.item.itemId)))
         self.setWindowTitle(self.item.name())
         self.__readTime = datetime.datetime.now()
         self.__updateTitle()
@@ -109,8 +159,11 @@ class ReaderWindow(QtGui.QDialog):
         
     def loadJs(self):
         self.js = Javascript(self.po)
-        frame = self.ui.webView.page().mainFrame()
+        frame = self.webView.page().mainFrame()
         frame.addToJavaScriptWindowObject("rtjscript", self.js)
+        
+    def onLinkClicked(self, url):
+        print(url)
         
     def _updateNextPreviousMenu(self):
         prev = self.itemService.findPrevious(self.item, limit=5)
@@ -123,9 +176,10 @@ class ReaderWindow(QtGui.QDialog):
          
         if nextItem is None:
             self.ui.tbItems.setText('No items')
-            self.ui.tbItems.enabled = False
+            self.ui.tbItems.hide()
             return
             
+        self.ui.tbItems.show()
         action = QtGui.QAction(self)
         action.setText(nextItem.name())
         action.setData(nextItem.itemId)

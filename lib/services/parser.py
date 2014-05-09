@@ -157,8 +157,8 @@ class TextParser(BaseParser):
         self.pi = parserInput
         self.po.item = parserInput.item
         
-        l1Paragraphs = self.splitIntoParagraphs(self.pi.item.l1Content)
-        l2Paragraphs = self.splitIntoParagraphs(self.pi.item.l2Content)
+        l1Paragraphs = self.splitIntoParagraphs(self.pi.item.getL1Content())
+        l2Paragraphs = self.splitIntoParagraphs(self.pi.item.getL2Content())
         
         l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
         l1TermRegex = re.compile(self.pi.language1.termRegex)
@@ -237,8 +237,6 @@ class VideoParser(BaseParser):
                 end = datetime.datetime.strptime(times[1], "%H:%M:%S,%f")
                 srt.start = start.hour*60*60 + start.minute*60 + start.second + start.microsecond/1000000
                 srt.end = end.hour*60*60 + end.minute*60 + end.second + end.microsecond/1000000
-                
-                print(srt.end)
             else:
                 if srt is None:
                     continue
@@ -253,8 +251,8 @@ class VideoParser(BaseParser):
     def parse(self, parserInput):
         self.pi = parserInput
         self.po.item = parserInput.item
-        self.po.l1Srt = self.parseSrt(self.po.item.l1Content)
-        self.po.l2Srt = self.parseSrt(self.po.item.l2Content) if self.pi.asParallel else []
+        self.po.l1Srt = self.parseSrt(self.po.item.getL1Content())
+        self.po.l2Srt = self.parseSrt(self.po.item.getL2Content()) if self.pi.asParallel else []
         
         l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
         l1TermRegex = re.compile(self.pi.language1.termRegex)
@@ -308,20 +306,3 @@ class VideoParser(BaseParser):
         self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>").replace("<!-- webapi -->", Application.apiServer)
         
         return self.po
-    
-
-#===============================================================================
-# itemService = ItemService()
-# languageService = LanguageService()
-# userService = UserService()
-# Application.user = userService.findOne(216)
-# item = itemService.findOne(60)
-# pi = ParserInput()
-# pi.item = item
-# pi.language1 = languageService.findOne(item.l1LanguageId)
-# pi.language2 = languageService.findOne(item.l2LanguageId)
-#  
-# vp = VideoParser()
-# po = vp.parse(pi)
-# po.save()
-#===============================================================================

@@ -38,11 +38,11 @@ class Time:
         
         if diff.days>365:
             years = math.floor(diff.days/365)
-            return "1 year" + append if years==1 else years + " years" + append
+            return "1 year" + append if years==1 else str(years) + " years" + append
 
         if diff.days>30:
             months = math.floor(diff.days/30)
-            return "1 month" + append if months==1 else months + " months" + append
+            return "1 month" + append if months==1 else str(months) + " months" + append
         
         if diff.days==1:
             return "1 day" + append
@@ -62,4 +62,5 @@ class Time:
         if diff.seconds>60:
             return "minutes" + append
         
-        return "seconds" + append 
+        return "seconds" + append
+    

@@ -20,12 +20,15 @@ class PluginsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbAdd, QtCore.SIGNAL("clicked()"), self.addPlugin)
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deletePlugin)
         QtCore.QObject.connect(self.ui.pbCancel, QtCore.SIGNAL("clicked()"), self.cancel)
-        QtCore.QObject.connect(self.ui.leName, QtCore.SIGNAL("textChanged()"), self.changed)
+        QtCore.QObject.connect(self.ui.leName, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.teDescription, QtCore.SIGNAL("textChanged()"), self.changed)
         QtCore.QObject.connect(self.ui.teCode, QtCore.SIGNAL("textChanged()"), self.changed)
         
         self.pluginService = PluginService()
         self.updatePlugins();
+        
+        self.ui.splitter.setStretchFactor(0,0)
+        self.ui.splitter.setStretchFactor(1,1)
         
     def _setupCode(self):
         font = QtGui.QFont()
@@ -43,6 +46,7 @@ class PluginsForm(QtGui.QDialog):
         
         self.ui.teCode.setCaretLineVisible(True)
         self.ui.teCode.setCaretLineBackgroundColor(QtGui.QColor("#ffe4e4"))
+        self.ui.teCode.setAutoIndent(True)
         
         lexer = QsciLexerJavaScript()
         lexer.setDefaultFont(font)
@@ -57,11 +61,24 @@ class PluginsForm(QtGui.QDialog):
     def changed(self):
         self.ui.pbCancel.setEnabled(True)
         self.ui.pbSave.setEnabled(True)
+        self.ui.lvPlugins.setEnabled(False)
+        self.ui.pbAdd.setEnabled(False)
+        self.ui.pbDelete.setEnabled(False)
+        self.changed = True
+        
+    def resetForm(self):
+        self.ui.pbCancel.setEnabled(False)
+        self.ui.pbSave.setEnabled(False)
+        self.ui.lvPlugins.setEnabled(True)
+        self.ui.pbAdd.setEnabled(True)
+        self.ui.pbDelete.setEnabled(True)
+        self.changed = False
         
     def cancel(self):
         currentRow = self.ui.lvPlugins.currentRow()
         self.ui.lvPlugins.setCurrentRow(-1)
         self.ui.lvPlugins.setCurrentRow(currentRow)
+        self.resetForm()
         
     def populateItem(self, current, previous):
         if current is None:
@@ -72,29 +89,44 @@ class PluginsForm(QtGui.QDialog):
         self.ui.teDescription.setPlainText(plugin.description)
         self.ui.teCode.setText(plugin.content)
         
-        self.ui.pbCancel.setEnabled(False)
-        self.ui.pbSave.setEnabled(False)
+        self.resetForm()
         
     def savePlugin(self):
-        if self.ui.lvPlugins.currentItem() is None:
-            return
+        plugin = None
         
-        plugin = self._currentPlugin()
+        if self.ui.lvPlugins.currentItem() is None:
+            plugin = Plugin()
+        else:
+            plugin = self._currentPlugin()            
+        
+        currentRow = self.ui.lvPlugins.currentRow()
+        
         plugin.name = self.ui.leName.text()
         plugin.description = self.ui.teDescription.toPlainText()
         plugin.content = self.ui.teCode.text()
         
         self.pluginService.save(plugin)
         self.updatePlugins()
+        self.ui.lvPlugins.setCurrentRow(currentRow)
+        
+        self.resetForm()
         
     def deletePlugin(self):
         plugin = self._currentPlugin()
         
-        if plugin is None:
+        if plugin is None or self.changed:
             return
         
+        currentRow = self.ui.lvPlugins.currentRow()
         self.pluginService.delete(plugin.pluginId)
         self.updatePlugins()
+        
+        if currentRow>=self.ui.lvPlugins.count():
+            self.ui.lvPlugins.setCurrentRow(self.ui.lvPlugins.count()-1)
+        else:
+            self.ui.lvPlugins.setCurrentRow(currentRow)
+            
+        self.resetForm()
         
     def addPlugin(self):
         counter = 1
@@ -106,17 +138,42 @@ class PluginsForm(QtGui.QDialog):
             
         plugin = Plugin()
         plugin.name = name
-        self.pluginService.save(plugin)
-        self.updatePlugins()
+        plugin = plugin = self.pluginService.save(plugin)
+        self.updatePlugins(plugin.pluginId)
         
-    def updatePlugins(self):
+        self.resetForm()
+        
+    def updatePlugins(self, selectedId=None):
         plugins = self.pluginService.findAll()
         
         self.ui.lvPlugins.clear()
         for plugin in plugins:
             item = QtGui.QListWidgetItem(plugin.name)
             item.setData(QtCore.Qt.UserRole, plugin)
+                
             self.ui.lvPlugins.addItem(item)
-        
-        if self.ui.lvPlugins.currentItem() is None:
+            
+            if selectedId is not None and plugin.pluginId==selectedId:
+                self.ui.lvPlugins.setCurrentItem(item)
+                
+        if self.ui.lvPlugins.currentItem() is None and self.ui.lvPlugins.count()>0:
             self.ui.lvPlugins.setCurrentItem(self.ui.lvPlugins.item(0))
+            
+    def keyPressEvent(self, event):
+        if(self._currentPlugin() is None):
+            return
+        
+        if event.key()==QtCore.Qt.Key_Delete:
+            self.deletePlugin()
+            return
+        
+        if event.key()==QtCore.Qt.Key_Escape:
+            self.cancel()
+            return
+            
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            if event.key()==QtCore.Qt.Key_S:
+                self.savePlugin()
+                return
+            
+        return QtGui.QDialog.keyPressEvent(self, event)

@@ -22,8 +22,6 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWindow.setupUi(self)
         self.mainWindow.verticalLayout.setStretch(2, 1)
         self.changeView("items")
-        self.updateItems()
-        self.updateProfiles()
         
         QtCore.QObject.connect(self.mainWindow.pbLanguages, QtCore.SIGNAL("clicked()"), lambda view = "languages": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.tbProfiles, QtCore.SIGNAL("clicked()"), lambda view = "profiles": self.changeView(view))
@@ -74,7 +72,7 @@ class MainWindow(QtGui.QMainWindow):
         reader.show()
     
     def updateProfiles(self):
-        users = self.userService.findAll()
+        users = self.userService.findAll(orderBy="username")
          
         menu = QtGui.QMenu()
         
@@ -88,9 +86,8 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWindow.tbProfiles.setMenu(menu)
         
     def changeProfile(self, user):
-        Application.user.userId = user.userId
-        self.updateItems()
-        self.updateProfiles()
+        Application.user = user
+        self.changeView(self.currentView)
     
     def _removeChild(self):
         count = self.mainWindow.verticalLayout.count()
@@ -104,6 +101,7 @@ class MainWindow(QtGui.QMainWindow):
                     widget.deleteLater()
                     
     def changeView(self, viewName):
+        self.currentView = viewName
         viewName = viewName.lower()
         
         if viewName=="profiles":
@@ -130,3 +128,7 @@ class MainWindow(QtGui.QMainWindow):
             self._removeChild()
             termsForm = TermsForm()
             self.mainWindow.verticalLayout.addWidget(termsForm)
+            
+        self.updateItems()
+        self.updateProfiles()
+        self.setWindowTitle("ReadingTool - %s" % Application.user.username)

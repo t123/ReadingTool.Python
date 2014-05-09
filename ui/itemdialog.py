@@ -18,6 +18,8 @@ class ItemDialogForm(QtGui.QDialog):
         self._setupContent()
         self._updateLanguages()
         
+        self.ui.leCollectionNo.setValidator(QtGui.QIntValidator())
+        
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.saveItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbSplit, QtCore.SIGNAL("clicked()"), self.splitItem)
@@ -50,8 +52,8 @@ class ItemDialogForm(QtGui.QDialog):
         item.mediaUri = self.ui.leMediaURI.text()
         item.l1Title = self.ui.leL1Title.text()
         item.l2Title = self.ui.leL2Title.text()
-        item.l1Content = self.ui.teL1Content.text()
-        item.l2Content = self.ui.teL2Content.text()
+        item.setL1Content(self.ui.teL1Content.text())
+        item.setL2Content(self.ui.teL2Content.text())
         item.l1LanguageId = self.ui.cbL1Language.itemData(self.ui.cbL1Language.currentIndex())
         item.l2LanguageId = self.ui.cbL2Language.itemData(self.ui.cbL2Language.currentIndex())
         
@@ -88,8 +90,8 @@ class ItemDialogForm(QtGui.QDialog):
             
         self.ui.teL1Content.setUtf8(True)
         self.ui.teL2Content.setUtf8(True)
-        self.ui.teL1Content.setText(self.item.l1Content)
-        self.ui.teL2Content.setText(self.item.l2Content)
+        self.ui.teL1Content.setText(self.item.getL1Content())
+        self.ui.teL2Content.setText(self.item.getL2Content())
         
         index1 = self.ui.cbL1Language.findData(self.item.l1LanguageId)
         index2= self.ui.cbL1Language.findData(self.item.l2LanguageId)

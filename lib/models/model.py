@@ -1,3 +1,4 @@
+import bz2
 from lib.stringutil import StringUtil
 
 class TermState:
@@ -156,12 +157,38 @@ class Item():
         self.l2Title = ""
         self.l1LanguageId = None
         self.l2LanguageId = None
-        self.l1Content = ""
-        self.l2Content = ""
         self.readTimes = 0
         self.listenedTimes = 0
         self.l1Language = None
         self.l2Language = None
+        self.l1Content = None
+        self.l2Content = None
+        
+    def getL1Content(self):
+        if self.l1Content is None or StringUtil.isEmpty(self.l1Content):
+            return ""
+        
+        return bz2.decompress(self.l1Content).decode()
+    
+    def setL1Content(self, value):
+        if value is None or StringUtil.isEmpty(value):
+            self.l1Content = None
+            return
+            
+        self.l1Content = bz2.compress(value.encode())
+        
+    def getL2Content(self):
+        if self.l2Content is None or StringUtil.isEmpty(self.l2Content):
+            return ""
+        
+        return bz2.decompress(self.l2Content).decode()
+    
+    def setL2Content(self, value):
+        if value is None or StringUtil.isEmpty(value):
+            self.l2Content = None
+            return
+            
+        self.l2Content = bz2.compress(value.encode())
         
     def hasMedia(self):
         return not StringUtil.isEmpty(self.mediaUri)

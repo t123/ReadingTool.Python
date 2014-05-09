@@ -15,16 +15,48 @@ class LanguagesForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.saveLanguage)
         QtCore.QObject.connect(self.ui.pbAdd, QtCore.SIGNAL("clicked()"), self.addLanguage)
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteLanguage)
+        QtCore.QObject.connect(self.ui.pbCancel, QtCore.SIGNAL("clicked()"), self.cancel)
+        QtCore.QObject.connect(self.ui.leName, QtCore.SIGNAL("textChanged(QString)"), self.changed)
+        QtCore.QObject.connect(self.ui.leSentenceRegex, QtCore.SIGNAL("textChanged(QString)"), self.changed)
+        QtCore.QObject.connect(self.ui.leTermRegex, QtCore.SIGNAL("textChanged(QString)"), self.changed)
+        QtCore.QObject.connect(self.ui.cbIsArchived, QtCore.SIGNAL("stateChanged(int)"), self.changed)
+        QtCore.QObject.connect(self.ui.cbLanguageCodes, QtCore.SIGNAL("currentIndexChanged(int)"), self.changed)
+        QtCore.QObject.connect(self.ui.lvPlugins, QtCore.SIGNAL("itemChanged(QListWidgetItem*)"), self.changed)
         
         self.languageService = LanguageService()
         self.languageCodeService = LanguageCodeService()
-        self.updateLanguages();        
+        self.updateLanguages();
+        
+        self.ui.splitter.setStretchFactor(0,0)
+        self.ui.splitter.setStretchFactor(1,1)        
         
     def _currentLanguage(self):
         if self.ui.lvLanguages.currentItem() is None:
             return None
         
         return self.languageService.findOne(self.ui.lvLanguages.currentItem().data(QtCore.Qt.UserRole).languageId)
+        
+    def changed(self):
+        self.changed = True
+        self.ui.pbCancel.setEnabled(True)
+        self.ui.pbSave.setEnabled(True)
+        self.ui.lvLanguages.setEnabled(False)
+        self.ui.pbAdd.setEnabled(False)
+        self.ui.pbDelete.setEnabled(False)
+        
+    def resetForm(self):
+        self.changed = False
+        self.ui.pbCancel.setEnabled(False)
+        self.ui.pbSave.setEnabled(False)
+        self.ui.lvLanguages.setEnabled(True)
+        self.ui.pbAdd.setEnabled(True)
+        self.ui.pbDelete.setEnabled(True)
+        
+    def cancel(self):
+        currentRow = self.ui.lvLanguages.currentRow()
+        self.ui.lvLanguages.setCurrentRow(-1)
+        self.ui.lvLanguages.setCurrentRow(currentRow)
+        self.resetForm()
         
     def populateItem(self, current, previous):
         if current is None:
@@ -65,11 +97,18 @@ class LanguagesForm(QtGui.QDialog):
             p.setData(QtCore.Qt.UserRole, plugin)
             self.ui.lvPlugins.addItem(p)
             
+        self.resetForm()
+            
     def saveLanguage(self):
-        if self.ui.lvLanguages.currentItem() is None:
-            return
+        language = None
         
-        language = self._currentLanguage()
+        if self.ui.lvLanguages.currentItem() is None:
+            language = Language()
+        else:
+            language = self._currentLanguage()
+                        
+        currentRow = self.ui.lvLanguages.currentRow()
+        
         language.name = self.ui.leName.text()
         language.sentenceRegex = self.ui.leSentenceRegex.text()
         language.termRegex = self.ui.leTermRegex.text()
@@ -88,15 +127,25 @@ class LanguagesForm(QtGui.QDialog):
                 
         self.languageService.save(language, plugins)
         self.updateLanguages()
+        self.ui.lvLanguages.setCurrentRow(currentRow)
+        self.resetForm()
         
     def deleteLanguage(self):
         language = self._currentLanguage()
         
-        if language is None:
+        if language is None or self.changed:
             return
         
+        currentRow = self.ui.lvLanguages.currentRow()
         self.languageService.delete(language.languageId)
         self.updateLanguages()
+        
+        if currentRow>=self.ui.lvLanguages.count():
+            self.ui.lvLanguages.setCurrentRow(self.ui.lvLanguages.count()-1)
+        else:
+            self.ui.lvLanguages.setCurrentRow(currentRow)
+        
+        self.resetForm()
         
     def addLanguage(self):
         counter = 1
@@ -108,10 +157,11 @@ class LanguagesForm(QtGui.QDialog):
             
         language = Language()
         language.name = name
-        self.languageService.save(language)
-        self.updateLanguages()
+        language = self.languageService.save(language)
+        self.updateLanguages(language.languageId)
+        self.resetForm()
         
-    def updateLanguages(self):
+    def updateLanguages(self, selectedId=None):
         self._updateLanguageCodes()
         languages = self.languageService.findAll()
         
@@ -121,12 +171,37 @@ class LanguagesForm(QtGui.QDialog):
             item.setData(QtCore.Qt.UserRole, language)
             self.ui.lvLanguages.addItem(item)
             
-        if self.ui.lvLanguages.currentItem() is None:
+            if selectedId is not None and language.languageId==selectedId:
+                self.ui.lvPlugins.setCurrentItem(item)
+            
+        if self.ui.lvLanguages.currentItem() is None and self.ui.lvLanguages.count()>0:
             self.ui.lvLanguages.setCurrentItem(self.ui.lvLanguages.item(0))
             
+        if self.ui.lvLanguages.count()==0:
+            self.resetForm()
+         
     def _updateLanguageCodes(self):
         codes = self.languageCodeService.findAll()
         self.ui.cbLanguageCodes.clear()
         
         for code in codes:
             self.ui.cbLanguageCodes.addItem(code.name, code.code)
+            
+    def keyPressEvent(self, event):
+        if(self._currentLanguage() is None):
+            return
+        
+        if event.key()==QtCore.Qt.Key_Delete:
+            self.deleteLanguage()
+            return
+        
+        if event.key()==QtCore.Qt.Key_Escape:
+            self.cancel()
+            return
+            
+        if event.modifiers() & QtCore.Qt.ControlModifier:
+            if event.key()==QtCore.Qt.Key_S:
+                self.saveLanguage()
+                return
+            
+        return QtGui.QDialog.keyPressEvent(self, event)
