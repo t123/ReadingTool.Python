@@ -20,6 +20,12 @@
     </property>
     <item>
      <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0,0,1" rowminimumheight="30">
+      <property name="leftMargin">
+       <number>20</number>
+      </property>
+      <property name="rightMargin">
+       <number>20</number>
+      </property>
       <item row="0" column="0">
        <widget class="QToolButton" name="tbProfiles">
         <property name="minimumSize">

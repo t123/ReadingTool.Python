@@ -5,6 +5,7 @@ from lib.misc import Application
 from lib.models.model import Item, ItemType
 from lib.services.service import ItemService, LanguageService
 from ui.views.itemdialog import Ui_ItemDialog
+#from ui.signals import refreshItems
 
 class ItemDialogForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -23,7 +24,7 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.saveItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbSplit, QtCore.SIGNAL("clicked()"), self.splitItem)
-         
+        
     def splitItem(self):
         if self.item is None:
             return

@@ -22,11 +22,12 @@ class ItemsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbEdit, QtCore.SIGNAL("clicked()"), self.editItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteItem)
+        QtCore.QObject.connect(self.ui.pbClear, QtCore.SIGNAL("clicked()"), lambda: self.ui.leFilter.setText(""))
         QtCore.QObject.connect(self.ui.pbRead, QtCore.SIGNAL("clicked()"), lambda asParallel = False: self.readItem(asParallel))        
         QtCore.QObject.connect(self.ui.pbReadParallel, QtCore.SIGNAL("clicked()"), lambda asParallel = True: self.readItem(asParallel))        
         QtCore.QObject.connect(self.ui.tItems, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), lambda: self.readItem(asParallel=None))
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.updateItems)
-        QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("editingFinished()"), self.updateItems)
+        QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("returnPressed()"), self.updateItems)
         QtCore.QObject.connect(self.ui.tvFilter, QtCore.SIGNAL("itemDoubleClicked(QTreeWidgetItem*,int)"), self.onItemClicked)
         
         self.ui.splitter.setStretchFactor(0,0)
@@ -126,10 +127,10 @@ class ItemsForm(QtGui.QDialog):
             self.ui.leFilter.setText("")
         else:
             self.ui.leFilter.setText(self.ui.leFilter.text() + " " + data)
+            
         self.updateItems()
         
     def updateItems(self, filter = None):
-        print("updateItems")
         if filter is not None and filter!="":
             return
         
@@ -161,8 +162,6 @@ class ItemsForm(QtGui.QDialog):
         
         self.ui.tItems.resizeColumnsToContents()
         
-        self.ui.tItems.setFocus()
-
     def keyPressEvent(self, event):
         if self.ui.tItems.hasFocus():
             if not event.modifiers() & QtCore.Qt.ControlModifier and (event.key()==QtCore.Qt.Key_Return or event.key()==QtCore.Qt.Key_Enter):

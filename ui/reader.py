@@ -216,6 +216,7 @@ class ReaderWindow(QtGui.QDialog):
             else:
                 self.previousState = self.windowState()
                 self.previousGeometry = self.geometry()
+                self.showNormal()
                 self.showFullScreen()
             
             return
