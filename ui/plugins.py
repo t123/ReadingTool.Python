@@ -1,3 +1,4 @@
+import os, json
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla, QsciLexerJavaScript
 
@@ -5,6 +6,7 @@ from lib.misc import Application
 from lib.models.model import Plugin
 from lib.services.service import PluginService
 from ui.views.plugins import Ui_Plugins
+from PyQt4.Qt import QFileDialog
 
 
 class PluginsForm(QtGui.QDialog):
@@ -23,7 +25,9 @@ class PluginsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.leName, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.teDescription, QtCore.SIGNAL("textChanged()"), self.changed)
         QtCore.QObject.connect(self.ui.teCode, QtCore.SIGNAL("textChanged()"), self.changed)
-        
+        QtCore.QObject.connect(self.ui.tbExport, QtCore.SIGNAL("clicked()"), self.exportPlugins)
+                
+        self.setupExportImport()
         self.pluginService = PluginService()
         self.updatePlugins();
         
@@ -58,6 +62,62 @@ class PluginsForm(QtGui.QDialog):
         
         return self.pluginService.findOne(self.ui.lvPlugins.currentItem().data(QtCore.Qt.UserRole).pluginId)
     
+    def setupExportImport(self):
+        menu = QtGui.QMenu()
+        
+        action = QtGui.QAction(self)
+        action.setText("Import plugins")
+        action.connect(action, QtCore.SIGNAL("triggered()"), self.importPlugins)
+        menu.addAction(action)
+        self.ui.tbExport.setMenu(menu)
+        
+    def exportPlugins(self):
+        path = QFileDialog.getExistingDirectory()
+        
+        for plugin in self.pluginService.findAll():
+            filename = str(plugin.uuid) + ".js"
+            
+            with open (os.path.join(path, filename), "w") as file:
+                t = {
+                     "name": plugin.name,
+                     "uuid": str(plugin.uuid),
+                     "description": plugin.description,
+                     "content": plugin.content
+                     }
+                
+                file.write(json.dumps(t))
+                
+        QtGui.QMessageBox.information(self, "Export complete", "All plugins were exported.")
+    
+    def importPlugins(self):
+        path = QFileDialog.getExistingDirectory()
+        files = [file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file))]
+        
+        count = 0
+        for filename in files:
+            try:
+                with open (os.path.join(path, filename), "r") as file:
+                    content = json.load(file)
+                    plugin = self.pluginService.findOneByName(content["name"])
+                    
+                    if plugin is None:
+                        plugin = Plugin()
+                    
+                    plugin.content = content["content"]
+                    plugin.name = content["name"]
+                    plugin.description = content["description"]
+                    plugin.uuid = content["uuid"]
+                    
+                    self.pluginService.save(plugin)
+                    count +=1
+            except Exception as e:
+                continue
+            
+        self.updatePlugins()
+        self.ui.lvPlugins.setCurrentRow(0)
+        self.resetForm()
+        QtGui.QMessageBox.information(self, "Import complete", "{0} of {1} plugins were imported.".format(count, len(files)))
+                
     def changed(self):
         self.ui.pbCancel.setEnabled(True)
         self.ui.pbSave.setEnabled(True)

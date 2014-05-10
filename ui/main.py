@@ -21,13 +21,15 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWindow = Ui_MainWindow()
         self.mainWindow.setupUi(self)
         self.mainWindow.verticalLayout.setStretch(2, 1)
-        self.changeView("items")
+        self.changeView("plugins")
         
         QtCore.QObject.connect(self.mainWindow.pbLanguages, QtCore.SIGNAL("clicked()"), lambda view = "languages": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.tbProfiles, QtCore.SIGNAL("clicked()"), lambda view = "profiles": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.pbPlugins, QtCore.SIGNAL("clicked()"), lambda view = "plugins": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.tbItems, QtCore.SIGNAL("clicked()"), lambda view = "items": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.pbTerms, QtCore.SIGNAL("clicked()"), lambda view = "terms": self.changeView(view))
+        
+        self.showMaximized()
 
     def updateItems(self):
         readItems = self.itemService.findRecentlyRead()

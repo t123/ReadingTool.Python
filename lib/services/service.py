@@ -10,7 +10,7 @@ class UserService:
         self.db = Db(Application.connectionString)
         
     def save(self, user):
-        if(user.userId==0):
+        if(user.userId == 0):
             user.userId = self.db.execute("INSERT INTO user ( userId, username, lastLogin, accessKey, accessSecret, syncData ) VALUES ( :userId, :username, :lastLogin, :accessKey, :accessSecret, :syncData )",
                             userId=None,
                             username=user.username,
@@ -37,9 +37,9 @@ class UserService:
         return self.db.one(User, "SELECT * FROM user WHERE username=:username", username=username)
     
     def findAll(self, orderBy="lastLogin", maxResults=10):
-        if orderBy=="lastLogin":
+        if orderBy == "lastLogin":
             return self.db.many(User, "SELECT * FROM user ORDER BY lastLogin LIMIT :limit", limit=maxResults)
-        elif orderBy=="username":
+        elif orderBy == "username":
             return self.db.many(User, "SELECT * FROM user ORDER BY username COLLATE NOCASE LIMIT :limit", limit=maxResults)
         else:
             return self.db.many(User, "SELECT * FROM user ORDER BY username COLLATE NOCASE LIMIT :limit", limit=maxResults)
@@ -61,29 +61,29 @@ class LanguageService:
         self.db = Db(Application.connectionString)
         
     def save(self, language, plugins=None):
-        if(language.languageId==0):
+        if(language.languageId == 0):
             language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, sentenceRegex, termRegex, direction) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :sentenceRegex, :termRegex, :direction )",
-                            languageId = None,
-                            name = language.name,
-                            created = time.time(),
-                            modified = time.time(),
-                            isArchived = language.isArchived,
-                            languageCode = language.languageCode,
-                            userId = Application.user.userId,
-                            sentenceRegex = language.sentenceRegex,
-                            termRegex = language.termRegex,
-                            direction = language.direction
+                            languageId=None,
+                            name=language.name,
+                            created=time.time(),
+                            modified=time.time(),
+                            isArchived=language.isArchived,
+                            languageCode=language.languageCode,
+                            userId=Application.user.userId,
+                            sentenceRegex=language.sentenceRegex,
+                            termRegex=language.termRegex,
+                            direction=language.direction
                             )
         else:        
             self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, sentenceRegex=:sentenceRegex, termRegex=:termRegex, direction=:direction WHERE languageId=:languageId",
-                            languageId= language.languageId,
-                            name = language.name,
-                            modified = time.time(),
-                            isArchived = language.isArchived,
-                            languageCode = language.languageCode,
-                            sentenceRegex = language.sentenceRegex,
-                            termRegex = language.termRegex,
-                            direction = language.direction
+                            languageId=language.languageId,
+                            name=language.name,
+                            modified=time.time(),
+                            isArchived=language.isArchived,
+                            languageCode=language.languageCode,
+                            sentenceRegex=language.sentenceRegex,
+                            termRegex=language.termRegex,
+                            direction=language.direction
                             )
             
         if plugins is not None:
@@ -114,15 +114,15 @@ class LanguageService:
                                                 )
         
     def findOne(self, languageId):
-        return self.db.one(Language, "SELECT * FROM language WHERE languageId=:languageId AND userId=:userId", 
+        return self.db.one(Language, "SELECT * FROM language WHERE languageId=:languageId AND userId=:userId",
                            languageId=languageId, userId=Application.user.userId)
         
     def findOneByName(self, name):
-        return self.db.one(Language, "SELECT * FROM language WHERE name=:name AND userId=:userId", 
+        return self.db.one(Language, "SELECT * FROM language WHERE name=:name AND userId=:userId",
                            name=name, userId=Application.user.userId)
     
     def findAll(self, orderBy="name"):
-        if orderBy=="archived":
+        if orderBy == "archived":
             return self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY isArchived, Name COLLATE NOCASE", userId=Application.user.userId)
         
         return self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY Name COLLATE NOCASE", userId=Application.user.userId)
@@ -143,7 +143,7 @@ class LanguageCodeService:
         if temp is None:
             self.db.execute("INSERT INTO languagecode ( code, name ) VALUES ( :code, :name )", lc.code, lc.name)
         else:
-            self.db.execute("UPDATE languagecode SET name=:name WHERE code=:code", lc.code, lc.name )
+            self.db.execute("UPDATE languagecode SET name=:name WHERE code=:code", lc.code, lc.name)
             
         return self.findOne(lc.code)
     
@@ -153,47 +153,119 @@ class LanguageCodeService:
     def findAll(self):
         return self.db.many(LanguageCode, "SELECT * FROM LanguageCode ORDER BY name COLLATE NOCASE")
     
+    def reset(self):
+        self.db.execute("DELETE FROM LanguageCode")
+        
+        codes = {}
+        codes["Afrikaans"] = "af"
+        codes["Albanian"] = "sq"
+        codes["Arabic"] = "ar"
+        codes["Azerbaijani"] = "az"
+        codes["Basque"] = "eu"
+        codes["Bengali"] = "bn"
+        codes["Belarusian"] = "be"
+        codes["Bulgarian"] = "bg"
+        codes["Catalan"] = "ca"
+        codes["Chinese Simplified"] = "zh-CN"
+        codes["Chinese Traditional"] = "zh-TW"
+        codes["Croatian"] = "hr"
+        codes["Czech"] = "cs"
+        codes["Danish"] = "da"
+        codes["Dutch"] = "nl"
+        codes["English"] = "en"
+        codes["Esperanto"] = "eo"
+        codes["Estonian"] = "et"
+        codes["Filipino"] = "tl"
+        codes["Finnish"] = "fi"
+        codes["French"] = "fr"
+        codes["Galician"] = "gl"
+        codes["Georgian"] = "ka"
+        codes["German"] = "de"
+        codes["Greek"] = "el"
+        codes["Gujarati"] = "gu"
+        codes["Haitian Creole"] = "ht"
+        codes["Hebrew"] = "iw"
+        codes["Hindi"] = "hi"
+        codes["Hungarian"] = "hu"
+        codes["Icelandic"] = "is"
+        codes["Indonesian"] = "id"
+        codes["Irish"] = "ga"
+        codes["Italian"] = "it"
+        codes["Japanese"] = "ja"
+        codes["Kannada"] = "kn"
+        codes["Korean"] = "ko"
+        codes["Latin"] = "la"
+        codes["Latvian"] = "lv"
+        codes["Lithuanian"] = "lt"
+        codes["Macedonian"] = "mk"
+        codes["Malay"] = "ms"
+        codes["Maltese"] = "mt"
+        codes["Norwegian"] = "no"
+        codes["Persian"] = "fa"
+        codes["Polish"] = "pl"
+        codes["Portuguese"] = "pt"
+        codes["Romanian"] = "ro"
+        codes["Russian"] = "ru"
+        codes["Serbian"] = "sr"
+        codes["Slovak"] = "sk"
+        codes["Slovenian"] = "sl"
+        codes["Spanish"] = "es"
+        codes["Swahili"] = "sw"
+        codes["Swedish"] = "sv"
+        codes["Tamil"] = "ta"
+        codes["Telugu"] = "te"
+        codes["Thai"] = "th"
+        codes["Turkish"] = "tr"
+        codes["Ukrainian"] = "uk"
+        codes["Urdu"] = "ur"
+        codes["Vietnamese"] = "vi"
+        codes["Welsh"] = "cy"
+        codes["Yiddish"] = "yi"
+        
+        for name, code in codes.items():
+            self.db.execute("INSERT INTO languagecode ( code, name ) VALUES ( :code, :name )", code, name)
+
 class TermService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
     def save(self, term):
         isNew = True
-        if(term.termId==0):
+        if(term.termId == 0):
             term.termId = self.db.execute("INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId)",
-                            termId = None,
-                            created = time.time(),
-                            modified = time.time(),
-                            phrase = term.phrase,
-                            lowerPhrase = term.lowerPhrase,
-                            basePhrase = term.basePhrase,
-                            definition = term.definition,
-                            sentence = term.sentence,
-                            languageId = term.languageId,
-                            state = term.state,
-                            userId = Application.user.userId,
-                            itemSourceId = term.itemSourceId
+                            termId=None,
+                            created=time.time(),
+                            modified=time.time(),
+                            phrase=term.phrase,
+                            lowerPhrase=term.lowerPhrase,
+                            basePhrase=term.basePhrase,
+                            definition=term.definition,
+                            sentence=term.sentence,
+                            languageId=term.languageId,
+                            state=term.state,
+                            userId=Application.user.userId,
+                            itemSourceId=term.itemSourceId
                             )
         else:        
             isNew = False
             self.db.execute("UPDATE term SET modified=:modified, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, state=:state, itemSourceId=:itemSourceId WHERE termId=:termId",
-                            termId= term.termId,
-                            modified = time.time(),
-                            lowerPhrase = term.lowerPhrase,
-                            basePhrase = term.basePhrase,
-                            definition = term.definition,
-                            sentence = term.sentence,
-                            state = term.state,
-                            itemSourceId = term.itemSourceId
+                            termId=term.termId,
+                            modified=time.time(),
+                            lowerPhrase=term.lowerPhrase,
+                            basePhrase=term.basePhrase,
+                            definition=term.definition,
+                            sentence=term.sentence,
+                            state=term.state,
+                            itemSourceId=term.itemSourceId
                             )
             
         self.db.execute("INSERT INTO termlog ( entryDate, languageId, termId, state, userId, type ) VALUES (:entryDate, :languageId, :termId, :state, :userId, :type)",
-                        entryDate = time.time(),
-                        languageId = term.languageId,
-                        termId = term.termId,
-                        state = term.state,
-                        userId = Application.user.userId,
-                        type = TermType.Create if isNew else TermType.Modify
+                        entryDate=time.time(),
+                        languageId=term.languageId,
+                        termId=term.termId,
+                        state=term.state,
+                        userId=Application.user.userId,
+                        type=TermType.Create if isNew else TermType.Modify
                         )
             
         term = self.findOne(term.termId)
@@ -207,7 +279,7 @@ class TermService:
                                         LEFT JOIN item c on term.itemSourceId=c.itemId
                                         WHERE term.userId=:userId
                                         ORDER BY term.lowerPhrase
-                                        """, 
+                                        """,
                                         userId=Application.user.userId
                             )
         
@@ -218,7 +290,7 @@ class TermService:
                                         LEFT JOIN item c on term.itemSourceId=c.itemId
                                         WHERE term.userId=:userId AND term.termId=:termId
                                         ORDER BY term.lowerPhrase
-                                        """, 
+                                        """,
                                         userId=Application.user.userId,
                                         termId=termId
                             )
@@ -231,7 +303,7 @@ class TermService:
                                         LEFT JOIN item c on term.itemSourceId=c.itemId
                                         WHERE term.lowerPhrase=:lowerPhrase AND term.languageId=:languageId AND term.userId=:userId
                                         ORDER BY term.lowerPhrase
-                                        """, 
+                                        """,
                                         lowerPhrase=lowerPhrase, languageId=languageId, userId=Application.user.userId
                             )
     
@@ -242,7 +314,7 @@ class TermService:
                                         LEFT JOIN item c on term.itemSourceId=c.itemId
                                         WHERE term.languageId=:languageId AND term.userId=:userId
                                         ORDER BY term.lowerPhrase
-                                        """, 
+                                        """,
                                         languageId=languageId, userId=Application.user.userId
                             )
         
@@ -252,12 +324,12 @@ class TermService:
             return
         
         self.db.execute("INSERT INTO termlog ( entryDate, languageId, termId, state, userId, type ) VALUES (:entryDate, :languageId, :termId, :state, :userId, :type)",
-                        entryDate = time.time(),
-                        languageId = term.languageId,
-                        termId = term.termId,
-                        state = term.state,
-                        userId = Application.user.userId,
-                        type = TermType.Delete
+                        entryDate=time.time(),
+                        languageId=term.languageId,
+                        termId=term.termId,
+                        state=term.state,
+                        userId=Application.user.userId,
+                        type=TermType.Delete
                         )
         
         self.db.execute("DELETE FROM term WHERE termId=:termId and userId=:userId", termId=termId, userId=Application.user.userId)
@@ -276,19 +348,19 @@ class TermService:
         fp.filter(filter)
         
         for tag in fp.tags:
-            if tag=="know" or tag=="known":
+            if tag == "know" or tag == "known":
                 query += " AND term.state=" + str(TermState.Known)
-            elif tag=="unknown" or tag=="notknown":
+            elif tag == "unknown" or tag == "notknown":
                 query += " AND term.state=" + str(TermState.Unknown)
-            elif tag=="ignore" or tag=="ignored":
+            elif tag == "ignore" or tag == "ignored":
                 query += " AND term.state=" + str(TermState.Ignored)
                 
         counter = 0
         for exp in fp.normal:
             query += " AND (term.phrase LIKE :p{0} OR term.basePhrase LIKE :bp{0} OR language LIKE :l{0}) ".format(counter)
-            args["p%d"%counter] = exp + "%"
-            args["bp%d"%counter] = exp + "%"
-            args["l%d"%counter] = exp
+            args["p%d" % counter] = exp + "%"
+            args["bp%d" % counter] = exp + "%"
+            args["l%d" % counter] = exp
             counter += 1
                 
         query += " ORDER BY term.lowerPhrase"
@@ -299,43 +371,43 @@ class ItemService:
         self.db = Db(Application.connectionString)
         
     def save(self, item):
-        if(item.itemId==0):
+        if(item.itemId == 0):
             item.itemId = self.db.execute("INSERT INTO item ( itemId, created, modified, itemType, userId, collectionName, collectionNo, mediaUri, lastRead, l1Title, l2Title, l1LanguageId, l2LanguageId, l1Content, l2Content, readTimes, listenedTimes) VALUES ( :itemId, :created, :modified, :itemType, :userId, :collectionName, :collectionNo, :mediaUri, :lastRead, :l1Title, :l2Title, :l1LanguageId, :l2LanguageId, :l1Content, :l2Content, :readTimes, :listenedTimes )",
-                            itemId = None,
-                            created = time.time(),
-                            modified = time.time(),
-                            itemType = item.itemType, 
-                            userId = Application.user.userId, 
-                            collectionName = item.collectionName, 
-                            collectionNo = item.collectionNo, 
-                            mediaUri = item.mediaUri, 
-                            lastRead = item.lastRead, 
-                            l1Title = item.l1Title, 
-                            l2Title = item.l2Title, 
-                            l1LanguageId = item.l1LanguageId, 
-                            l2LanguageId = item.l2LanguageId, 
-                            l1Content = item.l1Content, 
-                            l2Content = item.l2Content, 
-                            readTimes = item.readTimes, 
-                            listenedTimes = item.listenedTimes
+                            itemId=None,
+                            created=time.time(),
+                            modified=time.time(),
+                            itemType=item.itemType,
+                            userId=Application.user.userId,
+                            collectionName=item.collectionName,
+                            collectionNo=item.collectionNo,
+                            mediaUri=item.mediaUri,
+                            lastRead=item.lastRead,
+                            l1Title=item.l1Title,
+                            l2Title=item.l2Title,
+                            l1LanguageId=item.l1LanguageId,
+                            l2LanguageId=item.l2LanguageId,
+                            l1Content=item.l1Content,
+                            l2Content=item.l2Content,
+                            readTimes=item.readTimes,
+                            listenedTimes=item.listenedTimes
                             )
         else:        
             self.db.execute("UPDATE item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo=:collectionNo, mediaUri=:mediaUri, lastRead=:lastRead, l1Title=:l1Title, l2Title=:l2Title, l1LanguageId=:l1LanguageId, l2LanguageId=:l2LanguageId, l1Content=:l1Content, l2Content=:l2Content, readTimes=:readTimes, listenedTimes=:listenedTimes WHERE itemId=:itemId",
-                            itemId = item.itemId,
-                            modified = time.time(),
-                            itemType = item.itemType, 
-                            collectionName = item.collectionName, 
-                            collectionNo = item.collectionNo, 
-                            mediaUri = item.mediaUri, 
-                            lastRead = item.lastRead, 
-                            l1Title = item.l1Title, 
-                            l2Title = item.l2Title, 
-                            l1LanguageId = item.l1LanguageId, 
-                            l2LanguageId = item.l2LanguageId, 
-                            l1Content = item.l1Content, 
-                            l2Content = item.l2Content, 
-                            readTimes = item.readTimes, 
-                            listenedTimes = item.listenedTimes
+                            itemId=item.itemId,
+                            modified=time.time(),
+                            itemType=item.itemType,
+                            collectionName=item.collectionName,
+                            collectionNo=item.collectionNo,
+                            mediaUri=item.mediaUri,
+                            lastRead=item.lastRead,
+                            l1Title=item.l1Title,
+                            l2Title=item.l2Title,
+                            l1LanguageId=item.l1LanguageId,
+                            l2LanguageId=item.l2LanguageId,
+                            l1Content=item.l1Content,
+                            l2Content=item.l2Content,
+                            readTimes=item.readTimes,
+                            listenedTimes=item.listenedTimes
                             )
         
         return self.findOne(item.itemId)
@@ -347,14 +419,14 @@ class ItemService:
                            LEFT JOIN language B on item.l1LanguageId=B.LanguageId
                            LEFT JOIN language C on item.l2LanguageId=C.LanguageId
                            WHERE item.itemId=:itemId AND item.userId=:userId
-                           """, 
+                           """,
                            itemId=itemId, userId=Application.user.userId)
     
     def delete(self, itemId):
         self.db.execute("DELETE FROM item WHERE itemId=:itemId and userId=:userId", itemId=itemId, userId=Application.user.userId)
         
     def findAll(self):
-        return self.db.many(Item, 
+        return self.db.many(Item,
                             """
                            SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
                            item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content,
@@ -364,11 +436,11 @@ class ItemService:
                            LEFT JOIN language C on item.l2LanguageId=C.LanguageId
                            WHERE item.userId=:userId
                            ORDER BY l1Language, item.collectionName, item.collectionNo, item.l1Title
-                           """, 
+                           """,
                            userId=Application.user.userId)
         
     def findRecentlyRead(self, maxItems=5):
-        return self.db.many(Item, 
+        return self.db.many(Item,
                             """
                            SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
                            item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
@@ -378,11 +450,11 @@ class ItemService:
                            WHERE item.userId=:userId
                            ORDER BY item.lastRead DESC
                            LIMIT :maxItems
-                           """, 
+                           """,
                            userId=Application.user.userId, maxItems=maxItems)
         
     def findRecentlyCreated(self, maxItems=5):
-        return self.db.many(Item, 
+        return self.db.many(Item,
                             """
                            SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
                            item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
@@ -392,7 +464,7 @@ class ItemService:
                            WHERE item.userId=:userId
                            ORDER BY item.created DESC
                            LIMIT :maxItems
-                           """, 
+                           """,
                            userId=Application.user.userId, maxItems=maxItems)
         
     def findPrevious(self, item, itemId=0, limit=1):
@@ -402,7 +474,7 @@ class ItemService:
         if item is None:
             return []
         
-        return self.db.many(Item, 
+        return self.db.many(Item,
                             """
                            SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
                            item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
@@ -412,7 +484,7 @@ class ItemService:
                            WHERE item.userId=:userId AND item.l1LanguageId=:l1LanguageId AND item.collectionName=:collectionName AND item.collectionNo<:collectionNo
                            ORDER BY item.collectionNo DESC
                            LIMIT :limit 
-                           """, 
+                           """,
                            userId=Application.user.userId, l1LanguageId=item.l1LanguageId, collectionName=item.collectionName, collectionNo=item.collectionNo, limit=limit
                            )
         
@@ -423,7 +495,7 @@ class ItemService:
         if item is None:
             return []
         
-        return self.db.many(Item, 
+        return self.db.many(Item,
                             """
                            SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 
                            item.mediaUri, item.lastRead, item.l1Title, item.l2Title, item.l1LanguageId, item.l2LanguageId, '' as l1Content, '' as l2Content, 
@@ -433,7 +505,7 @@ class ItemService:
                            WHERE item.userId=:userId AND item.l1LanguageId=:l1LanguageId AND item.collectionName=:collectionName AND item.collectionNo>:collectionNo
                            ORDER BY item.collectionNo
                            LIMIT :limit 
-                           """, 
+                           """,
                            userId=Application.user.userId, l1LanguageId=item.l1LanguageId, collectionName=item.collectionName, collectionNo=item.collectionNo, limit=limit
                            )
     
@@ -469,10 +541,10 @@ class ItemService:
         for i in range(0, len(l1Split)):
             copy = self.copyItem(item.itemId)
             copy.l1Content = l1Split[i].strip()
-            copy.l2Content = l2Split[i].strip() if i<len(l2Split) else ""
+            copy.l2Content = l2Split[i].strip() if i < len(l2Split) else ""
             
             if item.collectionNo is not None:
-                copy.collectionNo = item.collectionNo+i
+                copy.collectionNo = item.collectionNo + i
             else:
                 copy.collectionNo = None
                 
@@ -500,24 +572,24 @@ class ItemService:
                 }
         
         for exp in fp.tags:
-            if exp=="parallel":
+            if exp == "parallel":
                 query += " AND (item.L2Content IS NOT NULL AND item.L2Content<>'') "
-            elif exp=="media":
+            elif exp == "media":
                 query += " AND (item.mediaUri IS NOT NULL AND item.mediaUri<>'') "
                 pass
-            elif exp=="text":
+            elif exp == "text":
                 query += " AND item.itemType=%d" % ItemType.Text
-            elif exp=="video":
+            elif exp == "video":
                 query += " AND item.itemType=%d" % ItemType.Video
         
-        if len(fp.normal)>0:
+        if len(fp.normal) > 0:
             query += " AND ( "
             counter = 0
             for exp in fp.normal:
                 query += " (item.collectionName LIKE :cn{0} OR item.l1Title LIKE :t{0} OR l1Language LIKE :l{0}) AND ".format(counter)
-                args["cn%d"%counter] = exp + "%"
-                args["t%d"%counter] = exp + "%"
-                args["l%d"%counter] = exp
+                args["cn%d" % counter] = exp + "%"
+                args["t%d" % counter] = exp + "%"
+                args["l%d" % counter] = exp
                 counter += 1
                 
             query = query[0:-4]
@@ -525,27 +597,27 @@ class ItemService:
         
         query += " ORDER BY l1Language, item.collectionName, item.collectionNo, item.l1Title"
         
-        return self.db.many(Item, query,**args)
+        return self.db.many(Item, query, **args)
 
 class PluginService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
     def save(self, plugin):
-        if(plugin.pluginId==0):
-            plugin.pluginId= self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid) VALUES ( :pluginId, :name, :description, :content, :uuid)",
-                            pluginId = None,
-                            name = plugin.name,
-                            description = plugin.description,
-                            content = plugin.content,
-                            uuid = str(uuid.uuid1())
+        if(plugin.pluginId == 0):
+            plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid) VALUES ( :pluginId, :name, :description, :content, :uuid)",
+                            pluginId=None,
+                            name=plugin.name,
+                            description=plugin.description,
+                            content=plugin.content,
+                            uuid=str(uuid.uuid1())
                             )
         else:        
             self.db.execute("UPDATE plugin SET name=:name, description=:description, content=:content WHERE pluginId=:pluginId",
-                            pluginId = plugin.pluginId,
-                            name = plugin.name,
-                            content = plugin.content,
-                            description = plugin.description
+                            pluginId=plugin.pluginId,
+                            name=plugin.name,
+                            content=plugin.content,
+                            description=plugin.description
                             )
             
         return self.findOne(plugin.pluginId)

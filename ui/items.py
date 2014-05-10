@@ -122,11 +122,13 @@ class ItemsForm(QtGui.QDialog):
         
     def onItemClicked(self, item, column):
         data = item.data(0, QtCore.Qt.UserRole)
-        
-        if StringUtil.isEmpty(data):
-            self.ui.leFilter.setText("")
-        else:
-            self.ui.leFilter.setText(self.ui.leFilter.text() + " " + data)
+        self.ui.leFilter.setText(data)
+        #=======================================================================
+        # if StringUtil.isEmpty(data):
+        #     self.ui.leFilter.setText("")
+        # else:
+        #     self.ui.leFilter.setText(self.ui.leFilter.text() + " " + data)
+        #=======================================================================
             
         self.updateItems()
         
