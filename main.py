@@ -1,4 +1,4 @@
-import sys, os, datetime, shutil
+import sys, os, datetime, shutil, time
 from PyQt4 import QtGui
 from ui.main import MainWindow
 from lib.misc import Application
@@ -53,11 +53,29 @@ def backupDb(stage):
             for i in range(0, difference):
                 os.remove(os.path.join(path, d[i][0]))
           
+def cleanOldFiles():
+    path = Application.pathOutput
+    files = [file for file in os.listdir(path) if os.path.isfile(os.path.join(path,file))]
+    
+    for file in files:
+        (name, ext) = os.path.splitext(file)
+        
+        if not ext.lower()==".html" and not ext.lower()==".xml":
+            continue
+        
+        now = time.time() 
+        created = os.path.getmtime(os.path.join(path,file))
+        
+        if now-created>60*60*24*7:
+            os.remove(os.path.join(path, file))
+        
 if __name__=="__main__":
+    cleanOldFiles()
+    exit()
     checkUser()
     backupDb("start")
     
-    Application.server = Server(embed=False)
+    Application.server = Server(embed=True)
     app = QtGui.QApplication(sys.argv)
     myapp = MainWindow()
     myapp.show()
