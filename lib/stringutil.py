@@ -17,32 +17,50 @@ class FilterParser():
         self.tags = []
         self.normal = []
         self.special = []
-    
-    def stripQuotes(self, text):
-        if text.startswith('"'):
-            text = text[1:len(text)]
-            
-        if text.endswith('"'):
-            text = text[0:-1]
-            
-        return text
-    
-    def split(self, text):
-        return text.split(":", 1)
         
+        self.current = ""
+        self.isTag = False
+        self.inQuote = False
+    
+    def append(self):
+        if not StringUtil.isEmpty(self.current):
+            if self.isTag:
+                self.tags.append(self.current)
+                self.current = ""
+                self.isTag = False
+                self.inQuote = False
+            else:
+                self.normal.append(self.current)
+                self.current = ""
+                self.isTag = False
+                self.inQuote = False
+                
     def filter(self, text):
         if StringUtil.isEmpty(text):
             return
         
-        p = re.compile('[\w:]+|\w+|"[\w\s]*"|#\w+|#"[\w\s]*"')
-        matches = p.findall(text.lower())
-        for match in matches:
-            if match.startswith("#"):
-                match = match[1:len(match)]
-                match = self.stripQuotes(match)
-                self.tags.append(match)
-            elif ":" in match:
-                self.special.append(self.split(match))
-            else:
-                match = self.stripQuotes(match)
-                self.normal.append(match)
+        for char in text:
+            if char=="#":
+                self.isTag = True
+                continue
+            
+            if char=="\"":
+                if self.inQuote:
+                    self.append()
+                    self.inQuote = False
+                else:
+                    self.inQuote = True
+                    
+                continue
+                    
+            if char==" ":
+                if self.inQuote:
+                    self.current += char
+                    continue
+                
+                self.append()
+                continue
+                        
+            self.current += char
+
+        self.append()

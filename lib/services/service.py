@@ -357,9 +357,8 @@ class TermService:
                 
         counter = 0
         for exp in fp.normal:
-            query += " AND (term.phrase LIKE :p{0} OR term.basePhrase LIKE :bp{0} OR language LIKE :l{0}) ".format(counter)
-            args["p%d" % counter] = exp + "%"
-            args["bp%d" % counter] = exp + "%"
+            query += " AND (term.phrase LIKE :e{0} OR term.basePhrase LIKE :e{0} OR language LIKE :l{0}) ".format(counter)
+            args["e%d" % counter] = exp + "%"
             args["l%d" % counter] = exp
             counter += 1
                 
@@ -586,9 +585,8 @@ class ItemService:
             query += " AND ( "
             counter = 0
             for exp in fp.normal:
-                query += " (item.collectionName LIKE :cn{0} OR item.l1Title LIKE :t{0} OR l1Language LIKE :l{0}) AND ".format(counter)
-                args["cn%d" % counter] = exp + "%"
-                args["t%d" % counter] = exp + "%"
+                query += " (item.collectionName LIKE :e{0} OR item.l1Title LIKE :e{0} OR l1Language LIKE :l{0}) AND ".format(counter)
+                args["e%d" % counter] = exp + "%"
                 args["l%d" % counter] = exp
                 counter += 1
                 

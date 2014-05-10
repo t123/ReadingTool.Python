@@ -40,7 +40,8 @@
     };
 
     self.getCurrentWordAsText = function () {
-        if (self.getCurrent().any()) {
+    	current = self.getCurrent();
+        if (current!=null && current.any()) {
             return self._getWordFromSpan(self.currentElement);
         }
 
@@ -75,7 +76,7 @@
     self.copyToClipboard = function (toCopy) {
         $(document).trigger('preCopyToClipboard');
 
-        if(rtjscript==undefined) {
+        if(typeof rtjscript==='undefined') {
         	console.log("rtjscript undefined");
         	return;
         } 
@@ -225,6 +226,11 @@
         $(document).trigger('preSave');
 
         var phrase = self.getCurrentWordAsText();
+        
+        if(phrase=='') {
+        	return;
+        }
+        
         var state = self.getDState();
 
         $.ajax({

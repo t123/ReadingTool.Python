@@ -243,15 +243,5 @@
             reading.refresh();
             return false;
         });
-
-        $('#btnMark').click(function () {
-            if (!confirm('Are you sure you want to mark remaining words as known?')) {
-                return false;
-            }
-
-            reading.markRemainingAsKnown();
-
-            return false;
-        });
 });
 
