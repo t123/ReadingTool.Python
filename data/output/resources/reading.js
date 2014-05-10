@@ -332,8 +332,24 @@
         return self.hasChanged;
     };
 
+    self.hasPlayer = function() {
+    	if(self.jplayer==undefined || self.jplayer==null) {
+    		return false;
+    	}
+    	
+    	if(self.jplayer.data()==null || self.jplayer.data().jPlayer==undefined) {
+    		return false;
+    	}
+    	
+    	return true;
+    };
+    
     self.setWasPlaying = function () {
-        self.wasPlaying = self.jplayer.data() == null ? false : !self.jplayer.data().jPlayer.status.paused;
+    	self.wasPlaying = false;
+    	
+    	if(self.hasPlayer() && !self.jplayer.data().jPlayer.status.paused) {
+    		self.wasPlaying = true;
+    	}
     };
 
     self.getWasPlaying = function () {
@@ -525,7 +541,7 @@
         });
     };
 
-    if (self.getItemType() == 'video') {
+    if (self.getItemType() == 'video' && self.hasPlayer()) {
     	lastL1 = -2
     	lastL2 = -2
     	
@@ -533,15 +549,10 @@
             l1 = rtjscript.getSrtL1(event.jPlayer.status.currentTime);
             l2 = rtjscript.getSrtL2(event.jPlayer.status.currentTime);
             
-            console.log(l1);
-            
             if(l1!=lastL1) {
-            	console.log("l1!=last");
-            	
             	if(l1==-1) {
             		$('#l1Main').html('');
             	} else {
-            		console.log("l1Maon");
             		$('#l1Main').html($('#l1_' + l1).html());
             	}
             	
