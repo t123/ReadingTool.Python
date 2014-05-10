@@ -1,4 +1,4 @@
-import sys
+import sys, os, datetime, shutil
 from PyQt4 import QtGui
 from ui.main import MainWindow
 from lib.misc import Application
@@ -19,10 +19,44 @@ def checkUser():
     else:
         Application.user = users[0]
         userService.loginUser(users[0].userId)
-
+        
+def backupDb(stage):
+    if not os.path.exists(Application.connectionString):
+        return
+    
+    path = os.path.join(Application.pathDatabase, "backup")
+    
+    if not os.path.exists(path):
+        os.mkdir(path)
+        
+    counter = 1
+    backupFile = "{0}-{1}-{2}.sqlite".format(datetime.datetime.now().strftime("%Y-%m-%d"), stage, counter)
+    
+    while os.path.exists(os.path.join(path, backupFile)):
+        counter += 1
+        backupFile = "{0}-{1}-{2}.sqlite".format(datetime.datetime.now().strftime("%Y-%m-%d"), stage, counter)
+        
+    shutil.copy(Application.connectionString, os.path.join(path, backupFile))
+    
+    files = [file for file in os.listdir(path) if os.path.isfile(os.path.join(path,file))]
+    
+    if len(files)>15:
+        d = []
+        for file in files:
+            d.append([file, os.path.getmtime(os.path.join(path,file))])
+            
+        d = sorted(d, key=lambda tup:tup[1])
+        
+        difference = len(files)-15
+        
+        if difference>0:
+            for i in range(0, difference):
+                os.remove(os.path.join(path, d[i][0]))
+          
 if __name__=="__main__":
     checkUser()
-
+    backupDb("start")
+    
     Application.server = Server(embed=False)
     app = QtGui.QApplication(sys.argv)
     myapp = MainWindow()
@@ -30,4 +64,5 @@ if __name__=="__main__":
     Application.server.start()
     ret = app.exec_()
     Application.server.stop()
+    backupDb("stop")
     sys.exit(ret)

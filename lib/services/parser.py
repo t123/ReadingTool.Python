@@ -116,11 +116,11 @@ class BaseParser:
                     t.append([el, el.attrib["phrase"], el.attrib["frequency"]])
                     common[el.text.lower()] = self.frequency[el.text.lower()]
                     
-        t = sorted(t, key=lambda tup: tup[2])
+        t = sorted(t, key=lambda tup: tup[2], reversed=True)
         u = []
         counter = 0
         
-        for i in reversed(t):
+        for i in t:
             if counter>60:
                 break
             
