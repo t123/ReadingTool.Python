@@ -116,7 +116,7 @@ class BaseParser:
                     t.append([el, el.attrib["phrase"], el.attrib["frequency"]])
                     common[el.text.lower()] = self.frequency[el.text.lower()]
                     
-        t = sorted(t, key=lambda tup: tup[2], reversed=True)
+        t = sorted(t, key=lambda tup: tup[2], reverse=True)
         u = []
         counter = 0
         
