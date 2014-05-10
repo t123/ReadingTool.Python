@@ -114,6 +114,11 @@ class ReaderWindow(QtGui.QDialog):
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.DeveloperExtrasEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.PluginsEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.JavascriptCanOpenWindows, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalStorageDatabaseEnabled, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.WebGLEnabled, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalStorageDatabaseEnabled, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalContentCanAccessFileUrls, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalContentCanAccessRemoteUrls, True)
         
     def markKnown(self):
         frame = self.webView.page().mainFrame()

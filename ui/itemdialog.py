@@ -24,6 +24,11 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.saveItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbSplit, QtCore.SIGNAL("clicked()"), self.splitItem)
+        QtCore.QObject.connect(self.ui.pbChoose, QtCore.SIGNAL("clicked()"), self.chooseFile)
+        
+    def chooseFile(self):
+        filename = QtGui.QFileDialog.getOpenFileName(caption="Choose a media file", filter="Media files (*.mp3 *.mp4)")
+        self.ui.leMediaURI.setText(filename)
         
     def splitItem(self):
         if self.item is None:
