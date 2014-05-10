@@ -1,4 +1,4 @@
-import os, re, datetime
+import os, re, datetime, math
 from lxml import etree
 from lib.services.service import UserService, ItemService, LanguageService, TermService
 from lib.models.model import User, Item, Language, LanguageDirection, TermState, ItemType
@@ -106,17 +106,38 @@ class BaseParser:
         common = {}
         notseenState = TermState.ToString(TermState.NotSeen).lower()
         
+        t = []
         for el in document.iter("term"):
             if el.attrib["isTerm"]=="True":
-                el.attrib["occurences"] = str(self.frequency[el.text.lower()])
-                el.attrib["frequency"] = str(self.frequency[el.text.lower()]/totalTerms*100)
+                el.attrib["occurrences"] = str(self.frequency[el.text.lower()])
+                el.attrib["frequency"] = str(round(self.frequency[el.text.lower()]/totalTerms*100, 2))
                 
                 if el.attrib["state"]==notseenState:
+                    t.append([el, el.attrib["phrase"], el.attrib["frequency"]])
                     common[el.text.lower()] = self.frequency[el.text.lower()]
-
-        # TODO
-        #nodes = sorted(common, key=common.get, reverse=True)
-        #inv_map = {v:k for k, v in common.items()}
+                    
+        t = sorted(t, key=lambda tup: tup[2])
+        u = []
+        counter = 0
+        
+        for i in reversed(t):
+            if counter>60:
+                break
+            
+            if i[1] in u:
+                continue
+            
+            for el in document.iter("term"):
+                if el.attrib["isTerm"]=="True" and el.attrib["phrase"]==i[1]:
+                    if counter<20:
+                        el.attrib["commonness"] = "high"
+                    elif counter<40:
+                        el.attrib["commonness"] = "medium"
+                    else:
+                        el.attrib["commonness"] = "low"
+                        
+            u.append(i[1])
+            counter += 1
         
     def calculateUniqueTerms(self, document):
         terms = {}
