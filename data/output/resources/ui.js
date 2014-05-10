@@ -22,7 +22,7 @@
             }
 
             if ($('#reading').data('itemtype') == 'text') {
-                $("#jquery_jplayer_1").jPlayer({
+            	$("#jquery_jplayer_1").jPlayer({
                     ready: function () {
                         $(this).jPlayer("setMedia", {
                             mp3: mediaUri
@@ -30,8 +30,10 @@
                     },
                     swfPath: webApiEndPoint + "/resource/v1/local/Jplayer.swf",
                     supplied: "mp3",
+                    warningAlerts: true,
                     errorAlerts: true,
-                    solution: "flash"
+                    solution: "flash",
+                    wmode:"window"
                 });
             } else {
                 $("#jquery_jplayer_1").jPlayer({
