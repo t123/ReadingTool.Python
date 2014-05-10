@@ -1,0 +1,24 @@
+.project
+.pydevproject
+.settings
+__pycache__*/
+
+/data/database/
+/data/output
+/data/plugins
+/data/*.html
+/data/*.xml
+/ui/views/*.*
+
+# Windows image file caches
+Thumbs.db
+ehthumbs.db
+
+# Folder config file
+Desktop.ini
+
+# Recycle Bin used on file shares
+$RECYCLE.BIN/
+
+# Mac desktop service store files
+.DS_Store
