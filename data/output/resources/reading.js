@@ -232,6 +232,8 @@
         }
         
         var state = self.getDState();
+        var previousClass = self.getCurrent().attr('class');
+        $('.__current').removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
 
         $.ajax({
             url: self.options.url + "/internal/v1/term",
@@ -256,9 +258,10 @@
 
             self._removeChanged();
             self.setHasChanged(false);
+
             var lower = self.phraseToClass(phrase);
             $('.__' + lower).removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
-
+            
             var tempDef = self.getDBase().length > 0 ? self.getDBase() + "<br/>" : '';
             if (self.getDDefinition().length > 0) tempDef += self.getDDefinition().replace(/\n/g, '<br />');
 
@@ -280,6 +283,7 @@
                 });
             }
         }).fail(function (data) {
+        	self.getCurrent().attr('class', previousClass);
             self.setDMessage('Save failed');
         }).always(function (data) {
             $(document).trigger('postSave');
