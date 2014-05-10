@@ -206,6 +206,9 @@ class TextParser(BaseParser):
                 terms = self.splitIntoTerms(sentence, l1TermRegex)
                 
                 for term in terms:
+                    if term=="":
+                        continue
+                    
                     sentenceNode.append(self.createTermNode(term, l1TermRegex))
                     
                 l1ParagraphNode.append(sentenceNode)
@@ -305,6 +308,9 @@ class VideoParser(BaseParser):
                 terms = self.splitIntoTerms(sentence, l1TermRegex)
                 
                 for term in terms:
+                    if term=="":
+                        continue
+                    
                     sentenceNode.append(self.createTermNode(term, l1TermRegex))
                     
                 l1ParagraphNode.append(sentenceNode)

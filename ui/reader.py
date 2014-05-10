@@ -172,7 +172,7 @@ class ReaderWindow(QtGui.QDialog):
         nextItem = next[0] if next is not None and len(next)>0 else None
         
         if nextItem is None:
-            nextItem = reversed(prev)[0] if prev is not None and len(prev)>0 else None         
+            nextItem = prev[-1] if prev is not None and len(prev)>0 else None         
          
         if nextItem is None:
             self.ui.tbItems.setText('No items')
