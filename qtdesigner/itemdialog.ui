@@ -141,6 +141,13 @@
            <item row="5" column="4">
             <widget class="QComboBox" name="cbL2Language"/>
            </item>
+           <item row="3" column="3">
+            <widget class="QPushButton" name="pbChoose">
+             <property name="text">
+              <string>Choose</string>
+             </property>
+            </widget>
+           </item>
           </layout>
          </item>
         </layout>

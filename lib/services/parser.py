@@ -49,6 +49,7 @@ class BaseParser:
                                 lastRead=Time.toLocal(self.pi.item.lastRead) if self.pi.item.lastRead else "",
                                 l1Title=self.pi.item.l1Title,
                                 l2Title=self.pi.item.l2Title,
+                                mediaUri=self.pi.item.mediaUri,
                                 l1Id=str(self.pi.language1.languageId),
                                 l2Id=str(self.pi.language2.languageId) if self.pi.language2 else "",
                                 itemType=ItemType.ToString(self.pi.item.itemType).lower(),
