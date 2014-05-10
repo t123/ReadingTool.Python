@@ -71,7 +71,6 @@ def cleanOldFiles():
         
 if __name__=="__main__":
     cleanOldFiles()
-    exit()
     checkUser()
     backupDb("start")
     
