@@ -423,7 +423,7 @@
         if (c.top + 21 + popupH + 70 > dh) {
             nt = o.top - popupH - 5;
         } else {
-            nt = o.top + 21;
+            nt = o.top + 23;
         }
 
         if (o.left + popupW + 10 < dw) {

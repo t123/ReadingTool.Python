@@ -64,8 +64,7 @@ textarea.changed, input.changed {
     }
 
     #reading span.__term.__current {
-		-webkit-border-radius: 5px;
-        border-bottom: 2px solid #357ebd;
+        border-bottom: 2px solid red;
     }
 
     #reading span.__term.__matching {
