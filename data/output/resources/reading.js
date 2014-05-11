@@ -1,4 +1,100 @@
-﻿function Reading(options) {
+﻿function lib(options) {
+	var self = this;
+	self.options = options;
+	
+	self.getOptions = function () {
+        return self.options;
+    };
+    
+    self.find = function(phrase, languageId, doneCallback, failCallback) {
+    	$(document).trigger('preUpdateModal');
+    	
+    	$.ajax({
+            url: self.options.url + '/internal/v1/term',
+            type: 'GET',
+            data: {
+            	phrase: phrase,
+            	languageId: languageId
+            }
+        }).done(function (data, status, xhr) {
+        	if(doneCallback!=null) {
+        		doneCallback(phrase, languageId, data, status, xhr);
+        	}
+        }).fail(function (data, status, xhr) {
+        	if(failCallback!=null) {
+        		failCallback(phrase, languageId, data, status, xhr);
+        	}
+        }).always(function (data) {
+            $(document).trigger('postUpdateModalFetched');
+        });
+
+        $(document).trigger('postUpdateModal');
+    };
+    
+    self.save = function(
+    		phrase, 
+    		basePhrase, 
+    		sentence, 
+    		definition, 
+    		languageId, 
+    		itemId, 
+    		state,
+    		previousClass,
+    		doneCallback,
+    		failCallback
+    		) {
+    	$(document).trigger('preSave');
+    	
+        $.ajax({
+            url: self.options.url + "/internal/v1/term",
+            type: 'POST',
+            data: {
+                phrase: phrase,
+                basePhrase: basePhrase,
+                sentence: sentence,
+                definition: definition,
+                languageId: languageId,
+                itemId: itemId,
+                state: state,
+            }
+        }).done(function (data, status, xhr) {
+            if(doneCallback!=null) {
+            	doneCallback(phrase, state, data,status,xhr);
+            }
+        }).fail(function (data, status, xhr) {
+        	if(failCallback!=null) {
+        		failCallback(previousClass, data,status,xhr);
+            }
+        }).always(function (data) {
+            $(document).trigger('postSave');
+        });
+    };
+    
+    self.reset = function(phrase, languageId, doneCallback, failCallback) {
+    	$(document).trigger('preReset');
+    	
+    	$.ajax({
+            url: self.options.url + "/internal/v1/deleteterm",
+            type: 'POST',
+            data: {
+                phrase: phrase,
+                languageId: languageId 
+            }
+        }).done(function (data, status, xhr) {
+        	if(doneCallback!=null) {
+            	doneCallback(phrase, data, status, xhr);
+            }
+        }).fail(function (data, status, xhr) {
+        	if(failCallback!=null) {
+        		failCallback(data, status, xhr);
+            }
+        }).always(function (data) {
+            $(document).trigger('postReset');
+        });
+    };
+}
+
+function Reading(options) {
     var self = this;
     self.hasChanged = false;
     self.modal = $('#popup');
@@ -6,7 +102,8 @@
     self.options = options;
     self.wasPlaying = false;
     self.jplayer = $('#jquery_jplayer_1');
-
+    self.lib = new lib(options)
+    
     self.getOptions = function () {
         return self.options;
     };
@@ -105,32 +202,7 @@
         self.setDMessage('');
         self._removeChanged();
 
-        self.sendFind(text, self.options.languageId, self._findDone, self._findFail);
-    };
-    
-    self.sendFind = function(phrase, languageId, doneCallback, failCallback) {
-    	$(document).trigger('preUpdateModal');
-    	
-    	$.ajax({
-            url: self.options.url + '/internal/v1/term',
-            type: 'GET',
-            data: {
-            	phrase: phrase,
-            	languageId: languageId
-            }
-        }).done(function (data, status, xhr) {
-        	if(doneCallback!=null) {
-        		doneCallback(phrase, languageId, data, status, xhr);
-        	}
-        }).fail(function (data, status, xhr) {
-        	if(failCallback!=null) {
-        		failCallback(phrase, languageId, data, status, xhr);
-        	}
-        }).always(function (data) {
-            $(document).trigger('postUpdateModalFetched');
-        });
-
-        $(document).trigger('postUpdateModal');
+        self.lib.find(text, self.options.languageId, self._findDone, self._findFail);
     };
     
     self._findDone = function(phrase, languageId, data, status, xhr) {
@@ -247,52 +319,11 @@
         var previousClass = self.getCurrent().attr('class');
         $('.__current').removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
         
-        self.sendSave(
+        self.lib.save(
         		phrase, self.getDBase(), self.getDSentence(), self.getDDefinition(), 
-        		self.getLanguageId(), self.getItemId(), state,
-        		previousClass,
-        		self._saveDone,
-        		self._saveFail
+        		self.getLanguageId(), self.getItemId(), state, previousClass, 
+        		self._saveDone, self._saveFail
         		);
-    };
-    
-    self.sendSave = function(
-    		phrase, 
-    		basePhrase, 
-    		sentence, 
-    		definition, 
-    		languageId, 
-    		itemId, 
-    		state,
-    		previousClass,
-    		doneCallback,
-    		failCallback
-    		) {
-    	$(document).trigger('preSave');
-    	
-        $.ajax({
-            url: self.options.url + "/internal/v1/term",
-            type: 'POST',
-            data: {
-                phrase: phrase,
-                basePhrase: basePhrase,
-                sentence: sentence,
-                definition: definition,
-                languageId: languageId,
-                itemId: itemId,
-                state: state,
-            }
-        }).done(function (data, status, xhr) {
-            if(doneCallback!=null) {
-            	doneCallback(phrase, state, data,status,xhr);
-            }
-        }).fail(function (data, status, xhr) {
-        	if(failCallback!=null) {
-        		failCallback(previousClass, data,status,xhr);
-            }
-        }).always(function (data) {
-            $(document).trigger('postSave');
-        });
     };
     
     self._saveFail = function(previousClass, data,status,xhr) {
@@ -345,32 +376,9 @@
         var phrase = self.getCurrentWordAsText();
         var languageId = self.getLanguageId();
         
-        self.sendReset(phrase, languageId, self._resetDone, self._resetFail);
+        self.lib.reset(phrase, languageId, self._resetDone, self._resetFail);
     };
     
-    self.sendReset = function(phrase, languageId, doneCallback, failCallback) {
-    	$(document).trigger('preReset');
-    	
-    	$.ajax({
-            url: self.options.url + "/internal/v1/deleteterm",
-            type: 'POST',
-            data: {
-                phrase: phrase,
-                languageId: languageId 
-            }
-        }).done(function (data, status, xhr) {
-        	if(doneCallback!=null) {
-            	doneCallback(phrase, data, status, xhr);
-            }
-        }).fail(function (data, status, xhr) {
-        	if(failCallback!=null) {
-        		failCallback(data, status, xhr);
-            }
-        }).always(function (data) {
-            $(document).trigger('postReset');
-        });
-    }
-
     self._resetDone = function(phrase, data, status,xhr) {
     	if (xhr.status == 200) {
             self.setDMessage('Term reset, use save to keep data.');
