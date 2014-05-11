@@ -10,13 +10,71 @@ function Lib(options) {
     //MANIPULATION OF CURRENT ELEMENT
     
     /**
+     * Returns the first unknown or unseen element to the left of the current element
+     * @method currentLeft
+     * @return {element}
+     */
+    self.currentLeft = function() {
+    	if(self.getCurrentElement()==null) {
+    		return;
+    	}
+    	
+    	var el = self.getCurrentElement()
+			.prevAll('.__term.__notseen,.__term.__unknown')
+			.first('span');
+    	
+    	if (el.any()) {
+    		return el;
+    	}
+    	
+    	el = $('.__current')
+			.parent()
+			.prev('.__sentence')
+			.children('.__term.__notseen,.__term.__unknown')
+			.last('span');
+
+		if (el.any()) {
+			return el;
+		}
+    };
+    
+    /**
+     * Returns the first unknown or unseen element to the right of the current element
+     * @method currentRight
+     * @return {element}
+     */
+    self.currentRight = function() {
+    	if(self.getCurrentElement()==null) {
+    		return;
+    	}
+    	
+    	var el = $('.__current')
+			.nextAll('.__term.__notseen,.__term.__unknown')
+			.first('span');
+    	
+    	if (el.any()) {
+    		return el;
+    	}
+    	
+    	el = $('.__current')
+			.parent()
+			.next('.__sentence')
+			.children('.__term.__notseen,.__term.__unknown')
+			.first('span');
+
+		if (el.any()) {
+			return el;
+		}
+    };
+    
+    /**
      * Returns the current element
      * @method getCurrentElement
      * @return {element}
      */
     self.getCurrentElement = function() {
     	return self.currentElement;
-    }
+    };
     
     /**
      * Sets the current element

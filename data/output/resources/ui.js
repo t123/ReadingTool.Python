@@ -70,174 +70,122 @@
 	$.event.trigger("pluginReady");
 	
 	$(document).on('keydown', function(e) {
-						var code = (e.keyCode ? e.keyCode : e.which);
+		var code = (e.keyCode ? e.keyCode : e.which);
 
-						if (window.reading.isModalVisible()) {
-							if (e.ctrlKey) {
-								switch (code) {
-								case 13: // Enter
-									reading.save(true);
-									e.preventDefault();
-									break;
+		if (window.reading.isModalVisible()) {
+			if (e.ctrlKey) { //Modal visible, ctrl
+				switch (code) {
+					case 13: // Enter
+						reading.save(true);
+						e.preventDefault();
+						break;
+	
+					case 82: // R
+						reading.reset();
+						e.preventDefault();
+						break;
+	
+					case 49: // 1
+						reading.setDState('known');
+						e.preventDefault();
+						break;
+	
+					case 50: // 2
+						reading.setDState('unknown');
+						e.preventDefault();
+						break;
+	
+					case 51: // 3
+						reading.setDState('ignored');
+						e.preventDefault();
+						break;
+	
+					case 52: // 4
+						reading.setDState('notseen');
+						e.preventDefault();
+						break;
+	
+					case 81: // q
+					case 83: // s
+						reading.setFocus($('#dSentence'));
+						e.preventDefault();
+						break;
+	
+					case 65: // a
+					case 66: // b
+						reading.setFocus($('#dBase'));
+						e.preventDefault();
+						break;
+	
+					case 90: // z
+					case 68: // d
+						reading.setFocus($('#dDefinition'));
+						e.preventDefault();
+						break;
+				}
+	
+				return;
+			}  //Modal visible, ctrl
 
-								case 82: // R
-									reading.reset();
-									e.preventDefault();
-									break;
-
-								case 49: // 1
-									reading.setDState('known');
-									e.preventDefault();
-									break;
-
-								case 50: // 2
-									reading.setDState('unknown');
-									e.preventDefault();
-									break;
-
-								case 51: // 3
-									reading.setDState('ignored');
-									e.preventDefault();
-									break;
-
-								case 52: // 4
-									reading.setDState('notseen');
-									e.preventDefault();
-									break;
-
-								case 81: // q
-								case 83: // s
-									reading.setFocus($('#dSentence'));
-									e.preventDefault();
-									break;
-
-								case 65: // a
-								case 66: // b
-									reading.setFocus($('#dBase'));
-									e.preventDefault();
-									break;
-
-								case 90: // z
-								case 68: // d
-									reading.setFocus($('#dDefinition'));
-									e.preventDefault();
-									break;
-								}
-
-								return;
-							}
-
-							switch (code) {
-							case 27: // escape
-								reading.closeModal();
-								break;
-
-							case 37: // left
-								if (!reading.getHasChanged()) {
-									var el = $('.__current')
-										.prevAll('.__term.__notseen,.__term.__unknown')
-										.first('span');
-
-									if (el.any()) {
-										reading.showModal(el);
-										return;
-									}
-
-									el = $('.__current')
-											.parent()
-											.prev('.__sentence')
-											.children('.__term.__notseen,.__term.__unknown')
-											.last('span');
-
-									if (el.any()) {
-										reading.showModal(el);
-										return;
-									}
-								}
-								break;
-
-							case 39: // right
-								if (!reading.getHasChanged()) {
-									var el = $('.__current')
-											.nextAll('.__term.__notseen,.__term.__unknown')
-											.first('span');
-
-									if (el.any()) {
-										reading.showModal(el);
-										return;
-									}
-
-									el = $('.__current')
-											.parent()
-											.next('.__sentence')
-											.children('.__term.__notseen,.__term.__unknown')
-											.first('span');
-
-									if (el.any()) {
-										reading.showModal(el);
-										return;
-									}
-								}
-								break;
-							}
-						} else {
-							switch (code) {
-							case 32:
-								var el = reading.getCurrentSelected();
-
-								if (el.any()) {
-									reading.showModal(el);
-									e.preventDefault();
-									return;
-								}
-								break;
-
-							case 37: // left
-								var el = $('.__current')
-										.prevAll('.__term.__notseen,.__term.__unknown')
-										.first('span');
-
-								if (el.any()) {
-									reading.updateCurrentSelected(el);
-									return;
-								}
-
-								el = $('.__current')
-										.parent()
-										.prev('.__sentence')
-										.children('.__term.__notseen,.__term.__unknown')
-										.last('span');
-
-								if (el.any()) {
-									reading.updateCurrentSelected(el);
-									return;
-								}
-								break;
-
-							case 39: // right
-								var el = $('.__current')
-										.nextAll('.__term.__notseen,.__term.__unknown')
-										.first('span');
-
-								if (el.any()) {
-									reading.updateCurrentSelected(el);
-									return;
-								}
-
-								el = $('.__current')
-										.parent()
-										.next('.__sentence')
-										.children('.__term.__notseen,.__term.__unknown')
-										.first('span');
-
-								if (el.any()) {
-									reading.updateCurrentSelected(el);
-									return;
-								}
-								break;
-							}
+			switch (code) {  //Modal visible, not ctrl
+				case 27: // escape
+					reading.closeModal();
+					break;
+	
+				case 37: // left
+					if (!reading.getHasChanged()) {
+						var el = window.lib.currentLeft();
+						
+						if(el!=null) {
+							reading.showModal(el);
+							return;
 						}
-					});
+					}
+					break;
+	
+				case 39: // right
+					if (!reading.getHasChanged()) {
+						var el = window.lib.currentRight();
+						
+						if(el!=null) {
+							reading.showModal(el);
+							return;
+						}
+					}
+					break;
+			}
+		} else { //Modal not visible
+			switch (code) {
+				case 32:
+					var el = reading.getCurrentSelected();
+	
+					if (el.any()) {
+						reading.showModal(el);
+						e.preventDefault();
+						return;
+					}
+					break;
+	
+				case 37: // left
+					var el = window.lib.currentLeft();
+					
+					if(el!=null) {
+						reading.setCurrentSelected(el);
+						return;
+					}
+					break;
+	
+				case 39: // right
+					var el = window.lib.currentRight();
+					
+					if(el!=null) {
+						reading.setCurrentSelected(el);
+						return;
+					}
+					break;
+			}
+		}
+	});
 
 	$('input[type="text"], input[type="radio"], textarea').change(function(e) {
 		$.event.trigger("preDialogDataChanged", $(e.target));
