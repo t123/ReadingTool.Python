@@ -67,12 +67,15 @@
        <item>
         <widget class="QLabel" name="label">
          <property name="text">
-          <string>Reading</string>
+          <string>Read</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QSpinBox" name="spReading">
+         <property name="suffix">
+          <string> times</string>
+         </property>
          <property name="maximum">
           <number>999</number>
          </property>
@@ -88,12 +91,15 @@
        <item>
         <widget class="QLabel" name="label_2">
          <property name="text">
-          <string>Listening</string>
+          <string>Listened</string>
          </property>
         </widget>
        </item>
        <item>
         <widget class="QSpinBox" name="spListening">
+         <property name="suffix">
+          <string> times</string>
+         </property>
          <property name="maximum">
           <number>999</number>
          </property>

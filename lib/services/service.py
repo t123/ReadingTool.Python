@@ -555,6 +555,16 @@ class ItemService:
     def collectionsByLanguage(self, languageId):
         return self.db.list("SELECT DISTINCT(CollectionName) as X FROM item WHERE X<>'' AND userId=:userId AND l1LanguageId=:languageId ORDER BY x COLLATE NOCASE", userId=Application.user.userId, languageId=languageId)
         
+    def changeState(self, itemId, type, value):
+        if value<0:
+            return
+        
+        if(type=="listen"):
+            self.db.execute("UPDATE item SET listenedTimes=:value WHERE itemId=:itemId", value, itemId)
+            
+        if(type=="read"):
+            self.db.execute("UPDATE item SET readTimes=:value WHERE itemId=:itemId", value, itemId)
+            
     def search(self, filter):
         query = """
                            SELECT item.itemId, item.created, item.modified, item.itemType, item.userId, item.collectionName, item.collectionNo, 

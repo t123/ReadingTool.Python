@@ -110,6 +110,8 @@ class ReaderWindow(QtGui.QDialog):
         QtCore.QObject.connect(self.webView, QtCore.SIGNAL("loadFinished(bool)"), self.onLoadComplete)
         QtCore.QObject.connect(self.webView, QtCore.SIGNAL("javaScriptWindowObjectCleared()"), self.onJsCleared)
         QtCore.QObject.connect(self.webView, QtCore.SIGNAL("linkClicked(QUrl)"), self.onLinkClicked)
+        QtCore.QObject.connect(self.ui.spListening, QtCore.SIGNAL("valueChanged(int)"), self.onListeningChanged)
+        QtCore.QObject.connect(self.ui.spReading, QtCore.SIGNAL("valueChanged(int)"), self.onReadingChanged)
         
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.DeveloperExtrasEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.PluginsEnabled, True)
@@ -127,6 +129,9 @@ class ReaderWindow(QtGui.QDialog):
     def readItem(self, itemId, asParallel=None):
         self.item = self.itemService.findOne(itemId)
 
+        if self.item.itemType==ItemType.Video:
+            self.ui.label_2.setText("Watched")
+            
         if ((asParallel is None and self.item.isParallel()) or asParallel==True) and self.item.l2LanguageId is not None:
             asParallel = True
         else:
@@ -161,6 +166,37 @@ class ReaderWindow(QtGui.QDialog):
     
     def onJsCleared(self):
         self.loadJs()
+        
+    def onListeningChanged(self, value):
+        self.itemService.changeState(self.item.itemId, "listen", value)
+        self.setStatMessage(value, "listen")
+        
+    def onReadingChanged(self, value):
+        self.itemService.changeState(self.item.itemId, "read", value)
+        self.setStatMessage(value, "read")
+        
+    def setStatMessage(self, value, type):
+        if type=="listen":
+            if self.item.itemType==ItemType.Text:
+                msg = "listened to"
+            else:
+                msg = "watched"
+        else:
+            msg = "read"
+            
+        if value==0:
+            self.ui.lblMessage.setText("Item never %s." % msg)
+            return
+            
+        if value==1:
+            self.ui.lblMessage.setText("Item %s once." % msg)
+            return
+        
+        if value==2:
+            self.ui.lblMessage.setText("Item %s twice." % msg)
+            return
+            
+        self.ui.lblMessage.setText("Item %s %d times." % (msg, value))
         
     def loadJs(self):
         self.js = Javascript(self.po)
