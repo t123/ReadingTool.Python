@@ -63,16 +63,20 @@ class InternalController(object):
         cherrypy.response.headers["Content-Type"] = "application/json"
         return json.dumps(data).encode()
      
-    def deleteTerm(self, phrase, languageId):
+    def deleteTerm(self, phrase=None, languageId=None):
+        if cherrypy.request.method=="OPTIONS":
+            cherrypy.response.status = 200
+            return
+                    
         if not phrase or not self.isValidId(languageId):
             raise cherrypy.HTTPError(404)
-         
+          
         termService = TermService()
         term = termService.fineOneByPhraseAndLanguage(phrase, languageId)
-         
+          
         if term is None:
             raise cherrypy.HTTPError(404)
-         
+          
         termService.delete(term.termId)
          
         cherrypy.response.status = 200
@@ -119,10 +123,11 @@ class InternalController(object):
             cherrypy.response.status = 200
         
             
-    def markAllAsKnownOptions(self):
-        cherrypy.response.status = "200"
-    
     def markAllAsKnown(self):
+        if cherrypy.request.method=="OPTIONS":
+            cherrypy.response.status = 200
+            return
+        
         cherrypy.response.status = "200"
         cherrypy.response.headers["Content-Type"] = "text/plain"
         

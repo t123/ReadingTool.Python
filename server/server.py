@@ -33,10 +33,8 @@ class Server():
         d.connect(name="i3", route='/internal/v1/term', controller=ic, action="getTermByPhraseAndLanguage", conditions=dict(method=["GET"]))
         
         #some CORS weirdness with DELETE
-        d.connect(name="i5", route='/internal/v1/deleteterm', controller=ic, action="deleteTerm", conditions=dict(method=["POST"]))
-        d.connect(name="i6", route='/internal/v1/term', controller=ic, action="saveTerm", conditions=dict(method=["POST"]))
-        d.connect(name="i7", route='/internal/v1/markallknown', controller=ic, action="markAllAsKnown", conditions=dict(method=["POST"]))
-        d.connect(name="i7", route='/internal/v1/markallknown', controller=ic, action="markAllAsKnownOptions", conditions=dict(method=["OPTIONS"]))
+        d.connect(name="i5", route='/internal/v1/deleteterm', controller=ic, action="deleteTerm", conditions=dict(method=["OPTIONS", "POST"]))
+        d.connect(name="i7", route='/internal/v1/markallknown', controller=ic, action="markAllAsKnown", conditions=dict(method=["POST", "OPTIONS"]))
          
         d.connect(name="r1", route='/resource/v1/', controller=rc, action="index", conditions=dict(method=["GET"]))
         d.connect(name="r2", route='/resource/v1/plugins/:id', controller=rc, action="getPlugins", conditions=dict(method=["GET"]))
