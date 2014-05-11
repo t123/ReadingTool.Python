@@ -71,17 +71,25 @@ class CustomWebPage(Qt.QWebPage):
         print("windowType: %d" % windowType)
         pass
     
+class CustomCookieJar(Qt.QNetworkCookieJar):
+    def setCookiesFromUrl(self, cookies, url):
+        print(url)
+        
 class CustomWebView(Qt.QWebView):
     def __init__(self, parent = None):
         Qt.QWebView.__init__(self, parent)
+        #cookieJar = CustomCookieJar()
+        #self.page().networkAccessManager().setCookieJar(cookieJar)
+        #cookieJar.setParent(self)
+        
         #self.setPage(CustomWebPage())
         
     def createWindow(self, webWindowType):
         if webWindowType == Qt.QWebPage.WebBrowserWindow:
-            self.webView = CustomWebView()
-            self.webView.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
+            self.thisView = CustomWebView()
+            self.thisView.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
  
-            return self.webView
+            return self.thisView
  
         return super(CustomWebView, self).createWindow(webWindowType)
     
@@ -132,6 +140,10 @@ class ReaderWindow(QtGui.QDialog):
         if self.item.itemType==ItemType.Video:
             self.ui.label_2.setText("Watched")
             
+        self.ui.spListening.setValue(self.item.listenedTimes)
+        self.ui.spReading.setValue(self.item.readTimes)
+        self.ui.lblMessage.setText("")
+        
         if ((asParallel is None and self.item.isParallel()) or asParallel==True) and self.item.l2LanguageId is not None:
             asParallel = True
         else:
