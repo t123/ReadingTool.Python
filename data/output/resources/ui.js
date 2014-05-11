@@ -76,8 +76,7 @@
 							if (e.ctrlKey) {
 								switch (code) {
 								case 13: // Enter
-									reading.save();
-									reading.closeModal();
+									reading.save(true);
 									e.preventDefault();
 									break;
 

@@ -89,7 +89,7 @@ function Lib(options) {
             sentence += $(children[i]).text();
         }
 
-        return sentence;
+        return sentence.trim();
     };
     
     //AJAX calls
@@ -126,11 +126,11 @@ function Lib(options) {
     
     self.save = function(
     		obj,
-    		previousClass,
+    		optional,
     		doneCallback,
     		failCallback
     		) {
-    	$.event.trigger("preSaveTerm", [obj, previousClass]);
+    	$.event.trigger("preSaveTerm", [obj, optional]);
     	
         $.ajax({
             url: self.getWebAPI() + "/internal/v1/term",
@@ -145,23 +145,23 @@ function Lib(options) {
                 state: obj.state
             }
         }).done(function (data, status, xhr) {
-        	$.event.trigger("preSaveTermDone", [obj, previousClass, data]);
+        	$.event.trigger("preSaveTermDone", [obj, optional, data]);
         	
             if(doneCallback!=null) {
-            	doneCallback(obj, data, status, xhr);
+            	doneCallback(obj, optional, data, status, xhr);
             }
             
-            $.event.trigger("postSaveTermDone", [obj, previousClass, data]);
+            $.event.trigger("postSaveTermDone", [obj, optional, data]);
         }).fail(function (data, status, xhr) {
-        	$.event.trigger("preSaveTermFail", [obj, previousClass, data]);
+        	$.event.trigger("preSaveTermFail", [obj, optional, data]);
         	
         	if(failCallback!=null) {
-        		failCallback(obj, previousClass, data, status, xhr);
+        		failCallback(obj, optional, data, status, xhr);
             }
         	
-        	$.event.trigger("postSaveTermFail", [obj, previousClass, data]);
+        	$.event.trigger("postSaveTermFail", [obj, optional, data]);
         }).always(function (data, status, xhr) {
-        	$.event.trigger("postSaveTerm");
+        	$.event.trigger("postSaveTerm", [obj, optional, data]);
         });
     };
     

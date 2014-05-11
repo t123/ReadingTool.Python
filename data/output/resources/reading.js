@@ -46,11 +46,17 @@
     };
     
     self._findDone = function(phrase, languageId, data, status, xhr) {
+    	if(data.state=="known" && data.sentence=="") {
+    		self.setDSentence(window.lib.getSentence());
+    	} else {
+    		self.setDSentence(data.sentence);    		
+    	}
+    	
     	self.setDPhrase(data.phrase);
         self.setDState(data.state);
         self.setDBase(data.basePhrase);
         self.setDDefinition(data.definition);
-        self.setDSentence(data.sentence);
+        
         self.setHasChanged(false);
     };
     
@@ -134,11 +140,15 @@
         self.changed();
     };
 
-    self.save = function () {
+    self.save = function (close) {
         var phrase = window.lib.getCurrentWordAsText();
         
         if(phrase=='') {
         	return;
+        }
+        
+        if(close==null) {
+        	close = false;
         }
         
         state = self.getDState();
@@ -153,19 +163,21 @@
         			"languageId": self.getLanguageId(),
         			"itemId": self.getItemId(),
         			"state": state
-        		},
-        		previousClass, 
+        		}, {
+            		"close": close,
+            		"previousClass": previousClass
+        		}, 
         		self._saveDone, 
         		self._saveFail
         		);
     };
     
-    self._saveFail = function(obj, previousClass, data, status, xhr) {
-    	window.lib.getCurrentElement().attr('class', previousClass);
+    self._saveFail = function(obj, optional, data, status, xhr) {
+    	window.lib.getCurrentElement().attr('class', optional.previousClass);
         self.setDMessage('Save failed');
     };
     
-    self._saveDone = function(obj, data, status, xhr) {
+    self._saveDone = function(obj, optional, data, status, xhr) {
     	if (xhr.status == 200) {
             self.setDMessage('Term updated');
         } else if (xhr.status == 201) {
@@ -181,6 +193,10 @@
         if (data.definition.length > 0) tempDef += data.definition.replace(/\n/g, '<br />');
         
         window.lib.updateElementState(data.phrase, data.state, tempDef);
+        
+        if(optional.close) {
+        	self.closeModal();
+        }
     };
 
     self.reset = function () {
