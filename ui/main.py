@@ -21,7 +21,7 @@ class MainWindow(QtGui.QMainWindow):
         self.mainWindow = Ui_MainWindow()
         self.mainWindow.setupUi(self)
         self.mainWindow.verticalLayout.setStretch(2, 1)
-        self.changeView("plugins")
+        self.changeView("items")
         
         QtCore.QObject.connect(self.mainWindow.pbLanguages, QtCore.SIGNAL("clicked()"), lambda view = "languages": self.changeView(view))
         QtCore.QObject.connect(self.mainWindow.tbProfiles, QtCore.SIGNAL("clicked()"), lambda view = "profiles": self.changeView(view))

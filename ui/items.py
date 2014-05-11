@@ -195,6 +195,9 @@ class ItemsForm(QtGui.QDialog):
         self.ui.tItems.resizeColumnsToContents()
         
     def keyPressEvent(self, event):
+        if event.key()==QtCore.Qt.Key_Escape:
+            return
+            
         if self.ui.tItems.hasFocus():
             if not event.modifiers() & QtCore.Qt.ControlModifier and (event.key()==QtCore.Qt.Key_Return or event.key()==QtCore.Qt.Key_Enter):
                 self.readItem(None)

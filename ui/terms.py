@@ -75,4 +75,8 @@ class TermsForm(QtGui.QDialog):
             index +=1
         
         self.ui.tTerms.resizeColumnsToContents()
-        self.ui.tTerms.setSortingEnabled(True)            
+        self.ui.tTerms.setSortingEnabled(True)
+        
+    def keyPressEvent(self, event):
+        if event.key()==QtCore.Qt.Key_Escape:
+            return            

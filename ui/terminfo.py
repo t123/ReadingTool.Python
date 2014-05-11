@@ -71,3 +71,7 @@ class TermInfoForm(QtGui.QDialog):
             index += 1
             
         self.ui.twHistory.horizontalHeader().setResizeMode(Qt.QHeaderView.Stretch)
+        
+    def keyPressEvent(self, event):
+        if event.key()==QtCore.Qt.Key_Escape:
+            return
