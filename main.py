@@ -74,7 +74,7 @@ if __name__=="__main__":
     checkUser()
     backupDb("start")
     
-    Application.server = Server(embed=True)
+    Application.server = Server(embed=False)
     app = QtGui.QApplication(sys.argv)
     myapp = MainWindow()
     myapp.show()

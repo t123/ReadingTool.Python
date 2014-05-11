@@ -132,14 +132,19 @@ class InternalController(object):
         termService = TermService()
         counter = 0
         
-        for item in data:
+        languageId = data["languageId"]
+        itemSourceId = data["itemId"]
+        
+        for item in data["phrases"]:
             try:
                 term = Term()
                 term.state = TermState.Known
-                term.phrase = item["phrase"]
-                term.languageId = item["languageId"]
-                term.itemSourceId = item["itemId"]
+                term.phrase = item
+                term.languageId = languageId
+                term.itemSourceId = itemSourceId
+                
                 termService.save(term)
+                
                 counter += 1
                 
             except:

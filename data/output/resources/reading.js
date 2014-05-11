@@ -517,22 +517,22 @@
         var itemId = self.getItemId();
 
         $('.__notseen').each(function (index, x) {
-            var word = self._getWordFromSpan($(x));
+            var word = $(x).data('lower')
 
-            termArray.push({
-                languageId: languageId,
-                phrase: word,
-                definition: '',
-                basePhrase: '',
-                sentence: '',
-                itemId: itemId,
-                state: 'Known'
-            });
+            if(termArray.indexOf(word) > -1)
+            	return;
+            
+            termArray.push(word);
         });
-
+        
+        
+        data = JSON.stringify({
+        		"languageId": languageId,
+        		"itemId": itemId,
+        		"phrases": termArray
+        });
+        
         self._showOverlayModal('Please wait, sending <strong>' + termArray.length + '</strong> terms');
-
-        data = JSON.stringify(termArray);
         
         $.ajax({
             url: self.options.url + "/internal/v1/markallknown",
