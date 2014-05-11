@@ -12,7 +12,6 @@
         animation: false
     });
 
-    
         if ($('#reading').data('mediauri') != '') {
         	$("#jquery_jplayer_1").show()
             var mediaUri = $('#reading').data('mediauri');
@@ -57,6 +56,12 @@
             $('#jp_container_1').hide();
         }
 
+        var lib = new Lib({
+            url: webApiEndPoint,
+            languageId: $('#reading').data('languageid'),
+            itemId: $('#reading').data('itemid')
+        });
+        
         var reading = new Reading({
             url: webApiEndPoint,
             languageId: $('#reading').data('languageid'),
@@ -64,6 +69,8 @@
         });
 
         window.reading = reading;
+        window.lib = lib;
+        
         $(document).trigger('pluginReady');
 
         $(document).on('keydown', function (e) {
