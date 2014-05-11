@@ -177,29 +177,10 @@
         self._removeChanged();
         self.setHasChanged(false);
 
-        var lower = window.lib.phraseToClass(data.phrase);
-        $('.__' + lower).removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + data.state.toLowerCase());
-        
         var tempDef = data.basePhrase.length > 0 ? data.basePhrase + "<br/>" : '';
         if (data.definition.length > 0) tempDef += data.definition.replace(/\n/g, '<br />');
-
-        if (tempDef.length > 0) {
-            $('.__' + lower).each(function (index) {
-                $(this).html(
-                    (tempDef.length > 0 ? '<a rel="tooltip" title="' + tempDef + '">' : '') + data.phrase + (tempDef.length > 0 ? '</a>' : '')
-                );
-
-                var stateLower = data.state.toLowerCase();
-
-                if (stateLower == 'known') {
-                    $(this).addClass("__kd");
-                } else if (stateLower == 'unknown') {
-                    $(this).addClass("__ud");
-                } else if (stateLower == 'ignored') {
-                    $(this).addClass("__id");
-                }
-            });
-        }
+        
+        window.lib.updateElementState(data.phrase, data.state, tempDef);
     };
 
     self.reset = function () {
@@ -209,18 +190,14 @@
         window.lib.reset(phrase, languageId, self._resetDone, self._resetFail);
     };
     
-    self._resetDone = function(phrase, data, status,xhr) {
+    self._resetDone = function(phrase, data, status, xhr) {
     	if (xhr.status == 200) {
             self.setDMessage('Term reset, use save to keep data.');
         } else {
             self.setDMessage('Term reset');
         }
 
-        var lower = window.lib.phraseToClass(phrase);
-        $('.__' + lower).removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass('__notseen');
-        $('.__' + lower).each(function (index) {
-            $(this).html(phrase);
-        });    	
+        window.lib.updateElementState(phrase, 'notseen', '');
     };
     
     self._resetFail = function(data, status,xhr) {
@@ -229,6 +206,7 @@
     
     self.changed = function (element) {
         if (element && element.any()) {
+        	$.event.trigger("dialogDataElementChanged", [element]);
             element.addClass('changed');
         }
 
@@ -236,7 +214,8 @@
     };
 
     self.setHasChanged = function (value) {
-        self.hasChanged = value;
+    	$.event.trigger("dialogDataHasChanged", [value]);
+    	self.hasChanged = value;
     };
 
     self.getHasChanged = function () {
@@ -268,49 +247,25 @@
     };
 
     self.copy = function () {
-        $(document).trigger('preWordCopy');
+        $.event.trigger("preDialogWordCopy");
 
         self.setDBase(window.lib.getCurrentWordAsText());
         self.changed($('#dBase'));
         $('#dBase').trigger('change');
         self.setFocus($('#dBase'));
 
-        $(document).trigger('postWordCopy');
+        $.event.trigger("postDialogWordCopy");
     };
 
     self.refresh = function () {
-        $(document).trigger('preSentenceRefreshed');
+    	$.event.trigger("preDialogSentenceRefresh");
 
         self.setDSentence(window.lib.getSentence());
         self.changed($('#dSentence'));
         $('#dSentence').trigger('change');
         self.setFocus($('#dSentence'));
 
-        $(document).trigger('postSentenceRefreshed');
-    };
-
-    self.getCommonness = function () {
-        if (self.currentElement.hasClass('__high')) return ' high';
-        if (self.currentElement.hasClass('__medium')) return ' medium';
-        if (self.currentElement.hasClass('__low')) return ' low';
-
-        return '';
-    };
-
-    self.getFrequency = function () {
-        if (self.currentElement.any()) {
-            return self.currentElement.data('frequency');
-        }
-
-        return 0;
-    };
-
-    self.getOccurrences = function () {
-        if (self.currentElement.any()) {
-            return self.currentElement.data('occurrences');
-        }
-
-        return 0;
+        $.event.trigger("postDialogSentenceRefresh");
     };
 
     self.displayModal = function () {
@@ -361,26 +316,26 @@
         self._clearInputs();
         window.lib.setCurrentElement(element);
 
-        $(document).trigger('preShowModal');
+        $.event.trigger("preShowModal");
 
         window.lib.setCurrentSelected(window.lib.getCurrentElement());
         self.updateModal();
         self.displayModal();
 
-        $(document).trigger('postShowModal');
+        $.event.trigger("postShowModal");
     };
 
     self.closeModal = function () {
-        $(document).trigger('preCloseModal');
+    	$.event.trigger("preCloseModal");
 
         self.hasChanged = false;
         self.modal.hide();
 
-        $(document).trigger('postCloseModal');
+        $.event.trigger("postCloseModal");
     };
 
     self.getPlayer = function () {
-        if ($('#reading').data('mediauri') == '') {
+    	if(window.lib.getMediaUri()=='') {
             return null;
         }
 

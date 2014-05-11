@@ -67,8 +67,8 @@
 
 	window.reading = reading;
 
-	$(document).trigger('pluginReady');
-
+	$.event.trigger("pluginReady");
+	
 	$(document).on('keydown', function(e) {
 						var code = (e.keyCode ? e.keyCode : e.which);
 
