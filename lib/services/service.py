@@ -362,7 +362,7 @@ class TermService:
             args["l%d" % counter] = exp
             counter += 1
                 
-        query += " ORDER BY term.lowerPhrase"
+        query += " ORDER BY language, term.lowerPhrase"
         return self.db.many(Term, query, **args)
     
     def findHistory(self, termId):
