@@ -7,6 +7,7 @@ from lib.services.service import ItemService, LanguageService
 from ui.views.items import Ui_Items
 from ui.itemdialog import ItemDialogForm
 from ui.reader import ReaderWindow
+from PyQt4.Qt import QAction
 
 class ItemsForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -22,7 +23,7 @@ class ItemsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbEdit, QtCore.SIGNAL("clicked()"), self.editItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteItem)
-        QtCore.QObject.connect(self.ui.pbClear, QtCore.SIGNAL("clicked()"), lambda: self.ui.leFilter.setText(""))
+        QtCore.QObject.connect(self.ui.pbClear, QtCore.SIGNAL("clicked()"), self.clear)
         QtCore.QObject.connect(self.ui.pbRead, QtCore.SIGNAL("clicked()"), lambda asParallel = False: self.readItem(asParallel))        
         QtCore.QObject.connect(self.ui.pbReadParallel, QtCore.SIGNAL("clicked()"), lambda asParallel = True: self.readItem(asParallel))        
         QtCore.QObject.connect(self.ui.tItems, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), lambda: self.readItem(asParallel=None))
@@ -32,6 +33,35 @@ class ItemsForm(QtGui.QDialog):
         
         self.ui.splitter.setStretchFactor(0,0)
         self.ui.splitter.setStretchFactor(1,1)
+        
+        self.contextMenu()
+        
+    def clear(self):
+        self.ui.leFilter.setText("")
+        self.updateItems()
+                
+    def contextMenu(self):
+        self.ui.tItems.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        
+        action = QAction("Edit", self.ui.tItems)
+        self.ui.tItems.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.editItem)
+        
+        action = QAction("Delete", self.ui.tItems)
+        self.ui.tItems.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.deleteItem)
+        
+        action = QAction("Copy", self.ui.tItems)
+        self.ui.tItems.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.copyItem)
+        
+        action = QAction("Read", self.ui.tItems)
+        self.ui.tItems.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.readItem(asParallel=False))
+        
+        action = QAction("Read Parallel", self.ui.tItems)
+        self.ui.tItems.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.readItem(asParallel=True))
         
     def addItem(self):
         self.dialog = ItemDialogForm()
@@ -191,7 +221,7 @@ class ItemsForm(QtGui.QDialog):
                     self.copyItem()
                     return
                 
-                if event.key()==QtCore.Qt.Key_L:    
+                if event.key()==QtCore.Qt.Key_L or event.key()==QtCore.Qt.Key_F:    
                     self.ui.leFilter.setFocus()
                     return
             
