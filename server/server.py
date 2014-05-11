@@ -45,6 +45,12 @@ class Server():
         d.connect(name="r5", route='/resource/v1/local/:name', controller=rc, action="getLocalResource", conditions=dict(method=["GET"]))
         
         d.connect(name="a1", route='/api/v1/encode', controller=ac, action="encodePhrase", conditions=dict(method=["GET"]))
+        d.connect(name="a2", route='/api/v1/languages', controller=ac, action="getLanguages", conditions=dict(method=["GET"]))
+        d.connect(name="a2.1", route='/api/v1/languages/:id', controller=ac, action="getLanguage", conditions=dict(method=["GET"]))
+        d.connect(name="a3", route='/api/v1/items', controller=ac, action="getItems", conditions=dict(method=["GET"]))
+        d.connect(name="a3.1", route='/api/v1/items/:id', controller=ac, action="getItem", conditions=dict(method=["GET"]))
+        d.connect(name="a4", route='/api/v1/terms', controller=ac, action="getTerms", conditions=dict(method=["GET"]))
+        d.connect(name="a4.1", route='/api/v1/terms/:id', controller=ac, action="getTerm", conditions=dict(method=["GET"]))
             
         conf = {'/': {
                       'request.dispatch': d, 
