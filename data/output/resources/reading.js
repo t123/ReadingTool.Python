@@ -11,79 +11,16 @@
         return self.options;
     };
 
-    self._getWordFromSpan = function (element) {
-        if (element[0].childNodes[0].nodeType == 3) {
-            return element[0].childNodes[0].nodeValue;
-        } else {
-            return element[0].childNodes[0].innerText;
-        }
-    };
-
     self.setFocus = function (element) {
         if (element.any()) {
             element.focus();
         }
     };
 
-    self.updateCurrentSelected = function (element) {
-        if (element.any()) {
-            var current = self.getCurrentSelected();
-            current.removeClass('__current');
-            element.addClass('__current');
-        }
-
-        $(document).trigger('postUpdateCurrentSelected');
-    };
-
-    self.getCurrentSelected = function () {
-        return $('.__current');
-    };
-
-    self.getCurrentWordAsText = function () {
-    	current = self.getCurrent();
-        if (current!=null && current.any()) {
-            return self._getWordFromSpan(self.currentElement);
-        }
-
-        return '';
-    };
-
-    self.getCurrent = function () {
-        return self.currentElement;
-    };
-
-    self.getCurrentSentence = function () {
-        if (!self.currentElement.any()) {
-            return '';
-        }
-
-        var sentence = '';
-        var children = self.currentElement.parent('p.__sentence').children('span');
-
-        for (var i = 0; i < children.length; i++) {
-            sentence += $(children[i]).text();
-        }
-
-        return sentence;
-    };
-
     self._removeChanged = function () {
         $('#dSentence').removeClass('changed');
         $('#dBase').removeClass('changed');
         $('#dDefinition').removeClass('changed');
-    };
-
-    self.copyToClipboard = function (toCopy) {
-        $(document).trigger('preCopyToClipboard');
-
-        if(typeof rtjscript==='undefined') {
-        	console.log("rtjscript undefined");
-        	return;
-        } 
-        
-        rtjscript.copyToClipboard(toCopy);
-
-        $(document).trigger('postCopyToClipboard');
     };
 
     self.log = function (message) {
@@ -100,7 +37,7 @@
     };
 
     self.updateModal = function () {
-        var text = self.getCurrentWordAsText();
+        var text = window.lib.getCurrentWordAsText();
 
         self.setDMessage('');
         self._removeChanged();
@@ -123,7 +60,7 @@
             self.setDState('unknown');
             self.setDBase('');
             self.setDDefinition('');
-            self.setDSentence(self.getCurrentSentence());
+            self.setDSentence(window.lib.getSentence());
             self.changed($('#dSentence'));
 
             self.setDMessage('New word, defaulting to unknown');
@@ -133,20 +70,6 @@
             self.setDPhrase(phrase);
             self.setDMessage('Failed to lookup word');
         }
-    };
-
-    self._selectText = function (element) {
-        if (!element.any()) {
-            return;
-        }
-
-        setTimeout(function () {
-            var range = document.createRange();
-            var selection = window.getSelection();
-            selection.removeAllRanges();
-            range.selectNodeContents($('#dPhrase')[0]);
-            selection.addRange(range);
-        }, 125);
     };
 
     self.getDState = function () {
@@ -166,11 +89,11 @@
     };
 
     self.getLanguageId = function () {
-        return self.options.languageId;
+        return window.lib.getLanguageId();
     };
 
     self.getItemId = function () {
-        return self.options.itemId;
+    	return window.lib.getItemId();
     };
 
     self.setDState = function (state) {
@@ -212,14 +135,14 @@
     };
 
     self.save = function () {
-        var phrase = self.getCurrentWordAsText();
+        var phrase = window.lib.getCurrentWordAsText();
         
         if(phrase=='') {
         	return;
         }
         
         state = self.getDState();
-        var previousClass = self.getCurrent().attr('class');
+        var previousClass = window.lib.getCurrentElement().attr('class');
         $('.__current').removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
         
         window.lib.save( {
@@ -238,7 +161,7 @@
     };
     
     self._saveFail = function(obj, previousClass, data, status, xhr) {
-    	self.getCurrent().attr('class', previousClass);
+    	window.lib.getCurrentElement().attr('class', previousClass);
         self.setDMessage('Save failed');
     };
     
@@ -254,7 +177,7 @@
         self._removeChanged();
         self.setHasChanged(false);
 
-        var lower = self.phraseToClass(data.phrase);
+        var lower = window.lib.phraseToClass(data.phrase);
         $('.__' + lower).removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + data.state.toLowerCase());
         
         var tempDef = data.basePhrase.length > 0 ? data.basePhrase + "<br/>" : '';
@@ -279,12 +202,8 @@
         }
     };
 
-    self.phraseToClass = function (phrase) {
-        return phrase.toLowerCase().replace("'", "_").replace('"', "_");
-    };
-
     self.reset = function () {
-        var phrase = self.getCurrentWordAsText();
+        var phrase = window.lib.getCurrentWordAsText();
         var languageId = self.getLanguageId();
         
         window.lib.reset(phrase, languageId, self._resetDone, self._resetFail);
@@ -297,7 +216,7 @@
             self.setDMessage('Term reset');
         }
 
-        var lower = self.phraseToClass(phrase);
+        var lower = window.lib.phraseToClass(phrase);
         $('.__' + lower).removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass('__notseen');
         $('.__' + lower).each(function (index) {
             $(this).html(phrase);
@@ -351,7 +270,7 @@
     self.copy = function () {
         $(document).trigger('preWordCopy');
 
-        self.setDBase(self.getCurrentWordAsText());
+        self.setDBase(window.lib.getCurrentWordAsText());
         self.changed($('#dBase'));
         $('#dBase').trigger('change');
         self.setFocus($('#dBase'));
@@ -362,7 +281,7 @@
     self.refresh = function () {
         $(document).trigger('preSentenceRefreshed');
 
-        self.setDSentence(self.getCurrentSentence());
+        self.setDSentence(window.lib.getSentence());
         self.changed($('#dSentence'));
         $('#dSentence').trigger('change');
         self.setFocus($('#dSentence'));
@@ -395,12 +314,12 @@
     };
 
     self.displayModal = function () {
-        var c = self.currentElement[0].getBoundingClientRect();
+        var c = window.lib.getCurrentElement()[0].getBoundingClientRect();
 
         var dh = $(window).height();
         var dw = $(window).width();
 
-        var o = self.currentElement.offset();
+        var o = window.lib.getCurrentElement().offset();
         var nt, nl;
 
         var popupH = $('#popup').height();
@@ -430,25 +349,21 @@
         self.setHasChanged(false);
     };
 
-    self.markTemp = function (element) {
-        if (element.hasClass('__temp')) {
-            $(element).removeClass('__temp');
-        } else {
-            $(element).addClass('__temp');
-        }
+    self.isModalVisible = function() {
+    	return self.modal.is(':visible');
     };
-
+    
     self.showModal = function (element) {
-        if (self.modal.is(':visible') && self.hasChanged) {
+        if (self.isModalVisible() && self.hasChanged) {
             return;
         }
 
         self._clearInputs();
-        self.currentElement = element;
+        window.lib.setCurrentElement(element);
 
         $(document).trigger('preShowModal');
 
-        self.updateCurrentSelected(self.getCurrent());
+        window.lib.setCurrentSelected(window.lib.getCurrentElement());
         self.updateModal();
         self.displayModal();
 
@@ -462,10 +377,6 @@
         self.modal.hide();
 
         $(document).trigger('postCloseModal');
-    };
-
-    self.getItemType = function () {
-        return $('#reading').data('itemtype');
     };
 
     self.getPlayer = function () {
@@ -492,8 +403,6 @@
     };
 
     self.markRemainingAsKnown = function () {
-        $(document).trigger('preMarkRemainingAsKnown');
-
         var termArray = Array();
         var languageId = self.getLanguageId();
         var itemId = self.getItemId();
@@ -507,7 +416,6 @@
             termArray.push(word);
         });
         
-        
         data = JSON.stringify({
         		"languageId": languageId,
         		"itemId": itemId,
@@ -515,29 +423,24 @@
         });
         
         self._showOverlayModal('Please wait, sending <strong>' + termArray.length + '</strong> terms');
-        
-        $.ajax({
-            url: self.options.url + "/internal/v1/markallknown",
-            type: 'POST',
-            dataType: 'text',
-            contentType: "application/json",
-            data: data
-        }).done(function (data, status, xhr) {
-            self._setOverlayModalContent('Marked <strong>' + data + '</strong> words as known.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
+        window.lib.markRemainingAsKnown(data, self._doneMarkRemainingAsKnown, self._failMarkRemainingAsKnown);
+    };
+    
+    self._doneMarkRemainingAsKnown = function(data, status, xhr) {
+    	self._setOverlayModalContent('Marked <strong>' + data + '</strong> words as known.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
 
-            $('.__notseen').each(function (index, x) {
-                $(x).removeClass('__notseen').addClass('__known');
-            });
-        }).fail(function (data) {
-            self._setOverlayModalContent('Operation failed.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
-        }).always(function (data) {
-            $(document).trigger('postMarkRemainingAsKnown');
+        $('.__notseen').each(function (index, x) {
+            $(x).removeClass('__notseen').addClass('__known');
         });
     };
+    
+    self._failMarkRemainingAsKnown = function(data, status, xhr) {
+    	self._setOverlayModalContent('Operation failed.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
+    };
 
-    if (self.getItemType() == 'video' && self.hasPlayer()) {
-    	lastL1 = -2
-    	lastL2 = -2
+    if (window.lib.getItemType() == 'video' && self.hasPlayer()) {
+    	lastL1 = -2;
+    	lastL2 = -2;
     	
         self.jplayer.bind($.jPlayer.event.timeupdate, function (event) {
             l1 = rtjscript.getSrtL1(event.jPlayer.status.currentTime);
