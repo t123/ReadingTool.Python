@@ -119,9 +119,33 @@ class InternalController(object):
             cherrypy.response.status = 200
         
             
+    def markAllAsKnownOptions(self):
+        cherrypy.response.status = "200"
+    
     def markAllAsKnown(self):
-        cherrypy.response.status = "501 - not implemented"
+        cherrypy.response.status = "200"
         cherrypy.response.headers["Content-Type"] = "text/plain"
+        
+        length = cherrypy.request.headers['Content-Length']
+        raw = cherrypy.request.body.read(int(length)).decode()
+        data = json.loads(raw)
+        termService = TermService()
+        counter = 0
+        
+        for item in data:
+            try:
+                term = Term()
+                term.state = TermState.Known
+                term.phrase = item["phrase"]
+                term.languageId = item["languageId"]
+                term.itemSourceId = item["itemId"]
+                termService.save(term)
+                counter += 1
+                
+            except:
+                continue
+        
+        return str(counter)
         
 class ResourceController(object):
     def isValidId(self, id):

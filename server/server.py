@@ -5,18 +5,17 @@ def CORS():
         if "Origin" in cherrypy.request.headers:
             origin = cherrypy.request.headers["Origin"].lower()
             
-            # TODO -> replace localhost
+            #TODO fix localhost
             if  origin=="null" or origin.startswith("http://localhost"):
                 cherrypy.response.headers["Access-Control-Allow-Origin"] = cherrypy.request.headers["Origin"]
                 
-            #===================================================================
-            # if "Access-Control-Request-Method" in cherrypy.request.headers:
-            #     cherrypy.response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,HEAD,OPTIONS"
-            #     
-            # if "Access-Control-Request-Headers" in cherrypy.request.headers:
-            #     cherrypy.response.headers["Access-Control-Allow-Headers"] = cherrypy.request.headers["Access-Control-Request-Headers"]
-            #===================================================================
-        
+                for header in cherrypy.request.headers.keys():
+                    if header.lower()=="access-control-request-headers":
+                        cherrypy.response.headers["Access-Control-Allow-Headers"] = cherrypy.request.headers["Access-Control-Request-Headers"]
+                    
+                    if header.lower()=="access-control-request-method":
+                        cherrypy.response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,HEAD,OPTIONS"
+                         
 class Server():
     def __init__(self, embed=True):
         cherrypy.tools.CORS = cherrypy.Tool('before_handler', CORS) 
@@ -37,6 +36,7 @@ class Server():
         d.connect(name="i5", route='/internal/v1/deleteterm', controller=ic, action="deleteTerm", conditions=dict(method=["POST"]))
         d.connect(name="i6", route='/internal/v1/term', controller=ic, action="saveTerm", conditions=dict(method=["POST"]))
         d.connect(name="i7", route='/internal/v1/markallknown', controller=ic, action="markAllAsKnown", conditions=dict(method=["POST"]))
+        d.connect(name="i7", route='/internal/v1/markallknown', controller=ic, action="markAllAsKnownOptions", conditions=dict(method=["OPTIONS"]))
          
         d.connect(name="r1", route='/resource/v1/', controller=rc, action="index", conditions=dict(method=["GET"]))
         d.connect(name="r2", route='/resource/v1/plugins/:id', controller=rc, action="getPlugins", conditions=dict(method=["GET"]))

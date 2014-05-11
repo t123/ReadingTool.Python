@@ -532,12 +532,14 @@
 
         self._showOverlayModal('Please wait, sending <strong>' + termArray.length + '</strong> terms');
 
+        data = JSON.stringify(termArray);
+        
         $.ajax({
             url: self.options.url + "/internal/v1/markallknown",
             type: 'POST',
-            dataType: 'json',
-            headers: { "content-type": "application/json" },
-            data: JSON.stringify(termArray)
+            dataType: 'text',
+            contentType: "application/json",
+            data: data
         }).done(function (data, status, xhr) {
             self._setOverlayModalContent('Marked <strong>' + data + '</strong> words as known.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
 

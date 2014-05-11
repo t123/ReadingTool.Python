@@ -30,8 +30,8 @@
                     },
                     swfPath: webApiEndPoint + "/resource/v1/local/Jplayer.swf",
                     supplied: "mp3",
-                    warningAlerts: true,
-                    errorAlerts: true,
+                    //warningAlerts: true,
+                    //errorAlerts: true,
                     solution: "flash",
                     wmode:"window"
                 });
@@ -44,7 +44,8 @@
                     },
                     swfPath: webApiEndPoint + "/resource/v1/local/Jplayer.swf",
                     supplied: "m4v",
-                    errorAlerts: true,
+                    //warningAlerts: true,
+                    //errorAlerts: true,
                     solution: "flash",
                     size: {
                         width: "720px",
