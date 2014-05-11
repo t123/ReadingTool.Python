@@ -4,6 +4,7 @@ from lib.misc import Application
 from lib.models.model import Term, TermState
 from lib.services.service import TermService, LanguageService
 from ui.views.terms import Ui_Terms
+from ui.terminfo import TermInfoForm
 
 class TermsForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -13,11 +14,21 @@ class TermsForm(QtGui.QDialog):
         
         self.termService = TermService()
         self.updateCombo()
+        self.ui.leFilter.setText("#unknown")
         self.updateTerms()        
         
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.updateTerms)
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("editingFinished()"), self.updateTerms)
         QtCore.QObject.connect(self.ui.cbCollections, QtCore.SIGNAL("currentIndexChanged(int)"), self.onComboItem)
+        QtCore.QObject.connect(self.ui.tTerms, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), self.showInfo)
+        
+    def showInfo(self, data):
+        term = self.ui.tTerms.item(self.ui.tTerms.currentRow(), 0)
+        termId = term.data(QtCore.Qt.UserRole).termId
+        
+        self.popup = TermInfoForm()
+        self.popup.setTerm(termId)
+        self.popup.show() 
         
     def onComboItem(self, index):
         item = self.ui.cbCollections.itemData(index)

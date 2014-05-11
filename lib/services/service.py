@@ -248,7 +248,7 @@ class TermService:
                             )
         else:        
             isNew = False
-            self.db.execute("UPDATE term SET modified=:modified, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, state=:state, itemSourceId=:itemSourceId WHERE termId=:termId",
+            self.db.execute("UPDATE term SET modified=:modified, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, state=:state, itemSourceId=:itemSourceId, sentence=:sentence WHERE termId=:termId",
                             termId=term.termId,
                             modified=time.time(),
                             lowerPhrase=term.lowerPhrase,
@@ -364,6 +364,9 @@ class TermService:
                 
         query += " ORDER BY term.lowerPhrase"
         return self.db.many(Term, query, **args)
+    
+    def findHistory(self, termId):
+        return self.db.many(TermLog, "SELECT entryDate, termId, state, type, languageId, userId FROM termlog WHERE termId=:termId ORDER BY entryDate DESC", termId=termId)
        
 class ItemService:
     def __init__(self):

@@ -53,6 +53,19 @@ class ItemType:
 class TermType:
     Unknown, Create, Modify, Delete = range(4)
     
+    @staticmethod
+    def ToString(termType):
+        if termType==0:
+            return "Unknown"
+        elif termType==1:
+            return "Create"
+        elif termType==2:
+            return "Modify"
+        elif termType==3:
+            return "Delete"
+        
+        raise Exception("Unknown int termType")
+    
 class LanguageDirection:
     Unknown, LeftToRight, RightToLeft = range(3)
     
