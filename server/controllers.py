@@ -27,18 +27,9 @@ class InternalController(object):
         if term is None:
             raise cherrypy.HTTPError(404)
         
-        data = {
-            'id': term.termId,
-            'phrase': term.phrase,
-            'basePhrase': term.basePhrase,
-            'definition': term.definition,
-            'state': TermState.ToString(term.state).lower(),
-            'sentence': term.sentence
-        }
-     
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
-        return json.dumps(data).encode()
+        return json.dumps(term.toDict()).encode()
      
     def getTermByPhraseAndLanguage(self, phrase, languageId):
         if not phrase or not self.isValidId(languageId):
@@ -50,18 +41,9 @@ class InternalController(object):
         if term is None:
             raise cherrypy.HTTPError(404)
          
-        data = {
-            'id': term.termId,
-            'phrase': term.phrase,
-            'basePhrase': term.basePhrase,
-            'definition': term.definition,
-            'state': TermState.ToString(term.state).lower(),
-            'sentence': term.sentence
-        }
-      
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
-        return json.dumps(data).encode()
+        return json.dumps(term.toDict()).encode()
      
     def deleteTerm(self, phrase=None, languageId=None):
         if cherrypy.request.method=="OPTIONS":
@@ -74,14 +56,14 @@ class InternalController(object):
         termService = TermService()
         term = termService.fineOneByPhraseAndLanguage(phrase, languageId)
           
+        cherrypy.response.status = 200
+        cherrypy.response.headers["Content-Type"] = "application/json"
+                
         if term is None:
-            raise cherrypy.HTTPError(404)
+            return json.dumps({}).encode() 
           
         termService.delete(term.termId)
-         
-        cherrypy.response.status = 200
-        cherrypy.response.headers["Content-Type"] = "text/plain"
-        return ""
+        return json.dumps(term.toDict()).encode()
 
     def saveTerm(self, phrase, basePhrase, sentence, definition, languageId, itemId, state):
         if not self.isValidId(languageId) or not self.isValidId(itemId):
@@ -122,6 +104,8 @@ class InternalController(object):
             termService.save(term)
             cherrypy.response.status = 200
         
+        cherrypy.response.headers["Content-Type"] = "application/json"
+        return json.dumps(term.toDict()).encode()
             
     def markAllAsKnown(self):
         if cherrypy.request.method=="OPTIONS":
@@ -307,24 +291,6 @@ class ApiV1Controller(object):
         cherrypy.response.headers["Content-Type"] = "text/plain"
         return encoded
     
-    def _languageToDict(self, language):
-        if language is None:
-            return None
-        
-        d = {}
-        d["languageId"] = language.languageId
-        d["name"] = language.name
-        d["created"] = language.created
-        d["modified"] = language.modified
-        d["isArchived"] = language.isArchived
-        d["languageCode"] = language.languageCode
-        d["userId"] = language.userId
-        d["sentenceRegex"] = language.sentenceRegex
-        d["termRegex"] = language.termRegex
-        d["direction"] = language.direction
-        
-        return d
-        
     def getLanguages(self):
         languageService = LanguageService()
         languages = languageService.findAll()
@@ -335,7 +301,7 @@ class ApiV1Controller(object):
         l = []
         
         for language in languages:
-            l.append(self._languageToDict(language))
+            l.append(language.toDict())
             
         return json.dumps(l).encode()
     
@@ -352,42 +318,8 @@ class ApiV1Controller(object):
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
         
-        return json.dumps(self._languageToDict(language)).encode()
+        return json.dumps(language.toDict()).encode()
     
-    def _itemToDict(self, item, individual=False):
-        if item is None:
-            return None
-        
-        d = {}
-        d["itemId"] = item.itemId
-        d["created"] = item.created
-        d["modified"] = item.modified
-        d["itemType"] = item.itemType
-        d["userId"] = item.userId
-        d["collectionName"] = item.collectionName
-        d["collectionNo"] = item.collectionNo
-        d["mediaUri"] = item.mediaUri
-        d["lastRead"] = item.lastRead
-        d["l1Title"] = item.l1Title
-        d["l2Title"] = item.l2Title
-        d["l1LanguageId"] = item.l1LanguageId
-        d["l2LanguageId"] = item.l2LanguageId
-        d["readTimes"] = item.readTimes
-        d["listenedTimes"] = item.listenedTimes
-        d["l1Language"] = item.l1Language
-        d["l2Language"] = item.l2Language
-        d["isParallel"] = item.isParallel()
-        d["hasMedia"] = item.hasMedia()
-        
-        if individual:
-            d["l1Content"] = item.getL1Content()
-            d["l2Content"] = item.getL2Content()
-        else:
-            d["l1Content"] = ""
-            d["l2Content"] = ""
-            
-        return d
-        
     def getItems(self):
         itemService = ItemService()
         items = itemService.findAll()
@@ -398,7 +330,7 @@ class ApiV1Controller(object):
         i = []
         
         for item in items:
-            i.append(self._itemToDict(item))
+            i.append(item.toDict())
             
         return json.dumps(i).encode()
     
@@ -415,45 +347,7 @@ class ApiV1Controller(object):
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
         
-        return json.dumps(self._itemToDict(item, True)).encode()
-    
-    def _termToDict(self, term, history=None):
-        if term is None:
-            return None
-        
-        d = {}
-        d["termId"] = term.termId
-        d["created"] = term.created
-        d["modified"] = term.modified
-        d["phrase"] = term.phrase
-        d["lowerPhrase"] = term.lowerPhrase
-        d["basePhrase"] = term.basePhrase
-        d["definition"] = term.definition
-        d["sentence"] = term.sentence
-        d["languageId"] = term.languageId
-        d["state"] = TermState.ToString(term.state)
-        d["userId"] = term.userId
-        d["itemSourceId"] = term.itemSourceId
-        d["language"] = term.language
-        d["itemSource"] = term.itemSource
-
-        if history is not None:
-            l = []
-            
-            for h in history:
-                hd = {}
-                hd["entryDate"] = h.entryDate
-                hd["termId"] = h.termId
-                hd["state"] = TermState.ToString(h.state)
-                hd["type"] = TermType.ToString(h.type)
-                hd["languageId"] = h.languageId
-                hd["userId"] = h.userId
-                
-                l.append(hd)
-                
-            d["history"] = l
-            
-        return d
+        return json.dumps(item.toDict()).encode()
         
     def getTerms(self):
         termService = TermService()
@@ -465,7 +359,7 @@ class ApiV1Controller(object):
         t = []
         
         for term in terms:
-            t.append(self._termToDict(term))
+            t.append(term.toDict())
             
         return json.dumps(t).encode()
     
@@ -479,9 +373,17 @@ class ApiV1Controller(object):
         if term is None:
             raise cherrypy.HTTPError(404)
         
+        t = term.toDict()
         history = termService.findHistory(id)
+        if history is not None:
+            l = []
+            
+            for h in history:
+                l.append(h.toDict())
+                
+            t["history"] = l
         
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
         
-        return json.dumps(self._termToDict(term, history)).encode()
+        return json.dumps(t).encode()

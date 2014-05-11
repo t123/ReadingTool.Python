@@ -100,50 +100,64 @@
     };
 
     self.updateModal = function () {
-        $(document).trigger('preUpdateModal');
-
         var text = self.getCurrentWordAsText();
 
         self.setDMessage('');
         self._removeChanged();
 
-        $.ajax({
+        self.sendFind(text, self.options.languageId, self._findDone, self._findFail);
+    };
+    
+    self.sendFind = function(phrase, languageId, doneCallback, failCallback) {
+    	$(document).trigger('preUpdateModal');
+    	
+    	$.ajax({
             url: self.options.url + '/internal/v1/term',
             type: 'GET',
             data: {
-            	phrase: text,
-            	languageId: self.options.languageId
+            	phrase: phrase,
+            	languageId: languageId
             }
-        }).done(function (data) {
-            self.setDPhrase(data.phrase);
-            self.setDState(data.state);
-            self.setDBase(data.basePhrase);
-            self.setDDefinition(data.definition);
-            self.setDSentence(data.sentence);
-
-            self.setHasChanged(false);
-        }).fail(function (data, status, error) {
-            if (data.status == 404) {
-                self.setDPhrase(text);
-                self.setDState('unknown');
-                self.setDBase('');
-                self.setDDefinition('');
-                self.setDSentence(self.getCurrentSentence());
-                self.changed($('#dSentence'));
-
-                self.setDMessage('New word, defaulting to unknown');
-
-                self.setHasChanged(false);
-            } else {
-                self.setDPhrase(text);
-                self.setDMessage('Failed to lookup word');
-            }
-
+        }).done(function (data, status, xhr) {
+        	if(doneCallback!=null) {
+        		doneCallback(phrase, languageId, data, status, xhr);
+        	}
+        }).fail(function (data, status, xhr) {
+        	if(failCallback!=null) {
+        		failCallback(phrase, languageId, data, status, xhr);
+        	}
         }).always(function (data) {
             $(document).trigger('postUpdateModalFetched');
         });
 
         $(document).trigger('postUpdateModal');
+    };
+    
+    self._findDone = function(phrase, languageId, data, status, xhr) {
+    	self.setDPhrase(data.phrase);
+        self.setDState(data.state);
+        self.setDBase(data.basePhrase);
+        self.setDDefinition(data.definition);
+        self.setDSentence(data.sentence);
+        self.setHasChanged(false);
+    };
+    
+    self._findFail = function(phrase, languageId, data, status, xhr) {
+    	if (data.status == 404) {
+            self.setDPhrase(phrase);
+            self.setDState('unknown');
+            self.setDBase('');
+            self.setDDefinition('');
+            self.setDSentence(self.getCurrentSentence());
+            self.changed($('#dSentence'));
+
+            self.setDMessage('New word, defaulting to unknown');
+
+            self.setHasChanged(false);
+        } else {
+            self.setDPhrase(phrase);
+            self.setDMessage('Failed to lookup word');
+        }
     };
 
     self._selectText = function (element) {
@@ -223,71 +237,104 @@
     };
 
     self.save = function () {
-        $(document).trigger('preSave');
-
         var phrase = self.getCurrentWordAsText();
         
         if(phrase=='') {
         	return;
         }
         
-        var state = self.getDState();
+        state = self.getDState();
         var previousClass = self.getCurrent().attr('class');
         $('.__current').removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
-
+        
+        self.sendSave(
+        		phrase, self.getDBase(), self.getDSentence(), self.getDDefinition(), 
+        		self.getLanguageId(), self.getItemId(), state,
+        		previousClass,
+        		self._saveDone,
+        		self._saveFail
+        		);
+    };
+    
+    self.sendSave = function(
+    		phrase, 
+    		basePhrase, 
+    		sentence, 
+    		definition, 
+    		languageId, 
+    		itemId, 
+    		state,
+    		previousClass,
+    		doneCallback,
+    		failCallback
+    		) {
+    	$(document).trigger('preSave');
+    	
         $.ajax({
             url: self.options.url + "/internal/v1/term",
             type: 'POST',
             data: {
                 phrase: phrase,
-                basePhrase: self.getDBase(),
-                sentence: self.getDSentence(),
-                definition: self.getDDefinition(),
-                languageId: self.getLanguageId(),
-                itemId: self.getItemId(),
+                basePhrase: basePhrase,
+                sentence: sentence,
+                definition: definition,
+                languageId: languageId,
+                itemId: itemId,
                 state: state,
             }
         }).done(function (data, status, xhr) {
-            if (xhr.status == 200) {
-                self.setDMessage('Term updated');
-            } else if (xhr.status == 201) {
-                self.setDMessage('New term saved');
-            } else {
-                self.setDMessage('Saved');
+            if(doneCallback!=null) {
+            	doneCallback(phrase, state, data,status,xhr);
             }
-
-            self._removeChanged();
-            self.setHasChanged(false);
-
-            var lower = self.phraseToClass(phrase);
-            $('.__' + lower).removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
-            
-            var tempDef = self.getDBase().length > 0 ? self.getDBase() + "<br/>" : '';
-            if (self.getDDefinition().length > 0) tempDef += self.getDDefinition().replace(/\n/g, '<br />');
-
-            if (tempDef.length > 0) {
-                $('.__' + lower).each(function (index) {
-                    $(this).html(
-                        (tempDef.length > 0 ? '<a rel="tooltip" title="' + tempDef + '">' : '') + phrase + (tempDef.length > 0 ? '</a>' : '')
-                    );
-
-                    var stateLower = state.toLowerCase();
-
-                    if (stateLower == 'known') {
-                        $(this).addClass("__kd");
-                    } else if (stateLower == 'unknown') {
-                        $(this).addClass("__ud");
-                    } else if (stateLower == 'ignored') {
-                        $(this).addClass("__id");
-                    }
-                });
+        }).fail(function (data, status, xhr) {
+        	if(failCallback!=null) {
+        		failCallback(previousClass, data,status,xhr);
             }
-        }).fail(function (data) {
-        	self.getCurrent().attr('class', previousClass);
-            self.setDMessage('Save failed');
         }).always(function (data) {
             $(document).trigger('postSave');
         });
+    };
+    
+    self._saveFail = function(previousClass, data,status,xhr) {
+    	self.getCurrent().attr('class', previousClass);
+        self.setDMessage('Save failed');
+    };
+    
+    self._saveDone = function(phrase, state, data,status,xhr) {
+    	if (xhr.status == 200) {
+            self.setDMessage('Term updated');
+        } else if (xhr.status == 201) {
+            self.setDMessage('New term saved');
+        } else {
+            self.setDMessage('Saved');
+        }
+
+        self._removeChanged();
+        self.setHasChanged(false);
+
+        var lower = self.phraseToClass(phrase);
+        $('.__' + lower).removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
+        
+        var tempDef = self.getDBase().length > 0 ? self.getDBase() + "<br/>" : '';
+        if (self.getDDefinition().length > 0) tempDef += self.getDDefinition().replace(/\n/g, '<br />');
+
+        if (tempDef.length > 0) {
+            $('.__' + lower).each(function (index) {
+                $(this).html(
+                    (tempDef.length > 0 ? '<a rel="tooltip" title="' + tempDef + '">' : '') + phrase + (tempDef.length > 0 ? '</a>' : '')
+                );
+
+                var stateLower = state.toLowerCase();
+
+                if (stateLower == 'known') {
+                    $(this).addClass("__kd");
+                } else if (stateLower == 'unknown') {
+                    $(this).addClass("__ud");
+                } else if (stateLower == 'ignored') {
+                    $(this).addClass("__id");
+                }
+            });
+        }
     };
 
     self.phraseToClass = function (phrase) {
@@ -295,37 +342,53 @@
     };
 
     self.reset = function () {
-        $(document).trigger('preReset');
-
         var phrase = self.getCurrentWordAsText();
-
-        $.ajax({
+        var languageId = self.getLanguageId();
+        
+        self.sendReset(phrase, languageId, self._resetDone, self._resetFail);
+    };
+    
+    self.sendReset = function(phrase, languageId, doneCallback, failCallback) {
+    	$(document).trigger('preReset');
+    	
+    	$.ajax({
             url: self.options.url + "/internal/v1/deleteterm",
             type: 'POST',
             data: {
                 phrase: phrase,
-                languageId: self.getLanguageId()
+                languageId: languageId 
             }
         }).done(function (data, status, xhr) {
-            if (xhr.status == 200) {
-                self.setDMessage('Term reset, use save to keep data.');
-            } else {
-                self.setDMessage('Term reset');
+        	if(doneCallback!=null) {
+            	doneCallback(phrase, data, status, xhr);
             }
-
-            var lower = self.phraseToClass(phrase);
-            $('.__' + lower).removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass('__notseen');
-            $('.__' + lower).each(function (index) {
-                $(this).html(phrase);
-            });
-
-        }).fail(function (data) {
-            self.setDMessage('Reset failed');
+        }).fail(function (data, status, xhr) {
+        	if(failCallback!=null) {
+        		failCallback(data, status, xhr);
+            }
         }).always(function (data) {
             $(document).trigger('postReset');
         });
-    };
+    }
 
+    self._resetDone = function(phrase, data, status,xhr) {
+    	if (xhr.status == 200) {
+            self.setDMessage('Term reset, use save to keep data.');
+        } else {
+            self.setDMessage('Term reset');
+        }
+
+        var lower = self.phraseToClass(phrase);
+        $('.__' + lower).removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass('__notseen');
+        $('.__' + lower).each(function (index) {
+            $(this).html(phrase);
+        });    	
+    };
+    
+    self._resetFail = function(data, status,xhr) {
+    	self.setDMessage('Reset failed');    	
+    };
+    
     self.changed = function (element) {
         if (element && element.any()) {
             element.addClass('changed');

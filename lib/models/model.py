@@ -93,6 +93,22 @@ class Language():
         self.sentenceRegex = Language.SENTENCE_REGEX
         self.termRegex = Language.TERM_REGEX
         self.direction = LanguageDirection.LeftToRight
+        
+    def toDict(self):
+        d = {}
+        
+        d["languageId"] = self.languageId
+        d["name"] = self.name
+        d["created"] = self.created
+        d["modified"] = self.modified
+        d["isArchived"] = self.isArchived
+        d["languageCode"] = self.languageCode
+        d["userId"] = self.userId
+        d["sentenceRegex"] = self.sentenceRegex
+        d["termRegex"] = self.termRegex
+        d["direction"] = self.direction
+        
+        return d
     
 class LanguageCode():
     def __init__(self):
@@ -146,6 +162,25 @@ class Term():
         self._phrase = value;
         self.lowerPhrase = (value or "").lower()
         
+    def toDict(self):
+        d = {}
+        d["termId"] = self.termId
+        d["created"] = self.created
+        d["modified"] = self.modified
+        d["phrase"] = self.phrase
+        d["lowerPhrase"] = self.lowerPhrase
+        d["basePhrase"] = self.basePhrase
+        d["definition"] = self.definition
+        d["sentence"] = self.sentence
+        d["languageId"] = self.languageId
+        d["state"] = TermState.ToString(self.state).lower() #historical
+        d["userId"] = self.userId
+        d["itemSourceId"] = self.itemSourceId
+        d["language"] = self.language
+        d["itemSource"] = self.itemSource
+        
+        return d
+        
 class TermLog():
     def __init__(self):
         self.entryDate = None
@@ -155,6 +190,17 @@ class TermLog():
         self.languageId = None
         self.userId = None
         
+    def toDict(self):
+        d = {}
+        d["entryDate"] = self.entryDate
+        d["termId"] = self.termId
+        d["state"] = TermState.ToString(self.state)
+        d["type"] = TermType.ToString(self.type)
+        d["languageId"] = self.languageId
+        d["userId"] = self.userId
+        
+        return d
+    
 class Item():
     def __init__(self):
         self.itemId = 0
@@ -220,6 +266,43 @@ class Item():
         name += self.l1Title
         
         return name
+    
+    def toDict(self):
+        d = {}
+        d["itemId"] = self.itemId
+        d["created"] = self.created
+        d["modified"] = self.modified
+        d["itemType"] = self.itemType
+        d["userId"] = self.userId
+        d["collectionName"] = self.collectionName
+        d["collectionNo"] = self.collectionNo
+        d["mediaUri"] = self.mediaUri
+        d["lastRead"] = self.lastRead
+        d["l1Title"] = self.l1Title
+        d["l2Title"] = self.l2Title
+        d["l1LanguageId"] = self.l1LanguageId
+        d["l2LanguageId"] = self.l2LanguageId
+        d["readTimes"] = self.readTimes
+        d["listenedTimes"] = self.listenedTimes
+        d["l1Language"] = self.l1Language
+        d["l2Language"] = self.l2Language
+        d["isParallel"] = self.isParallel()
+        d["hasMedia"] = self.hasMedia()
+        
+        if self.l1Content is not None:
+            d["l1Content"] = self.getL1Content()
+        else:
+            d["l1Content"] = ""
+            
+        if self.l2Content is not None:
+            try:
+                d["l2Content"] = self.getL2Content()
+            except ValueError: #Find all only returns 1st 20 bytes
+                d["l2Content"] = ""
+        else:
+            d["l2Content"] = ""
+            
+        return d
     
 class Plugin():
     def __init__(self):
