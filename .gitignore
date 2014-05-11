@@ -4,7 +4,8 @@
 __pycache__*/
 
 /data/database/
-/data/output
+/data/output/*.html
+/data/output/*.xml
 /data/plugins
 /data/*.html
 /data/*.xml
