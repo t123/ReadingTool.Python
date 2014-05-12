@@ -188,13 +188,20 @@
 	});
 
 	$('input[type="text"], input[type="radio"], textarea').change(function(e) {
-		$.event.trigger("preDialogDataChanged", $(e.target));
+		$.event.trigger("preDialogDataChanged", [$(e.target)]);
 		reading.changed($(e.target));
-		$.event.trigger("postDialogDataChanged", $(e.target));
+		$.event.trigger("postDialogDataChanged", [$(e.target)]);
 	});
 	
 	$('#reading').on('click', 'span.__term', function(e) {
+		$.event.trigger("preTermClick", [e, $(this)]);
+		
+		if(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) {
+			return;
+		}
+		
 		reading.showModal($(this));
+		$.event.trigger("postTermClick", [e, $(this)]);
 	});
 
 	$('#dSave').click(function() {

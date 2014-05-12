@@ -222,8 +222,8 @@
     
     self.changed = function (element) {
         if (element && element.any()) {
-        	$.event.trigger("dialogDataElementChanged", [element]);
             element.addClass('changed');
+            $.event.trigger("dialogDataElementChanged", [element]);
         }
 
         self.setHasChanged(true);

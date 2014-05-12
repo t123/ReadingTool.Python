@@ -174,11 +174,11 @@ class ResourceController(object):
                 output += "* " + plugin.name + "\n"
                 output += "* " + plugin.uuid + "\n"
                 output += "* " + plugin.description + "\n"
-                output += "*/"
+                output += "*/\n"
                 output += plugin.content
                 output += "\n"
                 
-            output += "$(document).trigger('pluginInit');\n"
+            output += "$.event.trigger('pluginInit');\n"
             output += "});"
             
         cherrypy.response.status = 200
