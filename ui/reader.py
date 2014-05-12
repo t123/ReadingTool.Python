@@ -53,7 +53,7 @@ class CustomWebPage(Qt.QWebPage):
         if request.url().toString().startswith("http://localhost") or request.url().toString().startswith("about:blank"):
             return True
         else:
-            Qt.QDesktopServices.openUrl(request.url());
+            Qt.QDesktopServices.openUrl(request.url())
             return False
     
     def createWindow(self, windowType):
@@ -194,7 +194,7 @@ class ReaderWindow(QtGui.QDialog):
         frame.addToJavaScriptWindowObject("rtjscript", self.js)
         
     def onLinkClicked(self, url):
-        print(url)
+        Qt.QDesktopServices.openUrl(url)
         
     def _updateNextPreviousMenu(self):
         prev = self.itemService.findPrevious(self.item, limit=5)
