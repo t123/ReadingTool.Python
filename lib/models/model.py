@@ -21,7 +21,7 @@ class TermState:
     
     @staticmethod
     def ToEnum(state):
-        state = state.lower()
+        state = str(state).lower()
         
         if state=="invalid":
             return 0

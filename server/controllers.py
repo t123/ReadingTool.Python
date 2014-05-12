@@ -387,3 +387,83 @@ class ApiV1Controller(object):
         cherrypy.response.headers["Content-Type"] = "application/json"
         
         return json.dumps(t).encode()
+    
+    def deleteTerm(self, id):
+        if cherrypy.request.method=="OPTIONS":
+            cherrypy.response.status = 200
+            return
+                    
+        if not self.isValidId(id):
+            raise cherrypy.HTTPError(404, "Invalid Id")
+          
+        termService = TermService()
+        term = termService.findOne(id)
+        
+        if term is None:
+            raise cherrypy.HTTPError(404, "Term not found")
+          
+        cherrypy.response.status = 200
+        cherrypy.response.headers["Content-Type"] = "application/json"
+                
+        if term is None:
+            return json.dumps({}).encode() 
+          
+        termService.delete(term.termId)
+        return json.dumps(term.toDict()).encode()
+    
+    def saveTerms(self):
+        if cherrypy.request.method=="OPTIONS":
+            cherrypy.response.status = 200
+            return
+        
+        cherrypy.response.status = "200"
+        cherrypy.response.headers["Content-Type"] = "text/plain"
+        
+        length = cherrypy.request.headers['Content-Length']
+        raw = cherrypy.request.body.read(int(length)).decode()
+        data = json.loads(raw)
+        
+        termService = TermService()
+                       
+        insert = 0
+        update = 0
+        failures = 0
+        invalid = []
+        
+        for t in data:
+            try:
+                termId = t.get("termId", 0)
+                
+                if termId>0:
+                    term = termService.findOne(termId)
+                else:
+                    term = termService.fineOneByPhraseAndLanguage(t["phrase"], t["languageId"])
+
+                if term is None:
+                    term = Term()
+                    term.phrase = t["phrase"]
+                    term.languageId = int(t["languageId"])
+
+                term.basePhrase = t.get("basePhrase", "")
+                term.definition = t.get("definition", "")
+                term.sentence = t.get("sentence", "")
+                term.state = TermState.ToEnum(t["state"])
+                
+                termService.save(term)
+                
+                if term.termId==0:
+                    insert += 1
+                else:
+                    update += 1
+            except Exception as e:
+                t["exception"] = str(e)
+                failures += 1
+                invalid.append(t)
+            
+        return json.dumps({
+                            "insert": insert, 
+                            "update": update,
+                            "failures": failures,
+                            "invalid": invalid
+                            }
+                          ).encode()

@@ -33,7 +33,7 @@ class Server():
         d.connect(name="i3", route='/internal/v1/term', controller=ic, action="getTermByPhraseAndLanguage", conditions=dict(method=["GET"]))
         d.connect(name="i4", route='/internal/v1/term', controller=ic, action="saveTerm", conditions=dict(method=["POST"]))
         
-        #some CORS weirdness with DELETE
+        #CORS fixed, DELETE verb unhappy
         d.connect(name="i5", route='/internal/v1/deleteterm', controller=ic, action="deleteTerm", conditions=dict(method=["OPTIONS", "POST"]))
         d.connect(name="i7", route='/internal/v1/markallknown', controller=ic, action="markAllAsKnown", conditions=dict(method=["POST", "OPTIONS"]))
          
@@ -50,7 +50,9 @@ class Server():
         d.connect(name="a3.1", route='/api/v1/items/:id', controller=ac, action="getItem", conditions=dict(method=["GET"]))
         d.connect(name="a4", route='/api/v1/terms', controller=ac, action="getTerms", conditions=dict(method=["GET"]))
         d.connect(name="a4.1", route='/api/v1/terms/:id', controller=ac, action="getTerm", conditions=dict(method=["GET"]))
-            
+        d.connect(name="i5", route='/api/v1/terms/delete/:id', controller=ac, action="deleteTerm", conditions=dict(method=["OPTIONS", "DELETE"]))
+        d.connect(name="i6", route='/api/v1/terms/save', controller=ac, action="saveTerms", conditions=dict(method=["OPTIONS", "POST"]))
+        
         conf = {'/': {
                       'request.dispatch': d, 
                       'tools.CORS.on': True,
