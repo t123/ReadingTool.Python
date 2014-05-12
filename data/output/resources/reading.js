@@ -42,7 +42,7 @@
         self.setDMessage('');
         self._removeChanged();
 
-        window.lib.find(text, self.options.languageId, self._findDone, self._findFail);
+        window.lib.find(text, self.getLanguageId(), self._findDone, self._findFail);
     };
     
     self._findDone = function(phrase, languageId, data, status, xhr) {
