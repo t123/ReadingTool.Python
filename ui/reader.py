@@ -1,4 +1,4 @@
-import threading, datetime, time
+import threading, datetime, time, os
 
 from PyQt4 import QtCore, QtGui, Qt
 
@@ -49,48 +49,24 @@ class CustomWebPage(Qt.QWebPage):
     def __init__(self, parent = None):
         Qt.QWebPage.__init__(self, parent)
     
-    ###
-    #http://stackoverflow.com/questions/14804326/qt-pyqt-how-do-i-act-on-qwebview-qwebpages-open-in-new-window-action
-    ###
     def acceptNavigationRequest(self, frame, request, navigationType):
-        print("accept: %d" % navigationType)
-        if navigationType==Qt.QWebPage.NavigationTypeLinkClicked:
-            url = request.url().toString() 
-            if url.startswith("http://localhost"):
-                return True
-            
-            if url.startswith("about:"):
-                return True
-            
+        if request.url().toString().startswith("http://localhost") or request.url().toString().startswith("about:blank"):
+            return True
+        else:
             Qt.QDesktopServices.openUrl(request.url());
             return False
-        
-        return Qt.QWebPage.acceptNavigationRequest(self, frame, request, navigationType)
     
     def createWindow(self, windowType):
-        print("windowType: %d" % windowType)
-        pass
+        self.newPage = CustomWebPage()
+        return self.newPage
     
-class CustomCookieJar(Qt.QNetworkCookieJar):
-    def setCookiesFromUrl(self, cookies, url):
-        print(url)
-        
 class CustomWebView(Qt.QWebView):
     def __init__(self, parent = None):
         Qt.QWebView.__init__(self, parent)
-        #cookieJar = CustomCookieJar()
-        #self.page().networkAccessManager().setCookieJar(cookieJar)
-        #cookieJar.setParent(self)
-        
-        #self.setPage(CustomWebPage())
+        self.setPage(CustomWebPage())
+        self.page().setLinkDelegationPolicy(Qt.QWebPage.DelegateAllLinks)
         
     def createWindow(self, webWindowType):
-        if webWindowType == Qt.QWebPage.WebBrowserWindow:
-            self.thisView = CustomWebView()
-            self.thisView.setAttribute(QtCore.Qt.WA_DeleteOnClose, True)
- 
-            return self.thisView
- 
         return super(CustomWebView, self).createWindow(webWindowType)
     
 class ReaderWindow(QtGui.QDialog):
@@ -113,7 +89,6 @@ class ReaderWindow(QtGui.QDialog):
         self.setWindowFlags(QtCore.Qt.Window)
         self.showMaximized()
         
-        self.webView.page().setLinkDelegationPolicy(Qt.QWebPage.DelegateAllLinks)
         QtCore.QObject.connect(self.ui.btnMarkKnown, QtCore.SIGNAL("clicked()"), self.markKnown)
         QtCore.QObject.connect(self.webView, QtCore.SIGNAL("loadFinished(bool)"), self.onLoadComplete)
         QtCore.QObject.connect(self.webView, QtCore.SIGNAL("javaScriptWindowObjectCleared()"), self.onJsCleared)
@@ -123,7 +98,10 @@ class ReaderWindow(QtGui.QDialog):
         
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.DeveloperExtrasEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.PluginsEnabled, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.JavascriptEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.JavascriptCanOpenWindows, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.JavascriptCanCloseWindows, True)
+        Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.JavascriptCanAccessClipboard, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalStorageDatabaseEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.WebGLEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalStorageDatabaseEnabled, True)
