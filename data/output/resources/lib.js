@@ -15,56 +15,36 @@ function Lib(options) {
      * @return {element}
      */
     self.currentLeft = function() {
-    	if(self.getCurrentElement()==null) {
-    		return;
-    	}
-    	
-    	var el = self.getCurrentElement()
-			.prevAll('.__term.__notseen,.__term.__unknown')
-			.first('span');
-    	
-    	if (el.any()) {
-    		return el;
-    	}
-    	
-    	el = $('.__current')
-			.parent()
-			.prev('.__sentence')
-			.children('.__term.__notseen,.__term.__unknown')
-			.last('span');
-
-		if (el.any()) {
-			return el;
+    	var elements = $('span.__term.__notseen,span.__term.__unknown');
+		
+		for(var i=0; i<elements.length; i++) {
+			var el = $(elements[i]);
+			
+			if(el.hasClass('__current') && i>0) {
+				return $(elements[i-1]);
+			}
 		}
+		
+		return null;
     };
-    
+
     /**
      * Returns the first unknown or unseen element to the right of the current element
      * @method currentRight
      * @return {element}
      */
     self.currentRight = function() {
-    	if(self.getCurrentElement()==null) {
-    		return;
-    	}
-    	
-    	var el = $('.__current')
-			.nextAll('.__term.__notseen,.__term.__unknown')
-			.first('span');
-    	
-    	if (el.any()) {
-    		return el;
-    	}
-    	
-    	el = $('.__current')
-			.parent()
-			.next('.__sentence')
-			.children('.__term.__notseen,.__term.__unknown')
-			.first('span');
-
-		if (el.any()) {
-			return el;
+		var elements = $('span.__term.__notseen,span.__term.__unknown');
+		
+		for(var i=0; i<elements.length; i++) {
+			var el = $(elements[i]);
+			
+			if(el.hasClass('__current') && i+1<elements.length) {
+				return $(elements[i+1]);
+			}
 		}
+		
+		return null;
     };
     
     /**

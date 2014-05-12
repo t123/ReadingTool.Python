@@ -157,7 +157,7 @@
 		} else { //Modal not visible
 			switch (code) {
 				case 32:
-					var el = reading.getCurrentSelected();
+					var el = window.lib.getCurrentSelected();
 	
 					if (el.any()) {
 						reading.showModal(el);
@@ -170,7 +170,7 @@
 					var el = window.lib.currentLeft();
 					
 					if(el!=null) {
-						reading.setCurrentSelected(el);
+						window.lib.setCurrentSelected(el);
 						return;
 					}
 					break;
@@ -179,7 +179,7 @@
 					var el = window.lib.currentRight();
 					
 					if(el!=null) {
-						reading.setCurrentSelected(el);
+						window.lib.setCurrentSelected(el);
 						return;
 					}
 					break;
