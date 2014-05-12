@@ -311,4 +311,9 @@ class Plugin():
         self.name = ""
         self.content = ""
         self.uuid = ""
-    
+
+class Storage():
+    def __init__(self):
+        self.uuid = ""
+        self.key = ""
+        self.value = ""    

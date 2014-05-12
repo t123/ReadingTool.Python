@@ -1,5 +1,5 @@
 import time, uuid, re
-from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, ItemType, TermType, Plugin, LanguagePlugin, TermState
+from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, ItemType, TermType, Plugin, LanguagePlugin, TermState, Storage
 from lib.db import Db
 from lib.misc import Application
 from lib.stringutil import StringUtil, FilterParser
@@ -640,8 +640,23 @@ class PluginService:
         return self.db.one(Plugin, "SELECT * FROM Plugin WHERE name=:name", name=name)
     
     def findAll(self):
-        return self.db.many(Plugin, "SELECT * FROM Plugin ORDER BY name     COLLATE NOCASE")
+        return self.db.many(Plugin, "SELECT * FROM Plugin ORDER BY name COLLATE NOCASE")
     
     def delete(self, pluginId):
         self.db.execute("DELETE FROM Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
         self.db.execute("DELETE FROM Language_Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
+
+class StorageService:
+    def __init__(self):
+        self.db = Db(Application.connectionString)
+        
+    def save(self, key, value, uuid=""):
+        s = self.findOne(key, uuid)
+            
+        if s==None:
+            self.db.execute("INSERT INTO storage (uuid, k, v) VALUES (:uuid, :key, :value)", uuid=uuid, key=key, value=value)
+        else:
+            self.db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
+    
+    def findOne(self, key, uuid=""):
+        return self.db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)

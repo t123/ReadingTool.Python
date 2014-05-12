@@ -1,6 +1,6 @@
 import cherrypy, json, urllib, os, time
 from lib.models.model import TermState, Term, Item, TermType
-from lib.services.service import TermService, ItemService, PluginService, LanguageService
+from lib.services.service import TermService, ItemService, PluginService, LanguageService, StorageService
 from lib.misc import Application, Time
 from lib.stringutil import StringUtil
 
@@ -467,3 +467,38 @@ class ApiV1Controller(object):
                             "invalid": invalid
                             }
                           ).encode()
+
+    def saveStorage(self, uuid, key, value):
+        if cherrypy.request.method=="OPTIONS":
+            cherrypy.response.status = 200
+            return
+        
+        if StringUtil.isEmpty(uuid):
+            raise cherrypy.HTTPError(403, "Invalid uuid")
+          
+        if StringUtil.isEmpty(key):
+            raise cherrypy.HTTPError(403, "Invalid key")
+        
+        storageService = StorageService()
+        storageService.save(key, value, uuid)
+        
+        cherrypy.response.status = 200
+        return
+        
+    def getStorage(self, uuid, key):
+        if StringUtil.isEmpty(uuid):
+            raise cherrypy.HTTPError(403, "Invalid uuid")
+          
+        if StringUtil.isEmpty(key):
+            raise cherrypy.HTTPError(403, "Invalid key")
+        
+        storageService = StorageService()
+        storage = storageService.findOne(key, uuid)
+
+        if storage is None:
+            raise cherrypy.HTTPError(404, "Key does not exist")
+         
+        cherrypy.response.status = 200
+        cherrypy.response.headers["Content-Type"] = "application/json"
+        
+        return json.dumps(storage.value).encode()

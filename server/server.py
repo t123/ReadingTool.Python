@@ -53,6 +53,9 @@ class Server():
         d.connect(name="i5", route='/api/v1/terms/delete/:id', controller=ac, action="deleteTerm", conditions=dict(method=["OPTIONS", "DELETE"]))
         d.connect(name="i6", route='/api/v1/terms/save', controller=ac, action="saveTerms", conditions=dict(method=["OPTIONS", "POST"]))
         
+        d.connect(name="i7.1", route='/api/v1/storage/:uuid/:key', controller=ac, action="getStorage", conditions=dict(method=["GET"]))
+        d.connect(name="i7.2", route='/api/v1/storage/:uuid/:key', controller=ac, action="saveStorage", conditions=dict(method=["POST"]))
+        
         conf = {'/': {
                       'request.dispatch': d, 
                       'tools.CORS.on': True,
