@@ -362,7 +362,7 @@ class TermService:
             args["l%d" % counter] = exp
             counter += 1
                 
-        query += " ORDER BY language, term.lowerPhrase"
+        query += " ORDER BY b.isArchived, language, term.lowerPhrase"
         return self.db.many(Term, query, **args)
     
     def findHistory(self, termId):
@@ -606,7 +606,7 @@ class ItemService:
             query = query[0:-4]
             query += " ) "
         
-        query += " ORDER BY l1Language, item.collectionName, item.collectionNo, item.l1Title"
+        query += " ORDER BY B.isArchived, l1Language, item.collectionName, item.collectionNo, item.l1Title"
         
         return self.db.many(Item, query, **args)
 
