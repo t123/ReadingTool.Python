@@ -99,7 +99,7 @@ textarea.changed, input.changed {
     }
     
 #reading span.__fragment.__current {
-	border: 1px dotted red;
+	background-color: yellow;
 }
 
 #reading span.__fragment.__known {

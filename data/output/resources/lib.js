@@ -438,10 +438,13 @@ function Lib(options) {
     
     self.updateElementState = function(phrase, state, definition) {
     	lower = self.phraseToClass(phrase)
-    	elements = $('.__' + lower);
+    	elements = $('.__' + lower).filter(function() {
+    		return !$(this).closest('.__fragment').any()
+    	});
     	
     	state = state.toLowerCase();
-    	elements.removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass("__" + state);
+    	
+    	elements.removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass("__" + state);    		
     	
     	if(state=="notseen") {
     		elements.each(function (index) {
@@ -505,7 +508,7 @@ function Lib(options) {
 		
 		var inFragment = false;
 		$('.__temp_fragment').each(function() { //Piece is already in a fragment
-			if($(this).parent().hasClass('__fragment')) {
+			if(element.closest('.__fragment').any()) {
 				inFragment = true;
 			}
 		});
@@ -515,6 +518,28 @@ function Lib(options) {
 		}
 		
 		$('.__temp_fragment').wrapAll('<span class="__fragment"> </span>')
+		$('.__temp_fragment').each(function() {
+			if($(this).hasClass('__known')) {
+				$(this).removeClass('__known').addClass('__known_t');
+			}
+			
+			if($(this).hasClass('__unknown')) {
+				$(this).removeClass('__unknown').addClass('__unknown_t');
+			}
+			
+			if($(this).hasClass('__ignored')) {
+				$(this).removeClass('__ignored').addClass('__ignored_t');
+			}
+			
+			if($(this).hasClass('__notseen')) {
+				$(this).removeClass('__notseen').addClass('__notseen_t');
+			}
+			
+			if($(this).hasClass('__current')) {
+				$(this).removeClass('__current');
+			}
+		});
+		
 		$('.__temp_fragment').removeClass('__temp_fragment');
 		
 		return startElement.parent();

@@ -359,6 +359,11 @@
         if(window.lib.getIsFragment()) {
         	var current = window.lib.getCurrentElement();
         	
+        	$('.__known_t').removeClass('__known_t').addClass('__known');
+        	$('.__unknown_t').removeClass('__unknown_t').addClass('__unknown');
+        	$('.__ignored_t').removeClass('__ignored_t').addClass('__ignored');
+        	$('.__notseen_t').removeClass('__notseen_t').addClass('__notseen');
+        	
         	if(!current.hasClass('__known') && !current.hasClass('__unknown') && !current.hasClass('__ignored')) {
         		window.lib.deleteFragment(current);
         	}
@@ -391,6 +396,10 @@
     };
 
     self.markRemainingAsKnown = function () {
+    	if(self.isModalVisible()) {
+    		self.closeModal();
+    	}
+    	
         var termArray = Array();
         var languageId = self.getLanguageId();
         var itemId = self.getItemId();
