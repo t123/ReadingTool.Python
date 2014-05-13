@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-  <xsl:output method="xml" omit-xml-declaration="yes" />
+  <xsl:output method="html" omit-xml-declaration="yes" />
   <xsl:template match="/root">
     <xsl:apply-templates select="content"/>
   </xsl:template>
@@ -47,9 +47,7 @@
         <xsl:when test="/root/content/@isParallel='True'">
           <tr>
             <td class="__active" width="49%">
-              <xsl:value-of select="/root/content/@collectionNo"/> -
-              <xsl:value-of select="/root/content/@collectionName"/> :
-              <xsl:value-of select="/root/content/@l1Title"/>
+              <xsl:value-of select="/root/content/@collectionNo"/> - <xsl:value-of select="/root/content/@collectionName"/> : <xsl:value-of select="/root/content/@l1Title"/>
             </td>
             <td class="disabled" width="50%">
               <xsl:value-of select="/root/content/@l2Title"/>
@@ -59,9 +57,7 @@
         <xsl:otherwise>
           <tr>
             <td class="__active" width="100%">
-              <xsl:value-of select="/root/content/@collectionNo"/> -
-              <xsl:value-of select="/root/content/@collectionName"/> :
-              <xsl:value-of select="/root/content/@l1Title"/>
+              <xsl:value-of select="/root/content/@collectionNo"/> - <xsl:value-of select="/root/content/@collectionName"/> : <xsl:value-of select="/root/content/@l1Title"/>
             </td>
           </tr>
         </xsl:otherwise>
@@ -122,10 +118,9 @@
         <span>
         	<xsl:attribute name="class">
         		<xsl:text>__fragment</xsl:text>
-        		<xsl:text> __</xsl:text>
-	            <xsl:value-of select="@state"/>
+        		<xsl:text> __</xsl:text><xsl:value-of select="@state"/>
         	</xsl:attribute>
-              <xsl:apply-templates />
+           	<xsl:apply-templates />
         </span>
     </xsl:template>
   <xsl:template match="term">
@@ -134,10 +129,8 @@
         <span>
           <xsl:attribute name="class">
             <xsl:text>__term</xsl:text>
-            <xsl:text> __</xsl:text>
-            <xsl:value-of select="@state"/>
-            <xsl:text> __</xsl:text>
-            <xsl:value-of select="@phraseClass"/>
+            <xsl:text> __</xsl:text><xsl:value-of select="@state"/>
+            <xsl:text> __</xsl:text><xsl:value-of select="@phraseClass"/>
             <xsl:if test="string-length(@definition)>0 and @state='known'">
               <xsl:text> __kd</xsl:text>
             </xsl:if>
@@ -177,8 +170,7 @@
       </xsl:when>
       <xsl:otherwise>
         <span>
-          <xsl:attribute name="class">__punctuation
-            <xsl:if test="@isWhitespace='True'"> __whitespace</xsl:if>
+          <xsl:attribute name="class">__punctuation <xsl:if test="@isWhitespace='True'"> __whitespace</xsl:if>
           </xsl:attribute>
           <xsl:value-of select="."/>
         </span>

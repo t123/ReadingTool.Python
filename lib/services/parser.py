@@ -67,15 +67,14 @@ class BaseParser:
             return fragmentNode
         
         termLower = term.lower()
-        termNode = etree.Element("term",
-                                 phrase = termLower,
-                                 phraseClass = termLower.replace("'", "_").replace("\"", "_")
-                                 )
-        termNode.text = term
+        termNode = etree.Element("term")
+        termNode.text = term.rstrip('\n')
         
         if l1TermRegex.match(term):
             self.po.stats.totalTerms += 1
             termNode.attrib["isTerm"] = "True"
+            termNode.attrib["phrase"] = termLower
+            termNode.attrib["phraseClass"] = termLower.replace("'", "_").replace("\"", "_")
             
             if self.frequency.__contains__(termLower):
                 self.frequency[termLower] += 1
@@ -85,7 +84,10 @@ class BaseParser:
             if self.pi.lookup.__contains__(termLower):
                 existing = self.pi.lookup[termLower]
                 termNode.attrib["state"] = TermState.ToString(existing.state).lower()
-                termNode.attrib["definition"] = existing.fullDefinition()
+                
+                definition = existing.fullDefinition() 
+                if not StringUtil.isEmpty(definition):
+                    termNode.attrib["definition"] = definition
                 
                 if existing.state==TermState.Known:
                     self.po.stats.known += 1
