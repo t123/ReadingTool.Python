@@ -226,8 +226,8 @@
 			
 			element = fragment;
 		} else {
-			if(element.parent()!=null && element.parent().hasClass('__fragment')) {
-				element = element.parent();
+			if(element.closest('.__fragment').any()) {
+				element = element.closest('.__fragment');
 			}
 		}
 		

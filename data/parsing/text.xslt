@@ -120,11 +120,21 @@
         		<xsl:text>__fragment</xsl:text>
         		<xsl:text> __</xsl:text><xsl:value-of select="@state"/>
         	</xsl:attribute>
-           	<xsl:apply-templates />
+        	<xsl:choose>
+        	<xsl:when test="@definition">
+              <a rel="tooltip">
+                <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute>
+                <xsl:apply-templates />
+              </a>
+            </xsl:when> 
+            <xsl:otherwise>
+              <xsl:apply-templates />
+            </xsl:otherwise>
+          </xsl:choose>
         </span>
     </xsl:template>
   <xsl:template match="term">
-    <xsl:choose>
+    <xsl:choose> 
       <xsl:when test="@isTerm='True'">
         <span>
           <xsl:attribute name="class">
@@ -156,12 +166,10 @@
           <xsl:choose>
             <xsl:when test="@definition">
               <a rel="tooltip">
-                <xsl:attribute name="title">
-                  <xsl:value-of select="@definition"/>
-                </xsl:attribute>
+                <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute>
                 <xsl:value-of select="."/>
               </a>
-            </xsl:when>
+            </xsl:when> 
             <xsl:otherwise>
               <xsl:value-of select="."/>
             </xsl:otherwise>

@@ -262,7 +262,11 @@ class TextParser(BaseParser):
             root.attrib["termId"] = str(t.termId)
             root.attrib["lower"] = lower
             root.attrib["state"] = TermState.ToString(t.state).lower()
-            root.attrib["definition"] = t.fullDefinition()
+            
+            definition = t.fullDefinition()
+            
+            if not StringUtil.isEmpty(definition):
+                root.attrib["definition"] = t.fullDefinition()
             
             terms = self.splitIntoTerms(t.phrase, termRegex)
                 
@@ -353,7 +357,7 @@ class VideoParser(BaseParser):
                 terms = self.splitIntoTerms(sentence, l1TermRegex)
                 
                 for term in terms:
-                    if term=="":
+                    if term is None or term=="":
                         continue
                     
                     sentenceNode.append(self.createTermNode(term, l1TermRegex))

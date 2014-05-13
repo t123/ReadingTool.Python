@@ -111,8 +111,7 @@ function Lib(options) {
     	
     	if(self.getIsFragment()) {
     		fragment = '';
-    		children = current.children();
-    		
+    		children = current.find('.__term,.__punctuation');
     		for(var i=0; i<children.length; i++) {
     			child = $(children[i]);
     			
@@ -471,6 +470,11 @@ function Lib(options) {
     
     self.updateFragmentState = function(phrase, state, definition) {
     	element = self.getCurrentElement();
+    	
+    	if(definition.length>0) {
+    		element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');
+    	}
+    	
     	element.removeClass('__known __unknown __ignored').addClass('__' + state);
     };
     
@@ -517,15 +521,14 @@ function Lib(options) {
 	};
 	
 	self.deleteFragment = function(element) {
-		//$('.__fragment.__current')
 		if(!element.hasClass('__fragment')) {
 			return;
 		}
 		
 		if(element.prev().any()) {
-			element.prev().after(element.children());
+			element.prev().after(element.find('.__term,.__punctuation'));
 		} else {
-			element.parent().prepend(element.children());
+			element.parent().prepend(element.find('.__term,.__punctuation'));
 		}
 		
 		element.remove();

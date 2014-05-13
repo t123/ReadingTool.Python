@@ -337,7 +337,7 @@
         if (self.isModalVisible() && self.hasChanged) {
             return;
         }
-
+        
         self._clearInputs();
         window.lib.setCurrentElement(element);
 
