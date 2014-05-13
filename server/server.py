@@ -28,21 +28,17 @@ class Server():
         #d.mapper.minimization = True 
         #d.mapper.explicit = False
         
-        #d.connect(name="i1", route='/internal/v1/term/', controller=ic, action="index", conditions=dict(method=["GET"]))
         d.connect(name="i2", route='/internal/v1/term/:termId', controller=ic, action="getTermById", conditions=dict(method=["GET"]))
         d.connect(name="i3", route='/internal/v1/term', controller=ic, action="getTermByPhraseAndLanguage", conditions=dict(method=["GET"]))
         d.connect(name="i4", route='/internal/v1/term', controller=ic, action="saveTerm", conditions=dict(method=["POST"]))
-        
-        #CORS fixed, DELETE verb unhappy
-        d.connect(name="i5", route='/internal/v1/deleteterm', controller=ic, action="deleteTerm", conditions=dict(method=["OPTIONS", "POST"]))
+        d.connect(name="i5", route='/internal/v1/delete', controller=ic, action="deleteTerm", conditions=dict(method=["OPTIONS", "POST"]))
         d.connect(name="i7", route='/internal/v1/markallknown', controller=ic, action="markAllAsKnown", conditions=dict(method=["POST", "OPTIONS"]))
-         
-        d.connect(name="r1", route='/resource/v1/', controller=rc, action="index", conditions=dict(method=["GET"]))
+        
         d.connect(name="r2", route='/resource/v1/plugins/:id', controller=rc, action="getPlugins", conditions=dict(method=["GET"]))
         d.connect(name="r3", route='/resource/v1/media/:id', controller=rc, action="getMedia", conditions=dict(method=["GET"]))
         d.connect(name="r4", route='/resource/v1/item/:id', controller=rc, action="getItem", conditions=dict(method=["GET"]))
         d.connect(name="r5", route='/resource/v1/local/:name', controller=rc, action="getLocalResource", conditions=dict(method=["GET"]))
-        
+         
         d.connect(name="a1", route='/api/v1/encode', controller=ac, action="encodePhrase", conditions=dict(method=["GET"]))
         d.connect(name="a2", route='/api/v1/languages', controller=ac, action="getLanguages", conditions=dict(method=["GET"]))
         d.connect(name="a2.1", route='/api/v1/languages/:id', controller=ac, action="getLanguage", conditions=dict(method=["GET"]))
@@ -50,13 +46,13 @@ class Server():
         d.connect(name="a3.1", route='/api/v1/items/:id', controller=ac, action="getItem", conditions=dict(method=["GET"]))
         d.connect(name="a4", route='/api/v1/terms', controller=ac, action="getTerms", conditions=dict(method=["GET"]))
         d.connect(name="a4.1", route='/api/v1/terms/:id', controller=ac, action="getTerm", conditions=dict(method=["GET"]))
-        d.connect(name="i5", route='/api/v1/terms/delete/:id', controller=ac, action="deleteTerm", conditions=dict(method=["OPTIONS", "DELETE"]))
-        d.connect(name="i6", route='/api/v1/terms/save', controller=ac, action="saveTerms", conditions=dict(method=["OPTIONS", "POST"]))
-        
-        d.connect(name="i7.1", route='/api/v1/storage/:uuid/:key', controller=ac, action="getStorage", conditions=dict(method=["GET"]))
-        d.connect(name="i7.2", route='/api/v1/storage/:uuid/:key', controller=ac, action="saveStorage", conditions=dict(method=["POST"]))
-        d.connect(name="i7.3", route='/api/v1/storage/:uuid', controller=ac, action="allStorage", conditions=dict(method=["GET"]))
-        
+        d.connect(name="a5", route='/api/v1/terms/delete/:id', controller=ac, action="deleteTerm", conditions=dict(method=["OPTIONS", "DELETE"]))
+        d.connect(name="a6", route='/api/v1/terms/save', controller=ac, action="saveTerms", conditions=dict(method=["OPTIONS", "POST"]))
+         
+        d.connect(name="s7.1", route='/api/v1/storage/:uuid/:key', controller=ac, action="getStorage", conditions=dict(method=["GET"]))
+        d.connect(name="s7.2", route='/api/v1/storage/:uuid/:key', controller=ac, action="saveStorage", conditions=dict(method=["POST"]))
+        d.connect(name="s7.3", route='/api/v1/storage/:uuid', controller=ac, action="allStorage", conditions=dict(method=["GET"]))
+
         conf = {'/': {
                       'request.dispatch': d, 
                       'tools.CORS.on': True,
