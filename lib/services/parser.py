@@ -16,7 +16,6 @@ class BaseParser:
     
     def splitIntoTerms(self, sentence, regex):
         matches = regex.split(sentence)
-            
         return matches
     
     def splitIntoSentences(self, paragraph, regex):
@@ -63,6 +62,10 @@ class BaseParser:
         return content;
     
     def createTermNode(self, term, l1TermRegex):
+        if "__" in term:
+            fragmentNode = etree.Element(term)
+            return fragmentNode
+        
         termLower = term.lower()
         termNode = etree.Element("term",
                                  phrase = termLower,
@@ -159,7 +162,7 @@ class BaseParser:
             elif state==TermState.ToString(TermState.NotSeen).lower():
                 self.po.stats.uniqueNotSeen += 1
         
-    def applyTransform(self, document):
+    def applyTransform(self, document=None):
         xsltContent = None
         
         with open (os.path.join(Application.pathParsing, self.xsltFile), "r") as xsltFile:
@@ -167,6 +170,10 @@ class BaseParser:
 
         xslt = etree.XML(xsltContent)
         transform = etree.XSLT(xslt)
+        
+        if document is None:
+            return transform(etree.fromstring(self.po.xml))
+        
         return transform(document)
         
 class TextParser(BaseParser):
@@ -179,7 +186,10 @@ class TextParser(BaseParser):
         self.pi = parserInput
         self.po.item = parserInput.item
         
-        l1Paragraphs = self.splitIntoParagraphs(self.pi.item.getL1Content())
+        l1Content = self.pi.item.getL1Content()
+        l1Content, fragments = self.parseFragments(l1Content)
+        
+        l1Paragraphs = self.splitIntoParagraphs(l1Content)
         l2Paragraphs = self.splitIntoParagraphs(self.pi.item.getL2Content())
         
         l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
@@ -187,7 +197,7 @@ class TextParser(BaseParser):
         
         root = etree.Element("root")
         contentNode = self.createContentNode()
-
+        
         for i in range(0, len(l1Paragraphs)):
             l1Paragraph = l1Paragraphs[i]
             l2Paragraph = l2Paragraphs[i] if l2Paragraphs and self.pi.asParallel and i<len(l2Paragraphs) else ''
@@ -207,7 +217,7 @@ class TextParser(BaseParser):
                 terms = self.splitIntoTerms(sentence, l1TermRegex)
                 
                 for term in terms:
-                    if term=="":
+                    if term=="" or term is None:
                         continue
                     
                     sentenceNode.append(self.createTermNode(term, l1TermRegex))
@@ -222,17 +232,49 @@ class TextParser(BaseParser):
         self.addFrequencyData(root)
         self.calculateUniqueTerms(root)
                 
-        self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8") 
+        self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8").decode()
         
+        for fragment in fragments:
+            needle = "<__" + fragment.attrib["termId"] + "__/>"
+            replacement = etree.tostring(fragment, encoding="utf8").decode()
+            self.po.xml = self.po.xml.replace(needle, replacement)
+            
+        self.po.xml = self.po.xml.encode()
         htmlContent = None
         
         with open (os.path.join(Application.pathParsing, self.htmlFile), "r") as htmlFile:
             htmlContent = htmlFile.read()
             
-        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>").replace("<!-- webapi -->", Application.apiServer)
+        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform())) \
+                .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \
+                .replace("<!-- webapi -->", Application.apiServer)
         
         return self.po
+    
+    def parseFragments(self, content):
+        termRegex = re.compile(self.pi.language1.termRegex)
+        fragments = []
+        
+        for lower, t in self.pi.fragments.items():
+            root = etree.Element("fragment")
+            root.attrib["termId"] = str(t.termId)
+            root.attrib["lower"] = lower
+            root.attrib["state"] = TermState.ToString(t.state).lower()
+            root.attrib["definition"] = t.fullDefinition()
+            
+            terms = self.splitIntoTerms(t.phrase, termRegex)
+                
+            for term in terms:
+                if term is None or term=="":
+                    continue
+                
+                root.append(self.createTermNode(term, termRegex))
 
+            fragments.append(root)
+            content = content.replace(lower, "__" + str(t.termId) + "__")
+            
+        return (content, fragments)
+            
 class VideoParser(BaseParser):
     def __init__(self):
         super().__init__()

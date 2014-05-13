@@ -115,9 +115,19 @@
   </xsl:template>
   <xsl:template match="sentence">
     <p class="__sentence">
-      <xsl:apply-templates select="term"/>
+      <xsl:apply-templates />
     </p>
   </xsl:template>
+  <xsl:template match="fragment">
+        <span>
+        	<xsl:attribute name="class">
+        		<xsl:text>__fragment</xsl:text>
+        		<xsl:text> __</xsl:text>
+	            <xsl:value-of select="@state"/>
+        	</xsl:attribute>
+              <xsl:apply-templates />
+        </span>
+    </xsl:template>
   <xsl:template match="term">
     <xsl:choose>
       <xsl:when test="@isTerm='True'">

@@ -137,7 +137,7 @@ class ReaderWindow(QtGui.QDialog):
         pi.language1 = self.languageService.findOne(self.item.l1LanguageId)
         pi.language2 = self.languageService.findOne(self.item.l2LanguageId) if asParallel else None
         pi.asParallel = asParallel
-        pi.terms = self.termService.findAllByLanguage(self.item.l1LanguageId)
+        pi.terms, pi.multiTerms = self.termService.findAllForParsing(self.item.l1LanguageId)
         
         self.po = parser.parse(pi)
         self.po.save()

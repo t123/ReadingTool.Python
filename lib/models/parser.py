@@ -4,13 +4,14 @@ from lib.misc import Application
 class ParserInput:
     def __init__(self):
         self._terms = None
-        
+        self._multiTerms = None
         #self.html = ""
         self.item = None
         self.language1 = None
         self.language2 = None
         self.asParallel = False
         self.lookup = {}
+        self.fragments = {}
         
     @property
     def terms(self):
@@ -20,6 +21,15 @@ class ParserInput:
     def terms(self, value):
         self._terms = value
         self.lookup = dict((el.lowerPhrase, el) for el in value)
+        
+    @property
+    def multiTerms(self):
+        return self._multiTerms
+    
+    @multiTerms.setter
+    def multiTerms(self, value):
+        self._multiTerms = value
+        self.fragments = dict((el.lowerPhrase, el) for el in value)
         
 class ParserOutput:
     def __init__(self):

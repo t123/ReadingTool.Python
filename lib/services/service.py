@@ -319,6 +319,12 @@ class TermService:
                                         languageId=languageId, userId=Application.user.userId
                             )
         
+    def findAllForParsing(self, languageId):
+        terms = self.db.many(Term, "SELECT term.* FROM term term WHERE term.languageId=:languageId AND term.isFragment=0 AND term.userId=:userId", languageId=languageId, userId=Application.user.userId)
+        fragments = self.db.many(Term, "SELECT term.* FROM term term WHERE term.languageId=:languageId AND term.isFragment=1 AND term.State=2 AND term.userId=:userId", languageId=languageId, userId=Application.user.userId)
+        
+        return terms, fragments
+        
     def delete(self, termId):
         term = self.findOne(termId)
         if term is None:
