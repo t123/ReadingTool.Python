@@ -232,7 +232,7 @@ class TermService:
     def save(self, term):
         isNew = True
         if(term.termId == 0):
-            term.termId = self.db.execute("INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId)",
+            term.termId = self.db.execute("INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId, isFragment) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId, :isFragment)",
                             termId=None,
                             created=time.time(),
                             modified=time.time(),
@@ -244,7 +244,8 @@ class TermService:
                             languageId=term.languageId,
                             state=term.state,
                             userId=Application.user.userId,
-                            itemSourceId=term.itemSourceId
+                            itemSourceId=term.itemSourceId,
+                            isFragment=term.isFragment
                             )
         else:        
             isNew = False
@@ -663,3 +664,52 @@ class StorageService:
     
     def findAll(self, uuid):
         return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid=:uuid", uuid=uuid)
+    
+class DatabaseService:
+    def __init__(self):
+        self.db = Db(Application.connectionString)
+        self.storageService = StorageService()
+        
+    def tableExists(self, name):
+        return self.db.scalar("SELECT COUNT(name) FROM sqlite_master WHERE type='table' AND name=:name", name=name)
+    
+    def indexExist(self, name):
+        return self.db.scalar("SELECT COUNT(name) FROM sqlite_master WHERE type='index' AND name=:name", name=name)
+    
+    def upgradeRequired(self):
+        if not self.tableExists("storage"):
+            print("missing required table")
+            return True
+        
+        version = self.storageService.findOne("db_version")
+        
+        if version==None or version<Application.version:
+            print("Required dbversion: %d, your version: %d" % (Application.version, version or 0))
+            return True
+        
+        return False
+    
+    def upgradeDb(self):
+        if not self.tableExists("storage"):
+            print("create db")
+            
+        version = self.storageService.findOne("db_version")
+        
+        if version==None:
+            version = 0
+            print("perform all upgrades")
+            
+        if version<=1:
+            print("do version 1")
+            
+        if version<=2:
+            print("do version 2")
+            
+        if version<=3:
+            print("do version 3")
+            
+        if version<=4:
+            print("do version 4")
+            
+        if version<=5:
+            print("do version 5")
