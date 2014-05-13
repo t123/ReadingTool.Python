@@ -660,3 +660,6 @@ class StorageService:
     
     def findOne(self, key, uuid=""):
         return self.db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+    
+    def findAll(self, uuid):
+        return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid=:uuid", uuid=uuid)

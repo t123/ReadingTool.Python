@@ -502,3 +502,19 @@ class ApiV1Controller(object):
         cherrypy.response.headers["Content-Type"] = "application/json"
         
         return json.dumps(storage.value).encode()
+    
+    def allStorage(self, uuid):
+        if StringUtil.isEmpty(uuid):
+            raise cherrypy.HTTPError(403, "Invalid uuid")
+        
+        storageService = StorageService()
+        storage = storageService.findAll(uuid)
+        
+        cherrypy.response.status = 200
+        cherrypy.response.headers["Content-Type"] = "application/json"
+        
+        l = []
+        for s in storage:
+            l.append(s.toDict())
+            
+        return json.dumps(l).encode()

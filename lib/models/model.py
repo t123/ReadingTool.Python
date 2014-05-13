@@ -311,9 +311,27 @@ class Plugin():
         self.name = ""
         self.content = ""
         self.uuid = ""
+        
+    def toDict(self):
+        d = {}
+        d["pluginId"] = self.pluginId
+        d["description"] = self.description
+        d["name"] = self.name
+        d["content"] = self.content
+        d["uuid"] = self.uuid
+        
+        return d
 
 class Storage():
     def __init__(self):
         self.uuid = ""
         self.key = ""
-        self.value = ""    
+        self.value = ""
+        
+    def toDict(self):
+        d = {}
+        d["uuid"] = self.uuid
+        d["key"] = self.key
+        d["value"] = self.value
+        
+        return d  

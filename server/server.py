@@ -55,6 +55,7 @@ class Server():
         
         d.connect(name="i7.1", route='/api/v1/storage/:uuid/:key', controller=ac, action="getStorage", conditions=dict(method=["GET"]))
         d.connect(name="i7.2", route='/api/v1/storage/:uuid/:key', controller=ac, action="saveStorage", conditions=dict(method=["POST"]))
+        d.connect(name="i7.3", route='/api/v1/storage/:uuid', controller=ac, action="allStorage", conditions=dict(method=["GET"]))
         
         conf = {'/': {
                       'request.dispatch': d, 
