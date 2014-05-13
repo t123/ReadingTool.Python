@@ -97,6 +97,22 @@ textarea.changed, input.changed {
 	#reading span.__term.__temp {
         background-color: #91FFB4;
     }
+    
+#reading span.__fragment.__current {
+	border: 2px dashed red;
+}
+
+#reading span.__fragment.__known {
+	border: 2px solid black;
+}
+
+#reading span.__fragment.__unknown {
+	border: 2px solid #F5B8A9;
+}
+
+#reading span.__fragment.__ignored {
+	border: 2px solid #DAE5EB;
+}
 
 #popup {
     border: 1px solid black;

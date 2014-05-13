@@ -131,6 +131,8 @@ class Term():
         self.modified = None
         
         self._phrase = ""
+        self._isFragment = False
+        
         self.lowerPhrase = ""
         self.basePhrase = ""
         self.definition = ""
@@ -155,13 +157,24 @@ class Term():
         
     @property
     def phrase(self):
-        return self._phrase;
+        return self._phrase
     
     @phrase.setter
     def phrase(self, value):
-        self._phrase = value;
+        self._phrase = value
         self.lowerPhrase = (value or "").lower()
         
+        if " " in value:
+            self._isFragment = True
+        
+    @property
+    def isFragment(self):
+        return self._isFragment
+    
+    @isFragment.setter
+    def isFragment(self, value):
+        self._isFragment = value;
+    
     def toDict(self):
         d = {}
         d["termId"] = self.termId
@@ -178,6 +191,7 @@ class Term():
         d["itemSourceId"] = self.itemSourceId
         d["language"] = self.language
         d["itemSource"] = self.itemSource
+        d["isFragment"] = self.isFragment
         
         return d
         

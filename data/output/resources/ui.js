@@ -193,17 +193,57 @@
 		$.event.trigger("postDialogDataChanged", [$(e.target)]);
 	});
 	
-	$('#reading').on('click', 'span.__term', function(e) {
-		$.event.trigger("preTermClick", [e, $(this)]);
+	var mouseTrack = {};
+	mouseTrack.dragged = false;
+	mouseTrack.mouseDown = false;
+	mouseTrack.originalSpan = null;
+	
+	$('#reading') .on('mousedown', 'span.__term', function(e) {
+		mouseTrack.dragged = false;
+		mouseTrack.mouseDown = true;
+		mouseTrack.originalSpan = null;
+	});
+		
+	$('#reading').on('mousemove', 'span.__term', function(e) {
+		if(mouseTrack.mouseDown) {
+			mouseTrack.dragged = true;
+			
+			if(mouseTrack.originalSpan==null) {
+				mouseTrack.originalSpan = $(this);
+			}
+		}
+	});
+	
+	$('#reading').on('mouseup', 'span.__term', function(e) {
+		element = $(this);
+		
+		if(mouseTrack.dragged && element[0]!==mouseTrack.originalSpan[0]) {
+			fragment = window.lib.createFragment(mouseTrack.originalSpan, element);
+			
+			if(fragment==null) {
+				return;
+			}
+			
+			element = fragment;
+		} else {
+			if(element.parent()!=null && element.parent().hasClass('__fragment')) {
+				element = element.parent();
+			}
+		}
 		
 		if(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) {
 			return;
 		}
 		
-		reading.showModal($(this));
+		$.event.trigger("preTermClick", [e, $(this)]);
+		reading.showModal(element);
 		$.event.trigger("postTermClick", [e, $(this)]);
+		
+		mouseTrack.dragged = false;
+		mouseTrack.mouseDown = false;
+		mouseTrack.originalSpan = null;
 	});
-
+	
 	$('#dSave').click(function() {
 		reading.save();
 	});

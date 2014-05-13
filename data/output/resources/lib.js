@@ -2,6 +2,7 @@ function Lib(options) {
 	var self = this;
 	self.options = options;
 	self.currentElement = null;
+	self.isFragment = false;
 	
 	self.getOptions = function () {
         return self.options;
@@ -64,7 +65,12 @@ function Lib(options) {
     self.setCurrentElement = function(element) {
     	$.event.trigger("preSetCurrentElement", [element]);
     	self.currentElement = element;
+    	self.isFragment = element.hasClass('__fragment');
     	$.event.trigger("postSetCurrentElement", [element]);
+    };
+    
+    self.getIsFragment = function() {
+    	return self.isFragment;
     };
     
     /**
@@ -99,7 +105,26 @@ function Lib(options) {
     self.getCurrentWordAsText = function () {
     	current = self.getCurrentElement();
         
-    	if (current!=null && current.any()) {
+    	if(current==null || !current.any()) {
+    		return '';
+    	}
+    	
+    	if(self.getIsFragment()) {
+    		fragment = '';
+    		children = current.children();
+    		
+    		for(var i=0; i<children.length; i++) {
+    			child = $(children[i]);
+    			
+    			if (child[0].childNodes[0].nodeType == 3) {
+                    fragment += child[0].childNodes[0].nodeValue;
+                } else {
+                    fragment += child[0].childNodes[0].innerText;
+                }
+    		}
+    		
+    		return fragment;
+    	} else {
     		if (current[0].childNodes[0].nodeType == 3) {
                 return current[0].childNodes[0].nodeValue;
             } else {
@@ -207,7 +232,7 @@ function Lib(options) {
     	$.event.trigger("preResetTerm", [phrase, languageId]);
     	
     	$.ajax({
-            url: self.getWebAPI() + "/internal/v1/deleteterm",
+            url: self.getWebAPI() + "/internal/v1/delete",
             type: 'POST',
             data: {
                 phrase: phrase,
@@ -420,12 +445,14 @@ function Lib(options) {
     	elements.removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass("__" + state);
     	
     	if(state=="notseen") {
-    		$(elements).each(function (index) {
+    		elements.each(function (index) {
+    			var phrase = $(this).text();
                 $(this).html(phrase);
             });
     	} else {
     		if (definition.length > 0) {
                 elements.each(function (index) {
+                	phrase = $(this).text();
                     $(this).html(
                         (definition.length > 0 ? '<a rel="tooltip" title="' + definition + '">' : '') + phrase + (definition.length > 0 ? '</a>' : '')
                     );
@@ -441,4 +468,66 @@ function Lib(options) {
             }
     	}
     };
+    
+    self.updateFragmentState = function(phrase, state, definition) {
+    	element = self.getCurrentElement();
+    	element.removeClass('__known __unknown __ignored').addClass('__' + state);
+    };
+    
+    self.createFragment = function(startElement, stopElement) {
+		if(!startElement.hasClass("__term") || !stopElement.hasClass("__term")) { //Only terms
+			return null;
+		}
+		
+		if(startElement[0]===stopElement[0]) { //On the same node
+			return null;
+		}
+		
+		if(startElement.parent()[0]!==stopElement.parent()[0]) { //Different sentences
+			return null;
+		}
+		
+		if( (startElement[0].offsetTop==stopElement[0].offsetTop && startElement[0].offsetLeft>stopElement[0].offsetLeft) || 
+			stopElement[0].offsetTop<startElement[0].offsetTop
+			) { //Selected backwards, same height, further on OR anywhere above
+			var temp = startElement;
+			startElement = stopElement;
+			stopElement = temp;
+		}
+		
+		startElement.addClass("__temp_fragment");
+		startElement.nextUntil(stopElement).addClass("__temp_fragment");
+		stopElement.addClass("__temp_fragment");
+		
+		var inFragment = false;
+		$('.__temp_fragment').each(function() { //Piece is already in a fragment
+			if($(this).parent().hasClass('__fragment')) {
+				inFragment = true;
+			}
+		});
+		
+		if(inFragment) {
+			return null;
+		}
+		
+		$('.__temp_fragment').wrapAll('<span class="__fragment"> </span>')
+		$('.__temp_fragment').removeClass('__temp_fragment');
+		
+		return startElement.parent();
+	};
+	
+	self.deleteFragment = function(element) {
+		//$('.__fragment.__current')
+		if(!element.hasClass('__fragment')) {
+			return;
+		}
+		
+		if(element.prev().any()) {
+			element.prev().after(element.children());
+		} else {
+			element.parent().prepend(element.children());
+		}
+		
+		element.remove();
+	};
 }

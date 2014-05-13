@@ -192,7 +192,11 @@
         var tempDef = data.basePhrase.length > 0 ? data.basePhrase + "<br/>" : '';
         if (data.definition.length > 0) tempDef += data.definition.replace(/\n/g, '<br />');
         
-        window.lib.updateElementState(data.phrase, data.state, tempDef);
+        if(window.lib.getIsFragment()) {
+        	window.lib.updateFragmentState(data.phrase, data.state, tempDef);
+        } else {
+        	window.lib.updateElementState(data.phrase, data.state, tempDef);
+        }
         
         if(optional.close) {
         	self.closeModal();
@@ -213,7 +217,12 @@
             self.setDMessage('Term reset');
         }
 
-        window.lib.updateElementState(phrase, 'notseen', '');
+        if(window.lib.getIsFragment()) {
+        	var current = window.lib.getCurrentElement();
+        	current.removeClass('__unknown __known __ignored');
+        } else {
+        	window.lib.updateElementState(phrase, 'notseen', '');
+        }
     };
     
     self._resetFail = function(data, status,xhr) {
@@ -346,6 +355,14 @@
 
         self.hasChanged = false;
         self.modal.hide();
+        
+        if(window.lib.getIsFragment()) {
+        	var current = window.lib.getCurrentElement();
+        	
+        	if(!current.hasClass('__known') && !current.hasClass('__unknown') && !current.hasClass('__ignored')) {
+        		window.lib.deleteFragment(current);
+        	}
+        }
 
         $.event.trigger("postCloseModal");
     };

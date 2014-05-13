@@ -3,6 +3,7 @@ from datetime import datetime
 from lib.models.model import User
 
 class Application:
+    version = 3
     user = User()
     
     path = os.path.abspath(
