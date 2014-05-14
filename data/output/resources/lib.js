@@ -566,7 +566,12 @@ function Lib(options) {
     	element = self.getCurrentElement();
     	
     	if(definition.length>0) {
-    		element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');
+    		if(element.children('a').any()) {
+    			var tooltip = element.children('a').first();
+    			tooltip.prop('title', definition);
+    		} else {
+    			element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');    			
+    		}
     	}
     	
     	element.removeClass('__known __unknown __ignored').addClass('__' + state);
