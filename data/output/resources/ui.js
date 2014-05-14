@@ -1,4 +1,14 @@
-﻿$(function() {
+﻿window.onerror = function(msg, url, line) {
+		console.error(line, msg);
+		alert('An unhandled error has occurred. You might want to reload the page. See the console for more information.')
+		return false;
+	};
+	
+$(function() {
+	cl = function() {
+		return console.log.apply(console, arguments); 
+	};
+	
 	jQuery.ajaxSettings.traditional = true;
 	jQuery.support.cors = true;
 	window.reading = undefined;
@@ -36,8 +46,8 @@
 				},
 				swfPath : webApiEndPoint + "/resource/v1/local/Jplayer.swf",
 				supplied : "mp3",
-				// warningAlerts: true,
-				// errorAlerts: true,
+				//warningAlerts: true,
+				//errorAlerts: true,
 				solution : "flash",
 				wmode : "window"
 			});
@@ -234,12 +244,12 @@
 			}
 		}
 		
-		if(e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) {
-			return;
+		$.event.trigger("preTermClick", [e, $(this)]);
+		
+		if(!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+			reading.showModal(element);
 		}
 		
-		$.event.trigger("preTermClick", [e, $(this)]);
-		reading.showModal(element);
 		$.event.trigger("postTermClick", [e, $(this)]);
 		
 		mouseTrack.dragged = false;
