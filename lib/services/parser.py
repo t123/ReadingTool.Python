@@ -1,4 +1,4 @@
-import os, re, datetime, math
+import os, re, datetime, math, logging
 from lxml import etree
 from lib.services.service import UserService, ItemService, LanguageService, TermService
 from lib.models.model import User, Item, Language, LanguageDirection, TermState, ItemType
@@ -181,9 +181,11 @@ class BaseParser:
         transform = etree.XSLT(xslt)
         
         if document is None:
-            return transform(etree.fromstring(self.po.xml))
+            result = transform(etree.fromstring(self.po.xml))
+        else:
+            result = transform(document)
         
-        return transform(document)
+        return result
         
     def parseFragments(self, content):
         termRegex = re.compile(self.pi.language1.termRegex)
@@ -283,31 +285,20 @@ class TextParser(BaseParser):
         self.addFrequencyData(root)
         self.calculateUniqueTerms(root)
                 
-        self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8").decode()
-        
-        for key, fragment in fragments.items():
-            pass
-            #print("%s=%s" % (key,fragment))
-            #===================================================================
-            # needle = "<__" + fragment.attrib["termId"] + "__/>"
-            # replacement = etree.tostring(fragment, encoding="utf8").decode()
-            # 
-            # matches = re.findall(needle, self.po.xml, re.IGNORECASE)
-            # 
-            # for match in matches:
-            #     self.po.xml = self.po.xml.replace(needle, replacement)
-            #===================================================================
-            
-        self.po.xml = self.po.xml.encode()
+        self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8")
         htmlContent = None
         
         with open (os.path.join(Application.pathParsing, self.htmlFile), "r") as htmlFile:
             htmlContent = htmlFile.read()
             
-        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform())) \
+        #WTF?? Newlines in XSLT transform cause extra spaces around punctuation. If anyone wants
+        #to try fix that... 
+        transform = re.sub("span>\s+<span", "span><span", str(self.applyTransform()))
+        
+        self.po.html = htmlContent.replace("<!-- table -->", transform) \
                 .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \
                 .replace("<!-- webapi -->", Application.apiServer)
-        
+                
         return self.po
     
 class VideoParser(BaseParser):
@@ -409,5 +400,6 @@ class VideoParser(BaseParser):
             htmlContent = htmlFile.read()
             
         self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>").replace("<!-- webapi -->", Application.apiServer)
+        self.po.html = re.sub("span>\s+<span", "span><span", self.po.html)
         
         return self.po

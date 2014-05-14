@@ -1,7 +1,6 @@
 <?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-  <xsl:output method="html" omit-xml-declaration="yes" indent="no"/>
-  <xsl:strip-space elements="*"/> 
+  <xsl:output method="html" omit-xml-declaration="yes" indent="yes" />
   <xsl:template match="/root">
     <xsl:apply-templates select="content"/>
   </xsl:template>
@@ -111,32 +110,40 @@
     </td>
   </xsl:template>
   <xsl:template match="sentence">
-    <p class="__sentence"><xsl:apply-templates /></p>
+    <p class="__sentence">
+      <xsl:apply-templates />
+    </p>
   </xsl:template>
   <xsl:template match="fragment">
-        <span><xsl:attribute name="class"><xsl:text>__fragment</xsl:text>
+        <span>
+        	<xsl:attribute name="class">
+        		<xsl:text>__fragment</xsl:text>
         		<xsl:text> __</xsl:text><xsl:value-of select="@state"/>
         		<xsl:text> __</xsl:text><xsl:value-of select="@termId"/>
         	</xsl:attribute>
         	<xsl:attribute name="data-termid">
         		<xsl:value-of select="@termId"/>
-       		</xsl:attribute><xsl:choose>
+       		</xsl:attribute>
+        	<xsl:choose>
         	<xsl:when test="@definition">
               <a rel="tooltip">
-                <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute><xsl:apply-templates />
+                <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute>
+                <xsl:apply-templates />
               </a>
             </xsl:when> 
-            <xsl:otherwise><xsl:apply-templates />
+            <xsl:otherwise>
+              <xsl:apply-templates />
             </xsl:otherwise>
-          </xsl:choose></span>
+          </xsl:choose>
+        </span>
   </xsl:template>
   <xsl:template match="term">
     <xsl:choose> 
       <xsl:when test="@isTerm='True'">
-      <span><xsl:attribute name="class">
+        <span>
+          <xsl:attribute name="class">
             <xsl:text>__term</xsl:text>
-            <xsl:text> __</xsl:text>
-            <xsl:value-of select="@phraseClass"/>
+            <xsl:text> __</xsl:text><xsl:value-of select="@phraseClass"/>
             <xsl:choose>
             	<xsl:when test="ancestor::fragment">
             		<xsl:text> __</xsl:text><xsl:value-of select="@state"/><xsl:text>_t</xsl:text>
@@ -177,19 +184,15 @@
             <xsl:otherwise>
               <xsl:value-of select="."/>
             </xsl:otherwise>
-          </xsl:choose></span>
+          </xsl:choose>
+        </span>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:choose>
-	        <xsl:when test="@isWhitespace='True'">
-	        	<span class="__punctuation __whitespace">&#160;</span>
-	        </xsl:when>
-	        <xsl:otherwise>
-	        <span class="__punctuation">
-	        	<xsl:value-of select="."/>
-	        </span>
-	        </xsl:otherwise>
-        </xsl:choose>
+        <span>
+          <xsl:attribute name="class">__punctuation <xsl:if test="@isWhitespace='True'"> __whitespace</xsl:if>
+          </xsl:attribute>
+          <xsl:value-of select="."/>
+        </span>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
