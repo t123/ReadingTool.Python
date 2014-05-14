@@ -10,14 +10,22 @@ from lib.services.service import ItemService, LanguageService, TermService
 from ui.views.reader import Ui_ReadingWindow
 
 class Javascript(QtCore.QObject):
-    def __init__(self, po=None):
+    def __init__(self, po=None, messageLabel=None):
         super().__init__()
         self.po = po
+        self.messageLabel = messageLabel
         
     @QtCore.pyqtSlot(str)
     def copyToClipboard(self, message):
         clipboard = QtGui.QApplication.clipboard()
         clipboard.setText(message)
+        
+    @QtCore.pyqtSlot(str)
+    def setMessage(self, message):
+        if self.messageLabel is None:
+            return
+        
+        self.messageLabel.setText(message)
         
     @QtCore.pyqtSlot(float, result=int)
     def getSrtL1(self, message):
@@ -189,7 +197,7 @@ class ReaderWindow(QtGui.QDialog):
         self.ui.lblMessage.setText("Item %s %d times." % (msg, value))
         
     def loadJs(self):
-        self.js = Javascript(self.po)
+        self.js = Javascript(self.po, self.ui.lblMessage)
         frame = self.webView.page().mainFrame()
         frame.addToJavaScriptWindowObject("rtjscript", self.js)
         

@@ -201,18 +201,36 @@ function Lib(options) {
      * @return {sentence}
     */
     self.getSentence = function () {
-        if (!self.getCurrentElement().any()) {
+    	current = self.getCurrentElement(); 
+        if (!current.any()) {
             return '';
         }
 
-        var sentence = '';
-        var children = self.getCurrentElement().parent('p.__sentence').children('span');
+        parent = element.parent('p.__sentence');
+        var sentence = self._sentenceText(parent); 
+        
+        if(sentence.length<30) {
+        	previous = parent.prev('.__sentence');
+        	sentence = self._sentenceText(previous) + sentence; 
+        }
+        
+        if(sentence.length<30) {
+        	next = parent.next('.__sentence');
+        	sentence += self._sentenceText(next); 
+        }
+        
+        return sentence.trim();
+    };
+    
+    self._sentenceText = function(element) {
+    	var sentence = '';
+    	var children = element.children('span');
 
         for (var i = 0; i < children.length; i++) {
             sentence += $(children[i]).text();
         }
 
-        return sentence.trim();
+        return sentence;    	
     };
     
     //AJAX calls
@@ -462,17 +480,29 @@ function Lib(options) {
     };
     
     //FUNCTIONS
+    self.hasEmbeddedScript = function() {
+    	if(typeof rtjscript==='undefined') {
+        	console.log("rtjscript undefined");
+        	return false;
+        }
+    	
+    	return true;
+    };
+    
     self.copyToClipboard = function (toCopy) {
     	$.event.trigger("preCopyToClipboard");
 
-        if(typeof rtjscript==='undefined') {
-        	console.log("rtjscript undefined");
-        	return;
-        } 
-        
-        rtjscript.copyToClipboard(toCopy);
+        if(self.hasEmbeddedScript()) {
+        	rtjscript.copyToClipboard(toCopy);
+        }
 
         $.event.trigger("postCopyToClipboard", [toCopy]);
+    };
+    
+    self.sendMessage = function(message) {
+    	if(self.hasEmbeddedScript()) {
+        	rtjscript.setMessage(message);
+        }
     };
 
     self.selectText = function (element) {

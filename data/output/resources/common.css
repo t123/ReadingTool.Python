@@ -99,7 +99,7 @@ textarea.changed, input.changed {
     }
     
 #reading span.__fragment.__current {
-	background-color: yellow;
+	background-color: #FFE97F;
 }
 
 #reading span.__fragment.__known {

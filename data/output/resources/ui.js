@@ -198,7 +198,7 @@
 	mouseTrack.mouseDown = false;
 	mouseTrack.originalSpan = null;
 	
-	$('#reading') .on('mousedown', 'span.__term', function(e) {
+	$('#reading').on('mousedown', 'span.__term', function(e) {
 		mouseTrack.dragged = false;
 		mouseTrack.mouseDown = true;
 		mouseTrack.originalSpan = null;
@@ -207,6 +207,7 @@
 	$('#reading').on('mousemove', 'span.__term', function(e) {
 		if(mouseTrack.mouseDown) {
 			mouseTrack.dragged = true;
+			$('body').css('cursor', 'copy');
 			
 			if(mouseTrack.originalSpan==null) {
 				mouseTrack.originalSpan = $(this);
@@ -215,6 +216,7 @@
 	});
 	
 	$('#reading').on('mouseup', 'span.__term', function(e) {
+		$('body').css('cursor', 'auto');
 		element = $(this);
 		
 		if(mouseTrack.dragged && element[0]!==mouseTrack.originalSpan[0]) {

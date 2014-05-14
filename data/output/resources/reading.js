@@ -56,6 +56,7 @@
         self.setDState(data.state);
         self.setDBase(data.basePhrase);
         self.setDDefinition(data.definition);
+        self.setFocus($('#dDefinition'))
         
         self.setHasChanged(false);
     };
@@ -64,12 +65,19 @@
     	if (data.status == 404) {
             self.setDPhrase(phrase);
             self.setDState('unknown');
-            self.setDBase('');
             self.setDDefinition('');
             self.setDSentence(window.lib.getSentence());
             self.changed($('#dSentence'));
 
             self.setDMessage('New word, defaulting to unknown');
+            
+            if(window.lib.getIsFragment()) {
+            	self.setDBase(phrase);
+            	self.setFocus($('#dDefinition'))
+            } else {
+            	self.setFocus($('#dBase'))
+            	self.setDBase('');
+            }
 
             self.setHasChanged(false);
         } else {
