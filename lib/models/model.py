@@ -79,7 +79,7 @@ class User():
         self.syncData = False
         
 class Language():
-    TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\\'-]+)"
+    TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\\'-]+)|(__\d+__)"
     SENTENCE_REGEX = "[^\\.!\\?]+[\\.!\\?\\n]+"
     
     def __init__(self):
