@@ -119,7 +119,11 @@
         	<xsl:attribute name="class">
         		<xsl:text>__fragment</xsl:text>
         		<xsl:text> __</xsl:text><xsl:value-of select="@state"/>
+        		<xsl:text> __</xsl:text><xsl:value-of select="@termId"/>
         	</xsl:attribute>
+        	<xsl:attribute name="data-termid">
+        		<xsl:value-of select="@termId"/>
+       		</xsl:attribute>
         	<xsl:choose>
         	<xsl:when test="@definition">
               <a rel="tooltip">

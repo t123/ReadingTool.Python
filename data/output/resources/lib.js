@@ -201,7 +201,8 @@ function Lib(options) {
      * @return {sentence}
     */
     self.getSentence = function () {
-    	current = self.getCurrentElement(); 
+    	current = self.getCurrentElement();
+    	
         if (!current.any()) {
             return '';
         }
@@ -575,16 +576,33 @@ function Lib(options) {
     self.updateFragmentState = function(phrase, state, definition) {
     	element = self.getCurrentElement();
     	
-    	if(definition.length>0) {
-    		if(element.children('a').any()) {
-    			var tooltip = element.children('a').first();
-    			tooltip.prop('title', definition);
-    		} else {
-    			element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');    			
+    	if(element.data('termid')!=null) {
+    		termId = element.data('termid');
+    		$('.__' + termId).removeClass('__known __unknown __ignored').addClass('__' + state);
+    		
+    		if(definition.length>0) {
+	    		$('.__' + termId).each(function() {
+	    			element = $(this);
+	    			if(element.children('a').any()) {
+		    			var tooltip = element.children('a').first();
+		    			tooltip.prop('title', definition);
+		    		} else {
+		    			element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');    			
+		    		}
+	    		});
     		}
+    	} else {
+	    	if(definition.length>0) {
+	    		if(element.children('a').any()) {
+	    			var tooltip = element.children('a').first();
+	    			tooltip.prop('title', definition);
+	    		} else {
+	    			element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');    			
+	    		}
+	    	}
+	    	
+	    	element.removeClass('__known __unknown __ignored').addClass('__' + state);
     	}
-    	
-    	element.removeClass('__known __unknown __ignored').addClass('__' + state);
     };
     
     self.createFragment = function(startElement, stopElement) {
