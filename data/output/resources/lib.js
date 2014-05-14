@@ -585,10 +585,10 @@ function Lib(options) {
 	    			element = $(this);
 	    			if(element.children('a').any()) {
 		    			var tooltip = element.children('a').first();
-		    			tooltip.prop('title', definition);
-		    		} else {
-		    			element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');    			
+		    			element.html(tooltip.contents());
 		    		}
+	    			
+	    			element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');    			
 	    		});
     		}
     	} else {
