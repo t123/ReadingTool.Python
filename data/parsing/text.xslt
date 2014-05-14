@@ -132,7 +132,7 @@
             </xsl:otherwise>
           </xsl:choose>
         </span>
-    </xsl:template>
+  </xsl:template>
   <xsl:template match="term">
     <xsl:choose> 
       <xsl:when test="@isTerm='True'">

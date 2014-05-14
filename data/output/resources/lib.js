@@ -524,6 +524,16 @@ function Lib(options) {
     };
     
     self.phraseToClass = function (phrase) {
+    	if(phrase==null) {
+    		console.log('Phrase is null.');
+    		return '__';
+    	}
+    	
+    	if(typeof phrase !== 'string') {
+    		console.log('Phrase is not a string.');
+    		return '__';
+    	}
+    	
         return phrase.toLowerCase().replace("'", "_").replace('"', "_");
     };
     

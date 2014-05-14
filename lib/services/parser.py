@@ -61,10 +61,17 @@ class BaseParser:
         
         return content;
     
-    def createTermNode(self, term, l1TermRegex):
+    def createTermNode(self, term, l1TermRegex, fragments):
         if "__" in term:
-            fragmentNode = etree.Element(term)
-            return fragmentNode
+            if fragments is not None and term in fragments:
+                #fragmentNode = etree.Element(term)
+                return fragments[term]
+            
+            print("missing: %s" % term)
+            for k, v in fragments.items():
+                print("%s" %k)
+            
+            return None
         
         termLower = term.lower()
         termNode = etree.Element("term")
@@ -178,6 +185,48 @@ class BaseParser:
         
         return transform(document)
         
+    def parseFragments(self, content):
+        termRegex = re.compile(self.pi.language1.termRegex)
+        
+        mdict = { }
+        rdict = { }
+        counter = 0
+        
+        for lower, t in self.pi.fragments.items():
+            matches = re.findall(lower, content, re.IGNORECASE) 
+            
+            if len(matches)==0:
+                continue
+            
+            for match in matches:
+                if not match in mdict:
+                    root = etree.Element("fragment")
+                    root.attrib["termId"] = str(t.termId)
+                    root.attrib["lower"] = lower
+                    root.attrib["phrase"] = match
+                    root.attrib["state"] = TermState.ToString(t.state).lower()
+                    
+                    definition = t.fullDefinition()
+                    
+                    if not StringUtil.isEmpty(definition):
+                        root.attrib["definition"] = t.fullDefinition()
+                    
+                    terms = self.splitIntoTerms(match, termRegex)
+                        
+                    for term in terms:
+                        if term is None or term=="":
+                            continue
+                        
+                        root.append(self.createTermNode(term, termRegex, None))
+        
+                    mdict[match] = root
+                    rdict["__" + str(counter) + "__"]  = root
+                    content = content.replace(match, "__" + str(counter) + "__")
+                    counter += 1
+                    #print(etree.tostring(root, encoding="utf8").decode())
+            
+        return (content, rdict)
+
 class TextParser(BaseParser):
     def __init__(self):
         super().__init__()
@@ -222,7 +271,7 @@ class TextParser(BaseParser):
                     if term=="" or term is None:
                         continue
                     
-                    sentenceNode.append(self.createTermNode(term, l1TermRegex))
+                    sentenceNode.append(self.createTermNode(term, l1TermRegex, fragments))
                     
                 l1ParagraphNode.append(sentenceNode)
                 
@@ -236,10 +285,18 @@ class TextParser(BaseParser):
                 
         self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8").decode()
         
-        for fragment in fragments:
-            needle = "<__" + fragment.attrib["termId"] + "__/>"
-            replacement = etree.tostring(fragment, encoding="utf8").decode()
-            self.po.xml = self.po.xml.replace(needle, replacement)
+        for key, fragment in fragments.items():
+            pass
+            #print("%s=%s" % (key,fragment))
+            #===================================================================
+            # needle = "<__" + fragment.attrib["termId"] + "__/>"
+            # replacement = etree.tostring(fragment, encoding="utf8").decode()
+            # 
+            # matches = re.findall(needle, self.po.xml, re.IGNORECASE)
+            # 
+            # for match in matches:
+            #     self.po.xml = self.po.xml.replace(needle, replacement)
+            #===================================================================
             
         self.po.xml = self.po.xml.encode()
         htmlContent = None
@@ -253,34 +310,6 @@ class TextParser(BaseParser):
         
         return self.po
     
-    def parseFragments(self, content):
-        termRegex = re.compile(self.pi.language1.termRegex)
-        fragments = []
-        
-        for lower, t in self.pi.fragments.items():
-            root = etree.Element("fragment")
-            root.attrib["termId"] = str(t.termId)
-            root.attrib["lower"] = lower
-            root.attrib["state"] = TermState.ToString(t.state).lower()
-            
-            definition = t.fullDefinition()
-            
-            if not StringUtil.isEmpty(definition):
-                root.attrib["definition"] = t.fullDefinition()
-            
-            terms = self.splitIntoTerms(t.phrase, termRegex)
-                
-            for term in terms:
-                if term is None or term=="":
-                    continue
-                
-                root.append(self.createTermNode(term, termRegex))
-
-            fragments.append(root)
-            content = content.replace(lower, "__" + str(t.termId) + "__")
-            
-        return (content, fragments)
-            
 class VideoParser(BaseParser):
     def __init__(self):
         super().__init__()
