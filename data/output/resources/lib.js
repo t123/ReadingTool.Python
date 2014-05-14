@@ -4,11 +4,64 @@ function Lib(options) {
 	self.currentElement = null;
 	self.isFragment = false;
 	
+	self.navTerms = { }
+	
 	self.getOptions = function () {
         return self.options;
     };
     
     //MANIPULATION OF CURRENT ELEMENT
+    
+    self.setNextPrev = function() {
+    	var elements = $('span.__term.__notseen,span.__term.__unknown');
+		var current = self.getCurrentElement();
+		var lower = current.data('lower');
+		
+		if(!current.any()) {
+			return;
+		}
+		
+		if(elements.length<=1) {
+			return;
+		} 
+		
+    	self.navTerms.left = null;
+    	self.navTerms.right = null;
+    	
+		for(var i=0; i<elements.length; i++) {
+			var el = $(elements[i]);
+			
+			if(el.hasClass('__current')) {
+				j = i;
+				
+				while(j-1>0) {
+					prev = $(elements[j-1]);
+					
+					if(prev.data('lower')!=lower) {
+						self.navTerms.left = prev;
+						j = -999;
+					}
+					
+					j--;
+				}
+				
+				j = i;
+				
+				while(j+1<elements.length) {
+					next = $(elements[j+1]);
+					
+					if(next.data('lower')!=lower) {
+						self.navTerms.right = next;
+						j = elements.length+999;
+					}
+					
+					j++;
+				}
+				
+				return;
+			}
+		}
+    };
     
     /**
      * Returns the first unknown or unseen element to the left of the current element
@@ -26,7 +79,9 @@ function Lib(options) {
 			}
 		}
 		
-		return null;
+    	if(self.navTerms.left!=null) {
+    		return self.navTerms.left;
+    	}
     };
 
     /**
@@ -45,7 +100,9 @@ function Lib(options) {
 			}
 		}
 		
-		return null;
+		if(self.navTerms.right!=null) {
+    		return self.navTerms.right;
+    	}
     };
     
     /**
@@ -93,6 +150,7 @@ function Lib(options) {
             var current = self.getCurrentSelected();
             current.removeClass('__current');
             element.addClass('__current');
+            self.setNextPrev();
             $.event.trigger("postSetCurrentSelected", [element]);
         }
     };
