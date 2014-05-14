@@ -11,7 +11,10 @@ function Lib(options) {
     };
     
     //MANIPULATION OF CURRENT ELEMENT
-    
+    /**
+     * Caches the previous/next element in case the current element changes state and can't be found
+     * @method setNextPrev
+     */
     self.setNextPrev = function() {
     	var elements = $('span.__term.__notseen,span.__term.__unknown');
 		var current = self.getCurrentElement();
@@ -608,6 +611,29 @@ function Lib(options) {
 			return;
 		}
 		
+		element.find('.__term,.__punctuation').each(function() {
+			if($(this).hasClass('__known_t')) {
+				$(this).addClass('__known').removeClass('__known_t');
+			}
+			
+			if($(this).hasClass('__unknown_t')) {
+				$(this).addClass('__unknown').removeClass('__unknown_t');
+			}
+			
+			if($(this).hasClass('__ignored_t')) {
+				$(this).addClass('__ignored').removeClass('__ignored_t');
+			}
+			
+			if($(this).hasClass('__notseen_t')) {
+				$(this).addClass('__notseen').removeClass('__notseen_t');
+			}
+			
+			if($(this).hasClass('__current')) {
+				$(this).removeClass('__current');
+			}		
+		});
+		
+    	
 		if(element.prev().any()) {
 			element.prev().after(element.find('.__term,.__punctuation'));
 		} else {

@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-  <xsl:output method="html" omit-xml-declaration="yes" />
+  <xsl:output method="html" omit-xml-declaration="yes" indent="yes" />
   <xsl:template match="/root">
     <xsl:apply-templates select="content"/>
   </xsl:template>
@@ -139,17 +139,24 @@
         <span>
           <xsl:attribute name="class">
             <xsl:text>__term</xsl:text>
-            <xsl:text> __</xsl:text><xsl:value-of select="@state"/>
             <xsl:text> __</xsl:text><xsl:value-of select="@phraseClass"/>
-            <xsl:if test="string-length(@definition)>0 and @state='known'">
-              <xsl:text> __kd</xsl:text>
-            </xsl:if>
-            <xsl:if test="string-length(@definition)>0 and @state='ignored'">
-              <xsl:text> __id</xsl:text>
-            </xsl:if>
-            <xsl:if test="string-length(@definition)>0 and @state='unknown'">
-              <xsl:text> __ud</xsl:text>
-            </xsl:if>
+            <xsl:choose>
+            	<xsl:when test="ancestor::fragment">
+            		<xsl:text> __</xsl:text><xsl:value-of select="@state"/><xsl:text>_t</xsl:text>
+            	</xsl:when>
+            	<xsl:otherwise>
+            		<xsl:text> __</xsl:text><xsl:value-of select="@state"/>
+            		<xsl:if test="string-length(@definition)>0 and @state='known'">
+		            <xsl:text> __kd</xsl:text>
+		            </xsl:if>
+		            <xsl:if test="string-length(@definition)>0 and @state='ignored'">
+		              <xsl:text> __id</xsl:text>
+		            </xsl:if>
+		            <xsl:if test="string-length(@definition)>0 and @state='unknown'">
+		              <xsl:text> __ud</xsl:text>
+		            </xsl:if>
+            	</xsl:otherwise> 
+            </xsl:choose>
             <xsl:if test="@commonness">
               <xsl:text> __</xsl:text><xsl:value-of select="@commonness"/>
             </xsl:if>
