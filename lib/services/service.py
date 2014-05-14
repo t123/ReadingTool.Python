@@ -1,4 +1,4 @@
-import time, uuid, re
+import time, uuid, re, logging
 from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, ItemType, TermType, Plugin, LanguagePlugin, TermState, Storage
 from lib.db import Db
 from lib.misc import Application
@@ -658,6 +658,7 @@ class StorageService:
         self.db = Db(Application.connectionString)
         
     def save(self, key, value, uuid=""):
+        """Inserts a new value or replaces an existing if the key already exists"""
         s = self.findOne(key, uuid)
             
         if s==None:
@@ -666,10 +667,16 @@ class StorageService:
             self.db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
     
     def findOne(self, key, uuid=""):
+        """Returns the storage object for a given key and UUID"""
         return self.db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
     
     def findAll(self, uuid):
+        """Returns all the storage objects for a given UUID"""
         return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid=:uuid", uuid=uuid)
+    
+    def find(self, key, uuid=""):
+        """Returns the storage value for a given key and UUID"""
+        return self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
     
 class DatabaseService:
     def __init__(self):
@@ -684,38 +691,38 @@ class DatabaseService:
     
     def upgradeRequired(self):
         if not self.tableExists("storage"):
-            print("missing required table")
+            logging.debug("missing required table")
             return True
         
         version = self.storageService.findOne("db_version")
         
         if version==None or version<Application.version:
-            print("Required dbversion: %d, your version: %d" % (Application.version, version or 0))
+            logging.debug("Required dbversion: %d, your version: %d" % (Application.version, version or 0))
             return True
         
         return False
     
     def upgradeDb(self):
         if not self.tableExists("storage"):
-            print("create db")
+            logging.debug("create db")
             
         version = self.storageService.findOne("db_version")
         
         if version==None:
             version = 0
-            print("perform all upgrades")
+            logging.debug("perform all upgrades")
             
         if version<=1:
-            print("do version 1")
+            logging.debug("do version 1")
             
         if version<=2:
-            print("do version 2")
+            logging.debug("do version 2")
             
         if version<=3:
-            print("do version 3")
+            logging.debug("do version 3")
             
         if version<=4:
-            print("do version 4")
+            logging.debug("do version 4")
             
         if version<=5:
-            print("do version 5")
+            logging.debug("do version 5")
