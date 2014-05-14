@@ -216,6 +216,7 @@
 	});
 	
 	$('#reading').on('mouseup', 'span.__term', function(e) {
+		mouseTrack.mouseDown = false;
 		$('body').css('cursor', 'auto');
 		element = $(this);
 		
@@ -242,7 +243,6 @@
 		$.event.trigger("postTermClick", [e, $(this)]);
 		
 		mouseTrack.dragged = false;
-		mouseTrack.mouseDown = false;
 		mouseTrack.originalSpan = null;
 	});
 	

@@ -610,6 +610,7 @@ function Lib(options) {
 		});
 		
 		if(inFragment) {
+			$('.__temp_fragment').removeClass('__temp_fragment');
 			return null;
 		}
 		
