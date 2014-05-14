@@ -1,4 +1,4 @@
-import cherrypy, json, urllib, os, time
+import cherrypy, json, urllib, os, time, threading
 from lib.models.model import TermState, Term, Item, TermType
 from lib.services.service import TermService, ItemService, PluginService, LanguageService, StorageService
 from lib.misc import Application, Time
@@ -107,17 +107,7 @@ class InternalController(object):
         cherrypy.response.headers["Content-Type"] = "application/json"
         return json.dumps(term.toDict()).encode()
             
-    def markAllAsKnown(self):
-        if cherrypy.request.method=="OPTIONS":
-            cherrypy.response.status = 200
-            return
-        
-        cherrypy.response.status = "200"
-        cherrypy.response.headers["Content-Type"] = "text/plain"
-        
-        length = cherrypy.request.headers['Content-Length']
-        raw = cherrypy.request.body.read(int(length)).decode()
-        data = json.loads(raw)
+    def backgroundMarkAllAsKnown(self, data):
         termService = TermService()
         counter = 0
         
@@ -138,6 +128,26 @@ class InternalController(object):
                 
             except:
                 continue
+            
+        return counter
+    
+    def markAllAsKnown(self):
+        if cherrypy.request.method=="OPTIONS":
+            cherrypy.response.status = 200
+            return
+        
+        cherrypy.response.status = "200"
+        cherrypy.response.headers["Content-Type"] = "text/plain"
+        
+        length = cherrypy.request.headers['Content-Length']
+        raw = cherrypy.request.body.read(int(length)).decode()
+        data = json.loads(raw)
+        
+        #bit dangerous
+        #thread = threading.Thread(target=self.backgroundMarkAllAsKnown, args=(data,))
+        #thread.start()
+        
+        counter = self.backgroundMarkAllAsKnown(data)
         
         return str(counter)
         

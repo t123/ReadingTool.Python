@@ -422,11 +422,13 @@
         		"phrases": termArray
         });
         
-        self._showOverlayModal('Please wait, sending <strong>' + termArray.length + '</strong> terms');
+        self._showOverlayModal('Please wait, sending <strong>' + termArray.length + '</strong> terms.<br/>This may take a few seconds.');
+        $('body').css('cursor', 'wait');
         window.lib.markRemainingAsKnown(data, self._doneMarkRemainingAsKnown, self._failMarkRemainingAsKnown);
     };
     
     self._doneMarkRemainingAsKnown = function(data, status, xhr) {
+    	$('body').css('cursor', 'auto');
     	self._setOverlayModalContent('Marked <strong>' + data + '</strong> words as known.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
 
         $('.__notseen').each(function (index, x) {
@@ -435,6 +437,7 @@
     };
     
     self._failMarkRemainingAsKnown = function(data, status, xhr) {
+    	$('body').css('cursor', 'auto');
     	self._setOverlayModalContent('Operation failed.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
     };
 
