@@ -710,19 +710,9 @@ class DatabaseService:
         
         if version==None:
             version = 0
-            logging.debug("perform all upgrades")
             
         if version<=1:
-            logging.debug("do version 1")
+            pass
             
         if version<=2:
-            logging.debug("do version 2")
-            
-        if version<=3:
-            logging.debug("do version 3")
-            
-        if version<=4:
-            logging.debug("do version 4")
-            
-        if version<=5:
-            logging.debug("do version 5")
+            pass

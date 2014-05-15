@@ -3,7 +3,7 @@ from datetime import datetime
 from lib.models.model import User
 
 class Application:
-    version = 3
+    version = 1
     user = User()
     
     path = os.path.abspath(
@@ -20,7 +20,8 @@ class Application:
 
     connectionString = os.path.join(pathDatabase, "rtwin.sqlite")
     
-    apiServer = "http://localhost:8080"
+    apiServer = None
+    remoteServer = None
         
 class Time:
     @staticmethod

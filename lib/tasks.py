@@ -7,7 +7,18 @@ from lib.models.model import User
 class Startup:
     def __init__(self):
         self.storage = StorageService()
+        self._setServers()
+    
+    def _setServers(self):
+        local = self.storage.find("server_local") or "http://localhost:8080"
+        remote = self.storage.find("server_remote") or "http://rt3"
         
+        logging.debug("Local server=%s" % local) 
+        logging.debug("Remove server=%s" % remote)
+        
+        Application.apiServer = local 
+        Application.removeServer = remote 
+            
     def checkUser(self):
         userService = UserService()
         users = userService.findAll(1)

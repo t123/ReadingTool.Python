@@ -58,7 +58,9 @@ class CustomWebPage(Qt.QWebPage):
         Qt.QWebPage.__init__(self, parent)
     
     def acceptNavigationRequest(self, frame, request, navigationType):
-        if request.url().toString().startswith("http://localhost") or request.url().toString().startswith("about:blank"):
+        local = ":".join(Application.apiServer.split(":")[0:2])
+        
+        if request.url().toString().startswith(local) or request.url().toString().startswith("about:blank"):
             return True
         else:
             Qt.QDesktopServices.openUrl(request.url())

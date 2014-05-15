@@ -1,20 +1,26 @@
-import cherrypy, routes
+import cherrypy, routes, logging
 from server.controllers import InternalController, ResourceController, ApiV1Controller 
+from lib.misc import Application
+from urllib.parse import urlparse
 
 def CORS():
-        if "Origin" in cherrypy.request.headers:
-            origin = cherrypy.request.headers["Origin"].lower()
+    if "Origin" in cherrypy.request.headers:
+        logging.debug("CORS request")
+        
+        origin = cherrypy.request.headers["Origin"].lower()
+        local = ":".join(Application.apiServer.split(":")[0:2])
+        
+        if  origin=="null" or origin.startswith(local):
+            logging.debug("Allowed from %s" % origin)
             
-            #TODO fix localhost
-            if  origin=="null" or origin.startswith("http://localhost"):
-                cherrypy.response.headers["Access-Control-Allow-Origin"] = cherrypy.request.headers["Origin"]
+            cherrypy.response.headers["Access-Control-Allow-Origin"] = cherrypy.request.headers["Origin"]
+            
+            for header in cherrypy.request.headers.keys():
+                if header.lower()=="access-control-request-headers":
+                    cherrypy.response.headers["Access-Control-Allow-Headers"] = cherrypy.request.headers["Access-Control-Request-Headers"]
                 
-                for header in cherrypy.request.headers.keys():
-                    if header.lower()=="access-control-request-headers":
-                        cherrypy.response.headers["Access-Control-Allow-Headers"] = cherrypy.request.headers["Access-Control-Request-Headers"]
-                    
-                    if header.lower()=="access-control-request-method":
-                        cherrypy.response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,HEAD,OPTIONS"
+                if header.lower()=="access-control-request-method":
+                    cherrypy.response.headers["Access-Control-Allow-Methods"] = "GET,POST,PUT,DELETE,HEAD,OPTIONS"
                          
 class Server():
     def __init__(self, embed=True):
@@ -66,6 +72,12 @@ class Server():
         cherrypy.tree.mount(root=None, config=conf)
         
     def start(self, block=False):
+        o = urlparse(Application.apiServer)
+        
+        cherrypy.server.socket_host = o.hostname
+        cherrypy.server.socket_port = o.port
+        cherrypy.server.shutdown_timeout  = 500
+
         cherrypy.engine.start()
         
         if block:
