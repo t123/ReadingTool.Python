@@ -301,6 +301,79 @@ class TextParser(BaseParser):
                 
         return self.po
     
+class LatexParser(BaseParser):
+    def __init__(self):
+        super().__init__()
+        self.xsltFile = "latex.xslt"
+        self.htmlFile = ""
+        
+    def createContentNode(self):
+        content = etree.Element("content",
+                                author="travis",
+                                title="some title"
+                                )
+        
+        return content;
+    
+    def parse(self, parserInput):
+        self.pi = parserInput
+        self.po.item = parserInput.item
+        
+        l1Content = self.pi.item.getL1Content()
+        l1Content, fragments = self.parseFragments(l1Content)
+        
+        l1Paragraphs = self.splitIntoParagraphs(l1Content)
+        
+        l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
+        l1TermRegex = re.compile(self.pi.language1.termRegex)
+        
+        root = etree.Element("root")
+        contentNode = self.createContentNode()
+        
+        for i in range(0, len(l1Paragraphs)):
+            l1Paragraph = l1Paragraphs[i]
+            
+            joinNode = etree.Element("join")
+            l1ParagraphNode = etree.Element("paragraph")
+            l1ParagraphNode.attrib["direction"] = "ltr" if self.pi.language1.direction==LanguageDirection.LeftToRight else "rtl"
+            
+            l2ParagraphNode = etree.Element("translation")
+            l2ParagraphNode.text = ''
+            l2ParagraphNode.attrib["direction"] = "ltr"
+            
+            sentences = self.splitIntoSentences(l1Paragraph, l1SentenceRegex)
+            
+            for sentence in sentences:
+                sentenceNode = etree.Element("sentence")
+                terms = self.splitIntoTerms(sentence, l1TermRegex)
+                
+                for term in terms:
+                    if term=="" or term is None:
+                        continue
+                    
+                    termNode = self.createTermNode(term, l1TermRegex, fragments)
+                    
+                    if "definition" in termNode.attrib:
+                        termNode.attrib["definition"] = termNode.attrib["definition"].replace("<br/>", " ; ")
+                        
+                    sentenceNode.append(termNode)
+                    
+                l1ParagraphNode.append(sentenceNode)
+                
+            joinNode.append(l1ParagraphNode) 
+            joinNode.append(l2ParagraphNode)
+            contentNode.append(joinNode)
+        
+        root.append(contentNode)
+                
+        self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8")
+        latex = str(self.applyTransform())
+        
+      
+        self.po.html = ' '.join(latex.split())
+                
+        return self.po
+        
 class VideoParser(BaseParser):
     def __init__(self):
         super().__init__()

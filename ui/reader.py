@@ -5,7 +5,7 @@ from PyQt4 import QtCore, QtGui, Qt
 from lib.misc import Application
 from lib.models.model import Item, ItemType
 from lib.models.parser import ParserInput
-from lib.services.parser import TextParser, VideoParser
+from lib.services.parser import TextParser, VideoParser, LatexParser
 from lib.services.service import ItemService, LanguageService, TermService
 from ui.views.reader import Ui_ReadingWindow
 
@@ -152,11 +152,13 @@ class ReaderWindow(QtGui.QDialog):
         self.po = parser.parse(pi)
         self.po.save()
         
-        self.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(self.po.item.itemId)))
-        self.setWindowTitle(self.item.name())
-        self.__readTime = datetime.datetime.now()
-        self.__updateTitle()
-        self._updateNextPreviousMenu()
+        #=======================================================================
+        # self.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(self.po.item.itemId)))
+        # self.setWindowTitle(self.item.name())
+        # self.__readTime = datetime.datetime.now()
+        # self.updateTitle()
+        # self.updateNextPreviousMenu()
+        #=======================================================================
         
         self.item.lastRead = time.time()
         self.itemService.save(self.item)
@@ -206,7 +208,7 @@ class ReaderWindow(QtGui.QDialog):
     def onLinkClicked(self, url):
         Qt.QDesktopServices.openUrl(url)
         
-    def _updateNextPreviousMenu(self):
+    def updateNextPreviousMenu(self):
         prev = self.itemService.findPrevious(self.item, limit=5)
         next = self.itemService.findNext(self.item, limit=5)
         
@@ -267,7 +269,7 @@ class ReaderWindow(QtGui.QDialog):
         
         return QtGui.QDialog.keyPressEvent(self, event)
         
-    def __updateTitle(self):
+    def updateTitle(self):
         delta = (datetime.datetime.now()-self.__openTime)
         hours, remainder = divmod(delta.seconds, 3600)
         minutes, seconds = divmod(remainder, 60)
@@ -276,4 +278,4 @@ class ReaderWindow(QtGui.QDialog):
             (self.item.name(), self.__openTime.strftime("%H:%M"), self.__readTime.strftime("%H:%M"), hours, minutes)
              
         self.setWindowTitle(title)
-        threading.Timer(5, self.__updateTitle).start()
+        threading.Timer(5, self.updateTitle).start()

@@ -11,13 +11,13 @@ class Startup:
     
     def _setServers(self):
         local = self.storage.find("server_local") or "http://localhost:8080"
-        remote = self.storage.find("server_remote") or "http://rt3"
+        remote = self.storage.find("server_remote") or "http://api.readingtool.net"
         
         logging.debug("Local server=%s" % local) 
-        logging.debug("Remove server=%s" % remote)
+        logging.debug("Remote server=%s" % remote)
         
         Application.apiServer = local 
-        Application.removeServer = remote 
+        Application.remoteServer = remote 
             
     def checkUser(self):
         userService = UserService()
