@@ -8,6 +8,15 @@ from lib.services.parser import LatexParser
 from lib.services.service import ItemService, LanguageService, TermService
 
 class WebService:
+    def getStandardDictionary(self, uri, verb="POST"):
+        return {
+                    "Uri": uri,
+                    "Verb": verb,
+                    "Time": time.time(),
+                    "Nonce": str(uuid.uuid1()),
+                    "AccessKey": Application.user.accessKey
+                }
+        
     def createJsonSignatureHeaders(self, dictionary, contentType="application/json"):
         data = json.dumps(dictionary, sort_keys=True)
         message = data.encode('utf-8')
@@ -40,16 +49,9 @@ class WebService:
         
         uri = Application.remoteServer + "/api/v1/createpdf"
         
-        data = {
-                    "Uri": uri,
-                    "Verb": "POST",
-                    "Time": time.time(),
-                    "Nonce": str(uuid.uuid1()),
-                    "AccessKey": Application.user.accessKey,
-                    "Latex": self.po.html,
-                    "Title": item.name()
-                }
-
+        data = self.getStandardDictionary(uri)
+        data["Latex"] = self.po.html
+        data["Title"] = item.name()
         content, signature, headers = self.createJsonSignatureHeaders(data)
         
         try:

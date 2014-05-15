@@ -4,6 +4,7 @@ from lib.misc import Application, Time
 from lib.stringutil import StringUtil
 from lib.models.model import Item, ItemType
 from lib.services.service import ItemService, LanguageService
+from lib.services.web import WebService
 from ui.views.items import Ui_Items
 from ui.itemdialog import ItemDialogForm
 from ui.reader import ReaderWindow
@@ -62,6 +63,29 @@ class ItemsForm(QtGui.QDialog):
         action = QAction("Read Parallel", self.ui.tItems)
         self.ui.tItems.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.readItem(asParallel=True))
+        
+        action = QAction("Create PDF", self.ui.tItems)
+        self.ui.tItems.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.createPdf)
+        
+    def createPdf(self):
+        print("createPdf")
+        item = self.ui.tItems.item(self.ui.tItems.currentRow(), 0)
+        
+        if item is None:
+            return
+        
+        webService = WebService()
+        content = webService.createPdf(item.data(QtCore.Qt.UserRole).itemId)
+        
+        if content is None:
+            QtGui.QMessageBox.warning(self, "Create PDF failed", "Unfortunately your PDF could not be created.")
+        else:
+            filename = QtGui.QFileDialog.getSaveFileName(parent=self, caption="Save your PDF", filter="*.pdf")
+            
+            if filename:
+                with open(filename, "wb") as file:
+                    file.write(content)
         
     def addItem(self):
         self.dialog = ItemDialogForm()

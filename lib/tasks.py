@@ -94,7 +94,9 @@ class Startup:
         for file in files:
             (name, ext) = os.path.splitext(file)
             
-            if not ext.lower()==".html" and not ext.lower()==".xml":
+            ext = ext.lower()
+            
+            if not ext in ["html", "xml", "pdf"]:
                 continue
             
             now = time.time() 
