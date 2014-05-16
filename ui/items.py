@@ -127,9 +127,9 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
         
-        reader = ReaderWindow()
-        reader.readItem(item.data(QtCore.Qt.UserRole).itemId, asParallel)
-        reader.show()
+        self.dialog = ReaderWindow()
+        self.dialog.readItem(item.data(QtCore.Qt.UserRole).itemId, asParallel)
+        self.dialog.show()
         
     def updateTree(self):
         self.ui.tvFilter.header().hide()

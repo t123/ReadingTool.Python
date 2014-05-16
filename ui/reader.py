@@ -152,13 +152,11 @@ class ReaderWindow(QtGui.QDialog):
         self.po = parser.parse(pi)
         self.po.save()
         
-        #=======================================================================
-        # self.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(self.po.item.itemId)))
-        # self.setWindowTitle(self.item.name())
-        # self.__readTime = datetime.datetime.now()
-        # self.updateTitle()
-        # self.updateNextPreviousMenu()
-        #=======================================================================
+        self.webView.setUrl(QtCore.QUrl(Application.apiServer + "/resource/v1/item/" + str(self.po.item.itemId)))
+        self.setWindowTitle(self.item.name())
+        self.__readTime = datetime.datetime.now()
+        self.updateTitle()
+        self.updateNextPreviousMenu()
         
         self.item.lastRead = time.time()
         self.itemService.save(self.item)
