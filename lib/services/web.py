@@ -29,6 +29,15 @@ class WebService:
                    "X-AccessKey": Application.user.accessKey
                    })
         
+    def checkForNewVersion(self):
+        uri = Application.remoteServer + "/api/v1/latestversion"
+        r = requests.get(uri)
+        
+        if r.status_code!=200:
+            return None
+        
+        return json.loads(r.text)
+        
     def createPdf(self, itemId):
         itemService = ItemService()
         languageService = LanguageService()

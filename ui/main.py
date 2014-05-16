@@ -1,6 +1,7 @@
 from PyQt4 import Qt, QtGui, QtCore
 from lib.misc import Application
-from lib.services.service import UserService, ItemService
+from lib.services.service import UserService, ItemService, StorageService
+from lib.services.web import WebService
 
 from ui.views.main import Ui_MainWindow
 from ui.reader import ReaderWindow
@@ -30,7 +31,21 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.mainWindow.pbTerms, QtCore.SIGNAL("clicked()"), lambda view = "terms": self.changeView(view))
         
         self.showMaximized()
+        self.checkVersion()
 
+    def checkVersion(self):
+        storageService = StorageService()
+        softwareVersion = storageService.find("software_version") or "0.0"
+        webService = WebService()
+        
+        result = webService.checkForNewVersion()
+        
+        if not result:
+            return
+        
+        if float(result["version"])>float(softwareVersion):
+            Qt.QMessageBox.information(self, result["title"], result["message"], Qt.QMessageBox.Ok)
+                
     def updateItems(self):
         readItems = self.itemService.findRecentlyRead()
         newItems = self.itemService.findRecentlyCreated()
