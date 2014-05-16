@@ -3,6 +3,7 @@ from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla, QsciLexerJavaScript
 
 from lib.misc import Application
+from lib.stringutil import StringUtil
 from lib.models.model import Plugin
 from lib.services.service import PluginService
 from ui.views.plugins import Ui_Plugins
@@ -74,6 +75,9 @@ class PluginsForm(QtGui.QDialog):
     def exportPlugins(self):
         path = QFileDialog.getExistingDirectory()
         
+        if StringUtil.isEmpty(path):
+            return
+    
         for plugin in self.pluginService.findAll():
             filename = str(plugin.uuid) + ".js"
             
@@ -91,6 +95,10 @@ class PluginsForm(QtGui.QDialog):
     
     def importPlugins(self):
         path = QFileDialog.getExistingDirectory()
+        
+        if StringUtil.isEmpty(path):
+            return
+        
         files = [file for file in os.listdir(path) if os.path.isfile(os.path.join(path, file))]
         
         count = 0
