@@ -83,6 +83,9 @@ class ItemDialogForm(QtGui.QDialog):
         item.l1LanguageId = self.ui.cbL1Language.itemData(self.ui.cbL1Language.currentIndex())
         item.l2LanguageId = self.ui.cbL2Language.itemData(self.ui.cbL2Language.currentIndex())
         
+        if item.l2LanguageId is None and item.isParallel():
+            item.l2LanguageId = item.l1LanguageId
+            
         item = self.itemService.save(item)
         self.setItem(item.itemId)
         

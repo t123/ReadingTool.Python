@@ -20,6 +20,10 @@ $(function() {
 	var lib = new Lib({});
 	window.lib = lib;
 
+	if(window.lib.getL1Code()=='ja') {
+		$('.__whitespace').hide();
+	}
+
 	var lastL1 = -2, lastL2 = -2;
 
 	$('body').tooltip({

@@ -111,6 +111,9 @@ class BaseParser:
             
             if term.isspace():
                 termNode.attrib["isWhitespace"] = "True"
+            else:
+                if "," in term:
+                    termNode.text = term.lstrip()
                 
         return termNode
     
