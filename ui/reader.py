@@ -7,7 +7,9 @@ from lib.models.model import Item, ItemType
 from lib.models.parser import ParserInput
 from lib.services.parser import TextParser, VideoParser, LatexParser
 from lib.services.service import ItemService, LanguageService, TermService
+from lib.services.web import WebService
 from ui.views.reader import Ui_ReadingWindow
+from ui.itemdialog import ItemDialogForm
 
 class Javascript(QtCore.QObject):
     def __init__(self, po=None, messageLabel=None):
@@ -79,6 +81,103 @@ class CustomWebView(Qt.QWebView):
     def createWindow(self, webWindowType):
         return super(CustomWebView, self).createWindow(webWindowType)
     
+    def contextMenuEvent(self, event):
+        self.menu = Qt.QMenu()
+        self.menu.move(Qt.QCursor.pos())
+                
+        rw = self.parent()
+        
+        if rw is not None:
+            item = rw.item
+            
+            if item is not None:
+                action = QtGui.QAction(self.menu)
+                action.setText("Edit item")
+                action.connect(action, QtCore.SIGNAL("triggered()"), self.editItem)
+                self.menu.addAction(action)
+                
+                action = QtGui.QAction(self.menu)
+                action.setText("Reload item")
+                action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, rw.asParallel))
+                self.menu.addAction(action)
+                
+                if item.itemType==ItemType.Text:
+                    if not rw.asParallel and item.isParallel():
+                        action = QtGui.QAction(self.menu)
+                        action.setText("Read in parallel")
+                        action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, True))
+                        self.menu.addAction(action)
+                                            
+                    if rw.asParallel:
+                        action = QtGui.QAction(self.menu)
+                        action.setText("Read in single")
+                        action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, False))
+                        self.menu.addAction(action)
+                        
+                    action = QtGui.QAction(self.menu)
+                    action.setText("Create PDF")
+                    action.connect(action, QtCore.SIGNAL("triggered()"), self.createPdf)
+                    self.menu.addAction(action)
+                        
+                elif item.itemType==ItemType.Video:
+                    if not rw.asParallel and item.isParallel():
+                        action = QtGui.QAction(self.menu)
+                        action.setText("Watch in parallel")
+                        action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, True))
+                        self.menu.addAction(action)
+                        
+                    if rw.asParallel:
+                        action = QtGui.QAction(self.menu)
+                        action.setText("Watch in single")
+                        action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, False))
+                        self.menu.addAction(action)
+        
+            action = QtGui.QAction(self.menu)
+            action.setText("Inspector")
+            action.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.triggerPageAction(Qt.QWebPage.InspectElement))
+            self.menu.addAction(action)
+            
+        self.menu.exec_()
+        
+    def editItem(self):
+        rw = self.parent()
+        
+        if rw is None:
+            return
+        
+        item = rw.item
+        
+        if item is None:
+            return
+        
+        self.dialog = ItemDialogForm()
+        self.dialog.setItem(item.itemId)
+        self.dialog.exec_()
+        rw.readItem(rw.item.itemId, rw.asParallel)
+        
+    def createPdf(self):
+        rw = self.parent()
+        
+        if rw is None:
+            return
+        
+        item = rw.item
+        
+        if item is None:
+            return
+        
+        webService = WebService()
+        content = webService.createPdf(item.itemId)
+        
+        if content is None:
+            QtGui.QMessageBox.warning(self, "Create PDF failed", "Unfortunately your PDF could not be created.")
+        else:
+            filename = QtGui.QFileDialog.getSaveFileName(parent=self, caption="Save your PDF", filter="*.pdf")
+            
+            if filename:
+                with open(filename, "wb") as file:
+                    file.write(content)
+    
 class ReaderWindow(QtGui.QDialog):
     def __init__(self, parent=None):
         self.itemService = ItemService()
@@ -137,6 +236,8 @@ class ReaderWindow(QtGui.QDialog):
         else:
             asParallel = False
             
+        self.asParallel = asParallel
+        
         if self.item.itemType==ItemType.Text:
             parser = TextParser()
         else:

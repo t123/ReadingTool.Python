@@ -69,7 +69,6 @@ class ItemsForm(QtGui.QDialog):
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.createPdf)
         
     def createPdf(self):
-        print("createPdf")
         item = self.ui.tItems.item(self.ui.tItems.currentRow(), 0)
         
         if item is None:
