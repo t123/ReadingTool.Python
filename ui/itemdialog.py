@@ -6,6 +6,7 @@ from lib.stringutil import StringUtil
 from lib.models.model import Item, ItemType
 from lib.services.service import ItemService, LanguageService, StorageService
 from ui.views.itemdialog import Ui_ItemDialog
+from lib.services.web import WebService
 
 class ItemDialogForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -25,6 +26,15 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbSplit, QtCore.SIGNAL("clicked()"), self.splitItem)
         QtCore.QObject.connect(self.ui.pbChoose, QtCore.SIGNAL("clicked()"), self.chooseFile)
+        QtCore.QObject.connect(self.ui.pbMecab, QtCore.SIGNAL("clicked()"), self.mecabText)
+        QtCore.QObject.connect(self.ui.cbL1Language, QtCore.SIGNAL("currentIndexChanged(int)"), self.checkLanguageCode)
+        
+    def mecabText(self):
+        webService = WebService()
+        content = webService.mecabText(self.ui.teL1Content.text())
+        
+        if content is not None:
+            self.ui.teL1Content.setText(content)
         
     def chooseFile(self):
         storageService = StorageService()
@@ -110,11 +120,22 @@ class ItemDialogForm(QtGui.QDialog):
         self.ui.teL2Content.setText(self.item.getL2Content())
         
         index1 = self.ui.cbL1Language.findData(self.item.l1LanguageId)
-        index2= self.ui.cbL1Language.findData(self.item.l2LanguageId)
+        index2 = self.ui.cbL1Language.findData(self.item.l2LanguageId)
         
         self.ui.cbL1Language.setCurrentIndex(index1)
         self.ui.cbL2Language.setCurrentIndex(index2)
         
+        self.checkLanguageCode(index1)
+        
+    def checkLanguageCode(self, index):
+        l1LanguageId = self.ui.cbL1Language.itemData(self.ui.cbL1Language.currentIndex())
+        language = self.languageService.findOne(l1LanguageId)
+        
+        if language.languageCode=="ja":
+            self.ui.pbMecab.show()
+        else:
+            self.ui.pbMecab.hide()
+            
     def updateLanguages(self):
         languages = self.languageService.findAll()
         self.ui.cbL1Language.clear()

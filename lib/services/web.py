@@ -29,6 +29,24 @@ class WebService:
                    "X-AccessKey": Application.user.accessKey
                    })
         
+    def mecabText(self, content):
+        uri = Application.remoteServer + "/api/v1/mecab"
+        
+        data = self.getStandardDictionary(uri)
+        data["Content"] = content
+        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        try:
+            r = requests.post(uri, headers=headers, data=content)
+            
+            if r.status_code==200:
+                return r.content.decode('utf8')
+                
+        except requests.exceptions.RequestException:
+            pass
+        
+        return None
+    
     def checkForNewVersion(self):
         uri = Application.remoteServer + "/api/v1/latestversion"
         r = requests.get(uri)
