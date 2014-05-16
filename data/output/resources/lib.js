@@ -2,7 +2,6 @@ function Lib(options) {
 	var self = this;
 	self.options = options;
 	self.currentElement = null;
-	self.isFragment = false;
 	
 	self.navTerms = { }
 	
@@ -125,12 +124,18 @@ function Lib(options) {
     self.setCurrentElement = function(element) {
     	$.event.trigger("preSetCurrentElement", [element]);
     	self.currentElement = element;
-    	self.isFragment = element.hasClass('__fragment');
     	$.event.trigger("postSetCurrentElement", [element]);
     };
     
-    self.getIsFragment = function() {
-    	return self.isFragment;
+    self.isCurrentFragment = function() {
+        return self.isFragment(self.getCurrentElement());
+    };
+
+    self.isFragment = function(element) {
+        if(element==null || !element.any())
+             return false;
+
+        return element.hasClass('__fragment');
     };
     
     /**
@@ -161,34 +166,36 @@ function Lib(options) {
     /**
      * Gets the text from the currently selected element 
      * @method getCurrentElementAsText
-     * @return {element}
+     * @return text of currently selected element
     */
     self.getCurrentWordAsText = function () {
-    	current = self.getCurrentElement();
+        return self.getCurrentElementAsText(self.getCurrentElement());
+    };
+
+    self.getCurrentElementAsText = function (element) {
+        if(element==null || !element.any()) {
+            return '';
+        }
         
-    	if(current==null || !current.any()) {
-    		return '';
-    	}
-    	
-    	if(self.getIsFragment()) {
-    		fragment = '';
-    		children = current.find('.__term,.__punctuation');
-    		for(var i=0; i<children.length; i++) {
-    			child = $(children[i]);
-    			
-    			if (child[0].childNodes[0].nodeType == 3) {
+        if(self.isFragment(element)) {
+            fragment = '';
+            children = element.find('.__term,.__punctuation');
+            for(var i=0; i<children.length; i++) {
+                child = $(children[i]);
+                
+                if (child[0].childNodes[0].nodeType == 3) {
                     fragment += child[0].childNodes[0].nodeValue;
                 } else {
                     fragment += child[0].childNodes[0].innerText;
                 }
-    		}
-    		
-    		return fragment;
-    	} else {
-    		if (current[0].childNodes[0].nodeType == 3) {
-                return current[0].childNodes[0].nodeValue;
+            }
+            
+            return fragment;
+        } else {
+            if (element[0].childNodes[0].nodeType == 3) {
+                return element[0].childNodes[0].nodeValue;
             } else {
-                return current[0].childNodes[0].innerText;
+                return element[0].childNodes[0].innerText;
             }
         }
 
@@ -268,12 +275,16 @@ function Lib(options) {
     
     self.save = function(
     		obj,
+            element,
     		optional,
     		doneCallback,
     		failCallback
     		) {
-    	$.event.trigger("preSaveTerm", [obj, optional]);
+    	$.event.trigger("preSaveTerm", [obj, element, optional]);
     	
+        var previousClass = element.attr('class');
+        element.removeClass('__notseen __known __ignored __unknown __temp').addClass('__' + state.toLowerCase());
+
         $.ajax({
             url: self.getWebAPI() + "/internal/v1/term",
             type: 'POST',
@@ -287,54 +298,65 @@ function Lib(options) {
                 state: obj.state
             }
         }).done(function (data, status, xhr) {
-        	$.event.trigger("preSaveTermDone", [obj, optional, data]);
+        	$.event.trigger("preSaveTermDone", [obj, element, optional, data]);
         	
+            self.updateState(element, data);
+
             if(doneCallback!=null) {
-            	doneCallback(obj, optional, data, status, xhr);
+            	doneCallback(obj, element, optional, data, status, xhr);
             }
             
-            $.event.trigger("postSaveTermDone", [obj, optional, data]);
+            $.event.trigger("postSaveTermDone", [obj, element, optional, data]);
         }).fail(function (data, status, xhr) {
-        	$.event.trigger("preSaveTermFail", [obj, optional, data]);
+        	$.event.trigger("preSaveTermFail", [obj, element, optional, data]);
         	
+            element.attr('class', previousClass);
+
         	if(failCallback!=null) {
-        		failCallback(obj, optional, data, status, xhr);
+        		failCallback(obj, element, optional, data, status, xhr);
             }
         	
-        	$.event.trigger("postSaveTermFail", [obj, optional, data]);
+        	$.event.trigger("postSaveTermFail", [obj, element, optional, data]);
         }).always(function (data, status, xhr) {
-        	$.event.trigger("postSaveTerm", [obj, optional, data]);
+        	$.event.trigger("postSaveTerm", [obj, element, optional, data]);
         });
     };
     
-    self.reset = function(phrase, languageId, doneCallback, failCallback) {
-    	$.event.trigger("preResetTerm", [phrase, languageId]);
+    self.reset = function(element, optional, doneCallback, failCallback) {
+    	phrase = self.getCurrentElementAsText(element);
+        $.event.trigger("preResetTerm", [element, optional]);
     	
     	$.ajax({
             url: self.getWebAPI() + "/internal/v1/delete",
             type: 'POST',
             data: {
                 phrase: phrase,
-                languageId: languageId 
+                languageId: self.getLanguageId() 
             }
         }).done(function (data, status, xhr) {
-        	$.event.trigger("preResetTermDone", [phrase, languageId, data]);
+        	$.event.trigger("preResetTermDone", [element, optional, data]);
         	
+            if(self.isFragment(element)) {
+                element.removeClass('__unknown __known __ignored');
+            } else{
+                self._updateElementState(phrase, 'notseen', '')
+            }
+
         	if(doneCallback!=null) {
-            	doneCallback(phrase, data, status, xhr);
+            	doneCallback(element, optional, data, status, xhr);
             }
         	
-        	$.event.trigger("postResetTermDone", [phrase, languageId, data]);
+        	$.event.trigger("postResetTermDone", [element, optional, data]);
         }).fail(function (data, status, xhr) {
         	if(failCallback!=null) {
-        		$.event.trigger("preResetTermFail", [phrase, languageId, data]);
+        		$.event.trigger("preResetTermFail", [element, optional, data]);
         		
-        		failCallback(data, status, xhr);
+        		failCallback(element, optional, data, status, xhr);
         		
-        		$.event.trigger("postResetTermDone", [phrase, languageId, data]);
+        		$.event.trigger("postResetTermDone", [element, optional, data]);
             }
         }).always(function (data) {
-        	$.event.trigger("postReset", [phrase, languageId, data]);
+        	$.event.trigger("postReset", [element, optional, data]);
         });
     };
     
@@ -348,6 +370,10 @@ function Lib(options) {
             contentType: "application/json",
             data: data
         }).done(function (data, status, xhr) {
+            $('.__notseen').each(function () {
+                $(this).removeClass('__notseen').addClass('__known');
+            });
+
         	if(doneCallback!=null) {
         		doneCallback(data, status, xhr);
         	}
@@ -538,15 +564,36 @@ function Lib(options) {
         return phrase.toLowerCase().replace("'", "_").replace('"', "_");
     };
     
-    self.updateElementState = function(phrase, state, definition) {
+    /**
+     * Updates all the element states with correct definition and classes
+     * @param  {[type]} The element currently selected. Required for fragment only.
+     * @param  {[type]} An object representing a term.
+     */
+    self.updateState = function(element, data) {
+        var tempDef = data.basePhrase.length > 0 ? data.basePhrase + "<br/>" : '';
+        if (data.definition.length > 0) tempDef += data.definition.replace(/\n/g, '<br />');
+
+        if(self.isFragment(element)) {
+            self._updateFragmentState(element, data.phrase, data.state, tempDef);
+        } else {
+            self._updateElementState(data.phrase, data.state, tempDef);
+        }
+    };
+
+    self._updateElementState = function(phrase, state, definition) {
     	lower = self.phraseToClass(phrase)
     	elements = $('.__' + lower).filter(function() {
     		return !$(this).closest('.__fragment').any()
     	});
+
+        elementsInFragments = $('.__' + lower).filter(function() {
+            return $(this).closest('.__fragment').any()
+        });
     	
     	state = state.toLowerCase();
     	
-    	elements.removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass("__" + state);    		
+    	elements.removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass("__" + state);
+        elementsInFragments.removeClass('__notseen __known __ignored __unknown __kd __id __ud __temp').addClass("__" + state + "_t");
     	
     	if(state=="notseen") {
     		elements.each(function (index) {
@@ -573,9 +620,7 @@ function Lib(options) {
     	}
     };
     
-    self.updateFragmentState = function(phrase, state, definition) {
-    	element = self.getCurrentElement();
-    	
+    self._updateFragmentState = function(element, phrase, state, definition) {
     	if(element.data('termid')!=null) {
     		termId = element.data('termid');
     		$('.__' + termId).removeClass('__known __unknown __ignored').addClass('__' + state);

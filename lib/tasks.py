@@ -7,9 +7,9 @@ from lib.models.model import User
 class Startup:
     def __init__(self):
         self.storage = StorageService()
-        self._setServers()
+        self.setServers()
     
-    def _setServers(self):
+    def setServers(self):
         local = self.storage.find("server_local") or "http://localhost:8080"
         remote = self.storage.find("server_remote") or "http://api.readingtool.net"
         
