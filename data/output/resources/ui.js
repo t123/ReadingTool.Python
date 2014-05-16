@@ -1,6 +1,6 @@
 ﻿window.onerror = function(msg, url, line) {
 		console.error(line, msg);
-		alert('An unhandled error has occurred. You might want to reload the page. See the console for more information.')
+		//alert('An unhandled error has occurred. You might want to reload the page. See the console for more information.')
 		return false;
 	};
 	
@@ -80,121 +80,9 @@ $(function() {
 	$.event.trigger("pluginReady");
 	
 	$(document).on('keydown', function(e) {
-		var code = (e.keyCode ? e.keyCode : e.which);
-
-		if (window.reading.isModalVisible()) {
-			if (e.ctrlKey) { //Modal visible, ctrl
-				switch (code) {
-					case 13: // Enter
-						reading.save(true);
-						e.preventDefault();
-						break;
-	
-					case 82: // R
-						reading.reset();
-						e.preventDefault();
-						break;
-	
-					case 49: // 1
-						reading.setDState('known');
-						e.preventDefault();
-						break;
-	
-					case 50: // 2
-						reading.setDState('unknown');
-						e.preventDefault();
-						break;
-	
-					case 51: // 3
-						reading.setDState('ignored');
-						e.preventDefault();
-						break;
-	
-					case 52: // 4
-						reading.setDState('notseen');
-						e.preventDefault();
-						break;
-	
-					case 81: // q
-					case 83: // s
-						reading.setFocus($('#dSentence'));
-						e.preventDefault();
-						break;
-	
-					case 65: // a
-					case 66: // b
-						reading.setFocus($('#dBase'));
-						e.preventDefault();
-						break;
-	
-					case 90: // z
-					case 68: // d
-						reading.setFocus($('#dDefinition'));
-						e.preventDefault();
-						break;
-				}
-	
-				return;
-			}  //Modal visible, ctrl
-
-			switch (code) {  //Modal visible, not ctrl
-				case 27: // escape
-					reading.closeModal();
-					break;
-	
-				case 37: // left
-					if (!reading.getHasChanged()) {
-						var el = window.lib.currentLeft();
-						
-						if(el!=null) {
-							reading.showModal(el);
-							return;
-						}
-					}
-					break;
-	
-				case 39: // right
-					if (!reading.getHasChanged()) {
-						var el = window.lib.currentRight();
-						
-						if(el!=null) {
-							reading.showModal(el);
-							return;
-						}
-					}
-					break;
-			}
-		} else { //Modal not visible
-			switch (code) {
-				case 32:
-					var el = window.lib.getCurrentSelected();
-	
-					if (el.any()) {
-						reading.showModal(el);
-						e.preventDefault();
-						return;
-					}
-					break;
-	
-				case 37: // left
-					var el = window.lib.currentLeft();
-					
-					if(el!=null) {
-						window.lib.setCurrentSelected(el);
-						return;
-					}
-					break;
-	
-				case 39: // right
-					var el = window.lib.currentRight();
-					
-					if(el!=null) {
-						window.lib.setCurrentSelected(el);
-						return;
-					}
-					break;
-			}
-		}
+		$.event.trigger("preKeyEvent", [$(this)]);
+		$.event.trigger("keyEvent", [e, $(this)]);
+		$.event.trigger("postKeyEvent", [$(this)]);
 	});
 
 	$('input[type="text"], input[type="radio"], textarea').change(function(e) {
@@ -208,6 +96,12 @@ $(function() {
 	mouseTrack.mouseDown = false;
 	mouseTrack.originalSpan = null;
 	
+	$('#reading').on('click', '', function(e) {
+		if(!$(e.target).hasClass('__term') && window.reading.isModalVisible() && !window.reading.getHasChanged()) {
+			window.reading.closeModal();
+		}
+	});
+
 	$('#reading').on('mousedown', 'span.__term', function(e) {
 		mouseTrack.dragged = false;
 		mouseTrack.mouseDown = true;

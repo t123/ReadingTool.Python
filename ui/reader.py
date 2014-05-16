@@ -92,13 +92,13 @@ class CustomWebView(Qt.QWebView):
             
             if item is not None:
                 action = QtGui.QAction(self.menu)
-                action.setText("Edit item")
-                action.connect(action, QtCore.SIGNAL("triggered()"), self.editItem)
+                action.setText("Reload item")
+                action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, rw.asParallel))
                 self.menu.addAction(action)
                 
                 action = QtGui.QAction(self.menu)
-                action.setText("Reload item")
-                action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, rw.asParallel))
+                action.setText("Edit item")
+                action.connect(action, QtCore.SIGNAL("triggered()"), self.editItem)
                 self.menu.addAction(action)
                 
                 if item.itemType==ItemType.Text:
