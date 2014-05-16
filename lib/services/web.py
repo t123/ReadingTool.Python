@@ -54,7 +54,7 @@ class WebService:
         pi.terms, pi.multiTerms = termService.findAllForParsing(item.l1LanguageId)
         
         self.po = parser.parse(pi)
-        self.po.save()
+        #self.po.save()
         
         uri = Application.remoteServer + "/api/v1/createpdf"
         

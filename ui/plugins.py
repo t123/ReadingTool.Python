@@ -154,6 +154,7 @@ class PluginsForm(QtGui.QDialog):
         
         plugin = self.pluginService.findOne(current.data(QtCore.Qt.UserRole).pluginId)
         self.ui.leName.setText(plugin.name)
+        self.ui.leUUID.setText(plugin.uuid)
         self.ui.teDescription.setPlainText(plugin.description)
         self.ui.teCode.setText(plugin.content)
         
