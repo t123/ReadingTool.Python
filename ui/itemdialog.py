@@ -1,11 +1,11 @@
+import os
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla
 
-from lib.misc import Application
+from lib.stringutil import StringUtil
 from lib.models.model import Item, ItemType
-from lib.services.service import ItemService, LanguageService
+from lib.services.service import ItemService, LanguageService, StorageService
 from ui.views.itemdialog import Ui_ItemDialog
-#from ui.signals import refreshItems
 
 class ItemDialogForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -16,8 +16,8 @@ class ItemDialogForm(QtGui.QDialog):
         self.ui = Ui_ItemDialog()
         self.ui.setupUi(self)
         self.setWindowFlags(QtCore.Qt.Window)
-        self._setupContent()
-        self._updateLanguages()
+        self.setupContent()
+        self.updateLanguages()
         
         self.ui.leCollectionNo.setValidator(QtGui.QIntValidator())
         
@@ -27,8 +27,18 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbChoose, QtCore.SIGNAL("clicked()"), self.chooseFile)
         
     def chooseFile(self):
-        filename = QtGui.QFileDialog.getOpenFileName(caption="Choose a media file", filter="Media files (*.mp3 *.mp4)")
-        self.ui.leMediaURI.setText(filename)
+        storageService = StorageService()
+        mediaDirectory = storageService.find("last_media_directory")
+        
+        if StringUtil.isEmpty(mediaDirectory):
+            filename = QtGui.QFileDialog.getOpenFileName(caption="Choose a media file", filter="Media files (*.mp3 *.mp4)")
+        else:
+            filename = QtGui.QFileDialog.getOpenFileName(caption="Choose a media file", filter="Media files (*.mp3 *.mp4)", directory=mediaDirectory)
+                    
+        if not StringUtil.isEmpty(filename):
+            path, file = os.path.split(filename)
+            storageService.save("last_media_directory", path)
+            self.ui.leMediaURI.setText(filename)
         
     def splitItem(self):
         if self.item is None:
@@ -105,7 +115,7 @@ class ItemDialogForm(QtGui.QDialog):
         self.ui.cbL1Language.setCurrentIndex(index1)
         self.ui.cbL2Language.setCurrentIndex(index2)
         
-    def _updateLanguages(self):
+    def updateLanguages(self):
         languages = self.languageService.findAll()
         self.ui.cbL1Language.clear()
         self.ui.cbL2Language.clear()
@@ -114,7 +124,7 @@ class ItemDialogForm(QtGui.QDialog):
             self.ui.cbL1Language.addItem(language.name, language.languageId)
             self.ui.cbL2Language.addItem(language.name, language.languageId)
             
-    def _setupContent(self):
+    def setupContent(self):
         font = QtGui.QFont()
         font.setFamily("Arial Unicode MS")
         font.setFixedPitch(True)
