@@ -98,6 +98,8 @@ class ProfilesForm(QtGui.QDialog):
         
         self.resetForm()
         
+        Application.user = user
+        
     def deleteUser(self):
         user = self._currentUser()
         
