@@ -29,10 +29,11 @@ class WebService:
                    "X-AccessKey": Application.user.accessKey
                    })
         
-    def mecabText(self, content):
-        uri = Application.remoteServer + "/api/v1/mecab"
+    def segmentText(self, languageCode, content):
+        uri = Application.remoteServer + "/api/v1/segment"
         
         data = self.getStandardDictionary(uri)
+        data["LanguageCode"] = languageCode
         data["Content"] = content
         content, signature, headers = self.createJsonSignatureHeaders(data)
         

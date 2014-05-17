@@ -244,7 +244,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pbMecab">
+      <widget class="QPushButton" name="pbSegment">
        <property name="text">
         <string>Add Spaces To Text</string>
        </property>
