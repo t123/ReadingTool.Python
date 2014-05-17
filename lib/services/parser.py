@@ -285,8 +285,8 @@ class TextParser(BaseParser):
             contentNode.append(joinNode)
         
         root.append(contentNode)
-        self.addFrequencyData(root)
-        self.calculateUniqueTerms(root)
+        #self.addFrequencyData(root)
+        #self.calculateUniqueTerms(root)
                 
         self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8")
         htmlContent = None
@@ -296,7 +296,7 @@ class TextParser(BaseParser):
             
         #WTF?? Newlines in XSLT transform cause extra spaces around punctuation. If anyone wants
         #to try fix that... 
-        transform = re.sub("span>\s+<span", "span><span", str(self.applyTransform()))
+        transform = re.sub("span>\s+<span", "span><span", str(self.applyTransform(root)))
         
         self.po.html = htmlContent.replace("<!-- table -->", transform) \
                 .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \

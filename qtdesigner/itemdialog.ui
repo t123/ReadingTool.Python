@@ -246,7 +246,7 @@
      <item>
       <widget class="QPushButton" name="pbMecab">
        <property name="text">
-        <string>Mecab</string>
+        <string>Add Spaces To Text</string>
        </property>
       </widget>
      </item>

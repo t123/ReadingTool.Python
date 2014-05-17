@@ -702,10 +702,73 @@ class DatabaseService:
         
         return False
     
+    def createDb(self):
+        if self.tableExists("storage"):
+            return
+        
+        logging.debug("creating db")
+        sql = """
+        CREATE TABLE "item" ("itemId" INTEGER PRIMARY KEY  NOT NULL ,"itemType" INTEGER NOT NULL ,"collectionName" VARCHAR NOT NULL ,"collectionNo" INTEGER,"l1Title" VARCHAR NOT NULL ,"l1Content" BINARY DEFAULT (null) ,"l1LanguageId" INTEGER NOT NULL ,"l2Title" VARCHAR NOT NULL ,"l2Content" BINARY DEFAULT (null) ,"l2LanguageId" INTEGER,"created" FLOAT NOT NULL ,"modified" FLOAT NOT NULL ,"lastRead" FLOAT,"mediaUri" VARCHAR,"userId" INTEGER NOT NULL ,"readTimes" INTEGER NOT NULL  DEFAULT (0) ,"listenedTimes" INTEGER NOT NULL  DEFAULT (0) );
+CREATE TABLE "language" (
+"languageId" INTEGER PRIMARY KEY ,
+"name" VARCHAR NOT NULL,
+"created" FLOAT NOT NULL,
+"modified" FLOAT,
+"isArchived" INTEGER,
+"languageCode" VARCHAR NOT NULL,
+"userId" INTEGER NOT NULL, 
+"direction" INTEGER NOT NULL, 
+"sentenceRegex" VARCHAR NOT NULL, 
+"termRegex" VARCHAR NOT NULL
+);
+CREATE TABLE "language_plugin" ("languageId" INTEGER NOT NULL , "pluginId" INTEGER NOT NULL , PRIMARY KEY ("languageId", "pluginId"));
+CREATE TABLE "languagecode" ("name" VARCHAR NOT NULL, "code" VARCHAR UNIQUE NOT NULL);
+CREATE TABLE "plugin" (
+"pluginId" INTEGER PRIMARY KEY  NOT NULL , 
+"name" VARCHAR NOT NULL, 
+"description" VARCHAR, 
+"content" TEXT, 
+"uuid" VARCHAR NOT NULL
+);
+CREATE TABLE "storage" ("uuid" VARCHAR, "k" VARCHAR NOT NULL,  "v" TEXT NOT NULL);
+CREATE TABLE "term" (
+    "termId" INTEGER PRIMARY KEY,
+    "created" FLOAT NOT NULL,
+    "modified" FLOAT,
+    "phrase" VARCHAR  NOT NULL,
+    "basePhrase" VARCHAR,
+    "lowerPhrase" VARCHAR  NOT NULL,
+    "definition" VARCHAR,
+    "sentence" VARCHAR,
+    "state" INTEGER  NOT NULL,
+    "languageId" INTEGER NOT NULL,
+    "itemSourceId" INTEGER,
+    "userId" INTEGER NOT NULL
+, "isFragment" BOOL NOT NULL  DEFAULT 0);
+CREATE TABLE "termlog" ("entryDate" FLOAT NOT NULL ,"termId" INTEGER NOT NULL ,"state" INTEGER NOT NULL ,"type" INTEGER NOT NULL  DEFAULT (0) ,"languageId" INTEGER NOT NULL ,"userId" INTEGER NOT NULL );
+CREATE TABLE "user" (
+"userId" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , 
+"username" VARCHAR UNIQUE NOT NULL , 
+"lastLogin" FLOAT, 
+"accessKey" VARCHAR, 
+"accessSecret" VARCHAR, 
+"syncData" BOOL);
+CREATE INDEX "IDX_item_l1Id" ON "item" ("l1LanguageId" ASC);
+CREATE INDEX "IDX_item_l2Id" ON "item" ("l2LanguageId" ASC);
+CREATE INDEX "IDX_term_languageId" ON "term" ("languageId" ASC);
+CREATE UNIQUE INDEX "IDX_unique_storage_key" ON "storage" ("uuid" ASC, "k" ASC);
+CREATE UNIQUE INDEX "IDX_unique_terms" ON "term" ("lowerPhrase" ASC, "languageId" ASC, "userId" ASC);
+        """
+        
+        self.db.script(sql)
+        
+        storageService = StorageService()
+        languageCodeService = LanguageCodeService()
+        
+        storageService.save("software_version", Application.version)
+        languageCodeService.reset()
+    
     def upgradeDb(self):
-        if not self.tableExists("storage"):
-            logging.debug("create db")
-            
         version = self.storageService.findOne("db_version")
         
         if version==None:

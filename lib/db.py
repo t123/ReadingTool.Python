@@ -1,33 +1,5 @@
 import sqlite3
     
-class Stmt:
-    def __init__(self):
-        pass
-    
-    def insert(self, sql, *a, **ka):
-        self.type = "insert"
-        self.sql = sql
-        self.a = a
-        self.ka = ka
-        
-    def update(self, sql, *a, **ka):
-        self.type = "update"
-        self.sql = sql
-        self.a = a
-        self.ka = ka
-        
-    def delete(self, sql, *a, **ka):
-        self.type = "delete"
-        self.sql = sql
-        self.a = a
-        self.ka = ka
-        
-    def select(self, sql, *a, **ka):
-        self.type = "select"
-        self.sql = sql
-        self.a = a
-        self.ka = ka
-    
 class Db:
     def __init__(self, connectionString = ':memory:'):
         self.conn = sqlite3.connect(connectionString, isolation_level=None)
@@ -39,6 +11,11 @@ class Db:
         
     def rollback(self):
         self.conn.rollback()
+        
+    def script(self, sql):
+        cursor = self.conn.cursor()
+        cursor.executescript(sql)
+        cursor.close()
         
     def execute(self, sql, *a, **ka):
         cursor = self.conn.cursor()
