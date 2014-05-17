@@ -1,4 +1,4 @@
-import requests, uuid, base64, json, hashlib, hmac, time
+import requests, uuid, base64, json, hashlib, hmac, time, logging
 from urllib.parse import urlparse
 
 from lib.misc import Application
@@ -17,10 +17,23 @@ class WebService:
                     "AccessKey": Application.user.accessKey
                 }
         
-    def createJsonSignatureHeaders(self, dictionary, contentType="application/json"):
+    def logError(self, response):
+        try:
+            data = json.loads(response.content.decode("utf8"))
+            logging.debug(data["code"])
+            logging.debug(data["message"])
+        except Exception as e:
+            logging.debug(str(e))
+             
+    def createJsonSignatureHeaders(self, dictionary, contentType="application/json", secret=None):
         data = json.dumps(dictionary, sort_keys=True)
         message = data.encode('utf-8')
-        secret = Application.user.accessSecret.encode('utf-8')
+        
+        if secret is None:
+            secret = Application.user.accessSecret.encode('utf-8')
+        else:
+            secret = secret.encode('utf-8')
+             
         signature = base64.b64encode(hmac.new(secret, message, digestmod=hashlib.sha256).digest())
         
         return (data, signature, {
@@ -43,16 +56,39 @@ class WebService:
             if r.status_code==200:
                 return r.content.decode('utf8')
                 
+            self.logError(r)
+            
         except requests.exceptions.RequestException:
             pass
         
         return None
+    
+    def validateCredentials(self, accessKey, accessSecret):
+        uri = Application.remoteServer + "/api/v1/validatecredentials"
+        data = self.getStandardDictionary(uri)
+        data["AccessKey"] = accessKey
+        
+        content, signature, headers = self.createJsonSignatureHeaders(data, secret=accessSecret)
+        
+        try:
+            r = requests.post(uri, headers=headers, data=content)
+            
+            if r.status_code==200:
+                return True
+            
+            self.logError(r)
+                
+        except requests.exceptions.RequestException:
+            pass
+              
+        return False
     
     def checkForNewVersion(self):
         uri = Application.remoteServer + "/api/v1/latestversion"
         r = requests.get(uri)
         
         if r.status_code!=200:
+            self.logError(r)
             return None
         
         return json.loads(r.text)
@@ -87,6 +123,8 @@ class WebService:
             
             if r.status_code==200:
                 return r.content 
+            
+            self.logError(r)
                 
         except requests.exceptions.RequestException:
             pass

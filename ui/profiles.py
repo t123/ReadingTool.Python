@@ -2,8 +2,10 @@ from PyQt4 import QtCore, QtGui, Qt
 
 from lib.misc import Application
 from lib.services.service import UserService
+from lib.services.web import WebService
 from lib.models.model import User
 from ui.views.profiles import Ui_Profiles
+from lib.stringutil import StringUtil
 
 class ProfilesForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -88,8 +90,8 @@ class ProfilesForm(QtGui.QDialog):
         currentRow = self.ui.lvUsers.currentRow()
         
         user.username = self.ui.leUsername.text()
-        user.accessKey = self.ui.leAccessKey.text()
-        user.accessSecret = self.ui.leAccessSecret.text()
+        user.accessKey = self.ui.leAccessKey.text().strip()
+        user.accessSecret = self.ui.leAccessSecret.text().strip()
         user.syncData = self.ui.cbSyncData.isChecked()
         
         self.userService.save(user)
@@ -99,6 +101,12 @@ class ProfilesForm(QtGui.QDialog):
         self.resetForm()
         
         Application.user = user
+        
+        webService = WebService()
+        
+        if not StringUtil.isEmpty(user.accessKey) and not StringUtil.isEmpty(user.accessSecret): 
+            if not webService.validateCredentials(user.accessKey, user.accessSecret):
+                Qt.QMessageBox.critical(self, "Invalid credentials", "Either your Access Key or Access Secret is incorrect.")
         
     def deleteUser(self):
         user = self._currentUser()
