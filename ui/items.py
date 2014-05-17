@@ -87,7 +87,7 @@ class ItemsForm(QtGui.QDialog):
                     file.write(content)
         
     def addItem(self):
-        self.dialog = ItemDialogForm()
+        self.dialog = ItemDialogForm(self)
         self.dialog.setItem(0)
         self.dialog.show()
         
@@ -97,7 +97,7 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
         
-        self.dialog = ItemDialogForm()
+        self.dialog = ItemDialogForm(self)
         self.dialog.setItem(item.data(QtCore.Qt.UserRole).itemId)
         self.dialog.show()
         

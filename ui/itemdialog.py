@@ -26,12 +26,23 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbSplit, QtCore.SIGNAL("clicked()"), self.splitItem)
         QtCore.QObject.connect(self.ui.pbChoose, QtCore.SIGNAL("clicked()"), self.chooseFile)
-        QtCore.QObject.connect(self.ui.pbMecab, QtCore.SIGNAL("clicked()"), self.mecabText)
+        QtCore.QObject.connect(self.ui.pbSegment, QtCore.SIGNAL("clicked()"), self.segmentText)
         QtCore.QObject.connect(self.ui.cbL1Language, QtCore.SIGNAL("currentIndexChanged(int)"), self.checkLanguageCode)
         
-    def mecabText(self):
+    def updateItems(self):
+        #TODO fix me
+        from ui.items import ItemsForm
+        
+        parent = self.parent()
+        
+        if parent is None or not isinstance(parent, ItemsForm):
+            return
+        
+        parent.updateItems()
+        
+    def segmentText(self):
         webService = WebService()
-        content = webService.mecabText(self.ui.teL1Content.text())
+        content = webService.segmentText(self.language.languageCode, self.ui.teL1Content.text())
         
         if content is not None:
             self.ui.teL1Content.setText(content)
@@ -55,6 +66,7 @@ class ItemDialogForm(QtGui.QDialog):
             return
         
         self.itemService.splitItem(self.item.itemId)
+        self.updateItems()
         
     def copyItem(self):
         if self.item is None:
@@ -63,6 +75,7 @@ class ItemDialogForm(QtGui.QDialog):
         copy = self.itemService.copyItem(self.item.itemId)
         copy = self.itemService.save(copy)
         self.setItem(copy.itemId)
+        self.updateItems()
         
     def saveItem(self):
         item = None
@@ -88,6 +101,7 @@ class ItemDialogForm(QtGui.QDialog):
             
         item = self.itemService.save(item)
         self.setItem(item.itemId)
+        self.updateItems()
         
     def setItem(self, itemId):
         self.item = self.itemService.findOne(itemId)
@@ -132,12 +146,13 @@ class ItemDialogForm(QtGui.QDialog):
         
     def checkLanguageCode(self, index):
         l1LanguageId = self.ui.cbL1Language.itemData(self.ui.cbL1Language.currentIndex())
-        language = self.languageService.findOne(l1LanguageId)
+        self.language = self.languageService.findOne(l1LanguageId)
         
-        if language.languageCode=="ja":
-            self.ui.pbMecab.show()
+        if self.language.languageCode=="ja":
+            self.ui.pbSegment.setToolTip("Segment with Mecab")
+            self.ui.pbSegment.show()
         else:
-            self.ui.pbMecab.hide()
+            self.ui.pbSegment.hide()
             
     def updateLanguages(self):
         languages = self.languageService.findAll()
