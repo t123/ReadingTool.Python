@@ -62,7 +62,7 @@ class LanguageService:
         
     def save(self, language, plugins=None):
         if(language.languageId == 0):
-            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, sentenceRegex, termRegex, direction) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :sentenceRegex, :termRegex, :direction )",
+            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, sentenceRegex, termRegex, direction) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :sentenceRegex, :termRegex, :direction)",
                             languageId=None,
                             name=language.name,
                             created=time.time(),
@@ -654,6 +654,16 @@ class PluginService:
         self.db.execute("DELETE FROM Language_Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
 
 class StorageService:
+    SERVER_LOCAL = "server_local"
+    SERVER_REMOTE = "server_remote"
+    
+    DB_BACKUP_DIRECTORY = "db_backup_directory"
+    DB_BACKUP_MAXFILES = "db_backup_maxfiles"
+    DB_VERSION = "db_version"
+    
+    SOFTWARE_VERSION = "software_version"
+    SOFTWARE_CHECK_UPDATES = "software_check_updates"
+    
     def __init__(self):
         self.db = Db(Application.connectionString)
         
@@ -674,9 +684,14 @@ class StorageService:
         """Returns all the storage objects for a given UUID"""
         return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid=:uuid", uuid=uuid)
     
-    def find(self, key, uuid=""):
+    def find(self, key, default=None, uuid=""):
         """Returns the storage value for a given key and UUID"""
-        return self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+        result = self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+        
+        if result is None:
+            return default
+        
+        return result
     
 class DatabaseService:
     def __init__(self):
@@ -694,7 +709,7 @@ class DatabaseService:
             logging.debug("missing required table")
             return True
         
-        version = self.storageService.findOne("db_version")
+        version = self.storageService.findOne(StorageService.DB_VERSION)
         
         if version==None or version<Application.version:
             logging.debug("Required dbversion: %d, your version: %d" % (Application.version, version or 0))
@@ -765,11 +780,11 @@ CREATE UNIQUE INDEX "IDX_unique_terms" ON "term" ("lowerPhrase" ASC, "languageId
         storageService = StorageService()
         languageCodeService = LanguageCodeService()
         
-        storageService.save("software_version", Application.version)
+        storageService.save(StorageService.SOFTWARE_VERSION, Application.version)
         languageCodeService.reset()
     
     def upgradeDb(self):
-        version = self.storageService.findOne("db_version")
+        version = self.storageService.findOne(StorageService.DB_VERSION)
         
         if version==None:
             version = 0

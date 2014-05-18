@@ -15,8 +15,8 @@ class Startup:
         databaseService.createDb()
         
     def setServers(self):
-        local = self.storage.find("server_local") or "http://localhost:8080"
-        remote = self.storage.find("server_remote") or "http://api.readingtool.net"
+        local = self.storage.find(StorageService.SERVER_LOCAL, "http://localhost:8080") 
+        remote = self.storage.find(StorageService.SERVER_REMOTE, "http://api.readingtool.net")
         
         logging.debug("Local server=%s" % local) 
         logging.debug("Remote server=%s" % remote)
@@ -42,7 +42,7 @@ class Startup:
         if not os.path.exists(Application.connectionString):
             return
         
-        path = self.storage.find("db_backup_directory")
+        path = self.storage.find(StorageService.DB_BACKUP_DIRECTORY)
         
         if StringUtil.isEmpty(path) or not os.path.exists(path):
             path = os.path.join(Application.pathDatabase, "backup")
@@ -64,18 +64,10 @@ class Startup:
         files = [file for file in os.listdir(path) if os.path.isfile(os.path.join(path,file))]
         
         try:
-            maxFiles = int(self.storage.find("db_backup_maxfiles"))
-            
-            if maxFiles<=0:
-                logging.debug("db_backup_maxfiles<=0, default to 15")                
-                maxFiles = 15
-                
-            if maxFiles>=999:
-                logging.debug("db_backup_maxfiles>=999, default to 15")                
-                maxFiles = 15
+            maxFiles = int(self.storage.find(StorageService.DB_BACKUP_MAXFILES, 30))
         except:
-            logging.debug("Invalid db_backup_maxfiles, default to 15")
-            maxFiles = 15
+            logging.debug("Invalid db_backup_maxfiles, default to 30")
+            maxFiles = 30
             
         if len(files)>maxFiles:
             d = []
@@ -84,7 +76,7 @@ class Startup:
                 
             d = sorted(d, key=lambda tup:tup[1])
             
-            difference = len(files)-15
+            difference = len(files)-maxFiles
             
             if difference>0:
                 for i in range(0, difference):

@@ -1,6 +1,7 @@
 import requests, uuid, base64, json, hashlib, hmac, time, logging
 from urllib.parse import urlparse
 
+from lib.db import Db
 from lib.misc import Application
 from lib.models.model import Item
 from lib.models.parser import ParserInput
@@ -8,13 +9,13 @@ from lib.services.parser import LatexParser
 from lib.services.service import ItemService, LanguageService, TermService
 
 class WebService:
-    def getStandardDictionary(self, uri, verb="POST"):
+    def getStandardDictionary(self, uri, verb="POST", accessKey=None):
         return {
                     "Uri": uri,
                     "Verb": verb,
                     "Time": time.time(),
                     "Nonce": str(uuid.uuid1()),
-                    "AccessKey": Application.user.accessKey
+                    "AccessKey": Application.user.accessKey if accessKey is None else accessKey
                 }
         
     def logError(self, response):
@@ -65,8 +66,7 @@ class WebService:
     
     def validateCredentials(self, accessKey, accessSecret):
         uri = Application.remoteServer + "/api/v1/validatecredentials"
-        data = self.getStandardDictionary(uri)
-        data["AccessKey"] = accessKey
+        data = self.getStandardDictionary(uri, accessKey=accessKey)
         
         content, signature, headers = self.createJsonSignatureHeaders(data, secret=accessSecret)
         
@@ -130,3 +130,68 @@ class WebService:
             pass
         
         return None
+    
+    #===========================================================================
+    # def sync(self, userId):
+    #     from lib.models.model import Language, Term, Item
+    #     
+    #     self.db = Db(Application.connectionString)
+    #     uri = Application.remoteServer + "/api/v1/sync-server-changes-1"
+    #     
+    #     data = self.getStandardDictionary(uri)
+    #     data["Language"] = self.db.scalar("SELECT ifnull(sync, 0) ts FROM language ORDER BY ts DESC LIMIT 1")
+    #     data["Terms"] = 0 #self.db.scalar("SELECT ifnull(sync, 0) ts FROM term ORDER BY ts DESC LIMIT 1")
+    #     data["Items"] = 0 #self.db.scalar("SELECT ifnull(sync, 0) ts FROM item ORDER BY ts DESC LIMIT 1")
+    #     
+    #     content, signature, headers = self.createJsonSignatureHeaders(data)
+    #     r = requests.post(uri, headers=headers, data=content)
+    #     
+    #     if r.status_code!=200:
+    #         self.logError(r)
+    #         return None;
+    #         
+    #     serverData = json.loads(r.content.decode('utf8'))
+    #     self.syncLanguage(userId, serverData["Language"])
+    #     
+    # def syncLanguage(self, userId, data):
+    #     from lib.models.model import Language
+    #     
+    #     timestamp = data["Timestamp"]
+    #     print(timestamp)
+    #     
+    #     for l in data["Languages"]:
+    #         pass
+    #     
+    #     languages = self.db.many(Language, "SELECT * FROM language WHERE isDeleted=0 AND userId=:userId AND modified>:ts", userId=userId, ts=timestamp)
+    #     languageReplace = []
+    #     
+    #     for l in languages:
+    #         languageReplace.append(json.dumps(l.toDict()))
+    #         
+    #     languages = self.db.many(Language, "SELECT * FROM language WHERE isDeleted=1 AND userId=:userId", userId=userId)
+    #     languageDelete = []
+    #     
+    #     for l in languages:
+    #         languageDelete.append(json.dumps(l.toDict()))
+    #         
+    #     uri = Application.remoteServer + "/api/v1/sync-server-changes-languages"
+    #     
+    #     sendData = self.getStandardDictionary(uri)
+    #     sendData["LanguagesReplace"] = languageReplace
+    #     sendData["LanguagesDelete"] = languageDelete
+    #     
+    #     print(languageReplace)
+    #     print(languageDelete)
+    #     
+    #     content, signature, headers = self.createJsonSignatureHeaders(sendData)
+    #     r = requests.post(uri, headers=headers, data=content)
+    #     
+    #     if r.status_code!=200:
+    #         self.logError(r)
+    #         
+    #     response = json.loads(r.content.decode('utf8'))
+    #     
+    #     syncTime = response["Timestamp"]
+    #     self.db.execute("UPDATE language SET sync=:sync WHERE userId=:userId and modified>:ts", sync=syncTime, userId=userId, ts=timestamp)
+    #     self.db.execute("DELETE FROM language WHERE isDeleted=1 AND userId=:userId", userId=userId)
+    #===========================================================================

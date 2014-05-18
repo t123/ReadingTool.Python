@@ -21,7 +21,6 @@ class ProfilesForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.leUsername, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.leAccessKey, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.leAccessSecret, QtCore.SIGNAL("textChanged(QString)"), self.changed)
-        QtCore.QObject.connect(self.ui.cbSyncData, QtCore.SIGNAL("stateChanged(int)"), self.changed)
         
         self.userService = UserService()
         self.updateUsers();
@@ -35,6 +34,15 @@ class ProfilesForm(QtGui.QDialog):
             return None
         
         return self.userService.findOne(self.ui.lvUsers.currentItem().data(QtCore.Qt.UserRole).userId)
+        
+    def sync(self):
+        user = self._currentUser()
+        
+        if user is None or not self.ui.cbSyncData.isChecked():
+            return
+        
+        webService = WebService()
+        webService.sync(user.userId)
         
     def changed(self):
         self.ui.pbCancel.setEnabled(True)
@@ -68,7 +76,7 @@ class ProfilesForm(QtGui.QDialog):
         self.ui.leUsername.setText(user.username)
         self.ui.leAccessKey.setText(user.accessKey)
         self.ui.leAccessSecret.setText(user.accessSecret)
-        self.ui.cbSyncData.setChecked(user.syncData)
+        #self.ui.cbSyncData.setChecked(user.syncData)
         
         if self.ui.lvUsers.currentItem().data(QtCore.Qt.UserRole).userId==Application.user.userId:
             self.ui.pbDelete.setEnabled(False)
@@ -92,7 +100,8 @@ class ProfilesForm(QtGui.QDialog):
         user.username = self.ui.leUsername.text()
         user.accessKey = self.ui.leAccessKey.text().strip()
         user.accessSecret = self.ui.leAccessSecret.text().strip()
-        user.syncData = self.ui.cbSyncData.isChecked()
+        #user.syncData = self.ui.cbSyncData.isChecked()
+        user.syncData = False
         
         self.userService.save(user)
         self.updateUsers()

@@ -12,6 +12,18 @@ class StringUtil:
         
         return False
     
+    @staticmethod
+    def isTrue(x):
+        if x is None:
+            return False
+        
+        x = x.lower().strip()
+        
+        if x=="1" or x=="true" or x=="yes":
+            return True
+        
+        return False
+    
 class FilterParser():
     def __init__(self):
         self.tags = []

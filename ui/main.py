@@ -1,3 +1,4 @@
+import logging
 from PyQt4 import Qt, QtGui, QtCore
 from lib.misc import Application
 from lib.services.service import UserService, ItemService, StorageService
@@ -11,6 +12,7 @@ from ui.plugins import PluginsForm
 from ui.items import ItemsForm
 from ui.terms import TermsForm
 from ui.itemdialog import ItemDialogForm
+from lib.stringutil import StringUtil
 
 class MainWindow(QtGui.QMainWindow):
     def __init__(self):
@@ -34,17 +36,25 @@ class MainWindow(QtGui.QMainWindow):
         self.checkVersion()
 
     def checkVersion(self):
-        storageService = StorageService()
-        softwareVersion = storageService.find("software_version") or "0.0"
-        webService = WebService()
+        try:
+            storageService = StorageService()
+            checkForUpdate = storageService.find(StorageService.SOFTWARE_CHECK_UPDATES, "true")
+            
+            if not StringUtil.isTrue(checkForUpdate):
+                return
         
-        result = webService.checkForNewVersion()
-        
-        if not result:
-            return
-        
-        if float(result["version"])>float(softwareVersion):
-            Qt.QMessageBox.information(self, result["title"], result["message"], Qt.QMessageBox.Ok)
+            softwareVersion = storageService.find(StorageService.SOFTWARE_VERSION, "0.0")
+            webService = WebService()
+            
+            result = webService.checkForNewVersion()
+            
+            if not result:
+                return
+            
+            if float(result["version"])>float(softwareVersion):
+                Qt.QMessageBox.information(self, result["title"], result["message"], Qt.QMessageBox.Ok)
+        except Exception as e:
+            logging.error(str(e))
                 
     def updateItems(self):
         readItems = self.itemService.findRecentlyRead()
