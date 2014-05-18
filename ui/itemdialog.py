@@ -3,6 +3,7 @@ from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla
 
 from lib.stringutil import StringUtil
+from lib.misc import Application
 from lib.models.model import Item, ItemType
 from lib.services.service import ItemService, LanguageService, StorageService
 from ui.views.itemdialog import Ui_ItemDialog
@@ -145,6 +146,10 @@ class ItemDialogForm(QtGui.QDialog):
         self.checkLanguageCode(index1)
         
     def checkLanguageCode(self, index):
+        if not Application.user.hasCredentials():
+            self.ui.pbSegment.hide()
+            return
+            
         l1LanguageId = self.ui.cbL1Language.itemData(self.ui.cbL1Language.currentIndex())
         self.language = self.languageService.findOne(l1LanguageId)
         

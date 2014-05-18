@@ -114,10 +114,11 @@ class CustomWebView(Qt.QWebView):
                         action.connect(action, QtCore.SIGNAL("triggered()"), lambda: rw.readItem(rw.item.itemId, False))
                         self.menu.addAction(action)
                         
-                    action = QtGui.QAction(self.menu)
-                    action.setText("Create PDF")
-                    action.connect(action, QtCore.SIGNAL("triggered()"), self.createPdf)
-                    self.menu.addAction(action)
+                    if Application.user.hasCredentials():
+                        action = QtGui.QAction(self.menu)
+                        action.setText("Create PDF")
+                        action.connect(action, QtCore.SIGNAL("triggered()"), self.createPdf)
+                        self.menu.addAction(action)
                         
                 elif item.itemType==ItemType.Video:
                     if not rw.asParallel and item.isParallel():

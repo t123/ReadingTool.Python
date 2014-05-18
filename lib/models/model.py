@@ -78,6 +78,15 @@ class User():
         self.accessSecret = ""
         self.syncData = False
         
+    def hasCredentials(self):
+        if not self.accessKey or not self.accessSecret:
+            return False
+        
+        if len(self.accessKey)!=20 or len(self.accessSecret)!=50:
+            return False
+        
+        return True
+        
 class Language():
     TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\\'-]+)|(__\d+__)"
     SENTENCE_REGEX = "[^\\.!\\?]+[\\.!\\?\\n]+"
