@@ -353,7 +353,7 @@ class LatexParser(BaseParser):
         super().__init__()
         self.xsltFile = "latex.xslt"
         self.htmlFile = ""
-        self.joinString = "\n"
+        self.joinString = " ; "
         
     def createContentNode(self):
         content = etree.Element("content",

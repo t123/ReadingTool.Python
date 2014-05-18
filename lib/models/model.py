@@ -156,16 +156,32 @@ class Term():
     def fullDefinition(self, joinString="<br/>"):
         fullDef = ""
         
-        if not StringUtil.isEmpty(self.basePhrase):
-            fullDef += self.basePhrase + joinString 
+        if joinString=="<br/>":
+            if not StringUtil.isEmpty(self.basePhrase):
+                fullDef += self.basePhrase + joinString 
             
-        if not StringUtil.isEmpty(self.definition):
-            fullDef += self.definition
+            if not StringUtil.isEmpty(self.definition):
+                fullDef += self.definition
+                
+            return re.sub(r"\n", "<br/>", fullDef)
          
         if joinString=="\n":
+            if not StringUtil.isEmpty(self.basePhrase):
+                fullDef += self.basePhrase + joinString 
+            
+            if not StringUtil.isEmpty(self.definition):
+                fullDef += self.definition
+                
             return fullDef
         
-        return re.sub(r"\n", "<br/>", fullDef)
+        if joinString==" ; ":
+            if not StringUtil.isEmpty(self.basePhrase):
+                fullDef += self.basePhrase + joinString 
+            
+            if not StringUtil.isEmpty(self.definition):
+                fullDef += self.definition
+                
+            return re.sub(r"\n", " ; ", fullDef)
         
     @property
     def phrase(self):

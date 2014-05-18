@@ -2,19 +2,24 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
   	<xsl:output method="text" indent="no" omit-xml-declaration="yes" />
     <xsl:template match="/">
-        <xsl:text>\documentclass[8pt]{article}
-\usepackage[papersize={90mm,120mm},margin=2mm]{geometry}
-\usepackage[kerning=true]{microtype}
+        <xsl:text>\documentclass[fontsize=9pt]{scrartcl}
 \usepackage[utf8]{inputenc}
+\usepackage[paperwidth=9cm, paperheight=12cm, top=1cm, left=1cm, right=1cm, bottom=1cm]{geometry}
+\usepackage{graphicx}
+\usepackage{perpage}
 \usepackage[T1]{fontenc}
-\usepackage[charter]{mathdesign}
-\usepackage[normalmargins]{savetrees}
+\usepackage[scaled]{helvet}
+\renewcommand*\familydefault{\sfdefault} 
+\frenchspacing
+\sloppy
+\pagestyle{empty}
 \usepackage[pdftex,
     pdfauthor={</xsl:text><xsl:value-of select="//root/content/@author"/><xsl:text>},
     pdftitle={</xsl:text><xsl:value-of select="//root/content/@title"/><xsl:text>},
     pdfcreator={ReadingTool}]{hyperref}
 \sloppy
 \pagestyle{empty}
+\MakePerPage[1]{footnote}
 \begin{document}
 </xsl:text>
 <xsl:apply-templates select="//root/content/join" />
