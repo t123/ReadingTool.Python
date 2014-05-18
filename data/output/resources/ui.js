@@ -107,13 +107,15 @@ $(function() {
 	});
 
 	$('#reading').on('mousedown', 'span.__term', function(e) {
-		mouseTrack.dragged = false;
-		mouseTrack.mouseDown = true;
-		mouseTrack.originalSpan = null;
+		if(e.which==1) {
+			mouseTrack.dragged = false;
+			mouseTrack.mouseDown = true;
+			mouseTrack.originalSpan = null;
+		}
 	});
 		
 	$('#reading').on('mousemove', 'span.__term', function(e) {
-		if(mouseTrack.mouseDown) {
+		if(e.which==1 && mouseTrack.mouseDown) {
 			mouseTrack.dragged = true;
 			$('body').css('cursor', 'copy');
 			
@@ -124,34 +126,38 @@ $(function() {
 	});
 	
 	$('#reading').on('mouseup', 'span.__term', function(e) {
-		mouseTrack.mouseDown = false;
-		$('body').css('cursor', 'auto');
-		element = $(this);
-		
-		if(mouseTrack.dragged && element[0]!==mouseTrack.originalSpan[0]) {
-			fragment = window.lib.createFragment(mouseTrack.originalSpan, element);
+		if(e.which==1) {
+			mouseTrack.mouseDown = false;
+			$('body').css('cursor', 'auto');
+			element = $(this);
 			
-			if(fragment==null) {
-				return;
+			if(mouseTrack.dragged && element[0]!==mouseTrack.originalSpan[0]) {
+				fragment = window.lib.createFragment(mouseTrack.originalSpan, element);
+				
+				if(fragment==null) {
+					return;
+				}
+				
+				element = fragment;
+			} else {
+				if(element.closest('.__fragment').any()) {
+					element = element.closest('.__fragment');
+				}
 			}
 			
-			element = fragment;
+			$.event.trigger("preTermClick", [e, $(this)]);
+			
+			if(!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
+				reading.showModal(element);
+			}
+			
+			$.event.trigger("postTermClick", [e, $(this)]);
+			
+			mouseTrack.dragged = false;
+			mouseTrack.originalSpan = null;
 		} else {
-			if(element.closest('.__fragment').any()) {
-				element = element.closest('.__fragment');
-			}
+			$.event.trigger("termClick", [e, $(this)]);
 		}
-		
-		$.event.trigger("preTermClick", [e, $(this)]);
-		
-		if(!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-			reading.showModal(element);
-		}
-		
-		$.event.trigger("postTermClick", [e, $(this)]);
-		
-		mouseTrack.dragged = false;
-		mouseTrack.originalSpan = null;
 	});
 	
 	$('#dSave').click(function() {

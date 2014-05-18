@@ -128,7 +128,7 @@
         	<xsl:when test="@definition">
               <a rel="tooltip">
                 <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute>
-                <xsl:apply-templates select="term"/>
+                <xsl:apply-templates />
               </a>
             </xsl:when> 
             <xsl:otherwise>
@@ -138,8 +138,6 @@
         </span>
   </xsl:template>
   <xsl:template match="term">
-    <xsl:choose> 
-      <xsl:when test="@isTerm='True'">
         <span>
           <xsl:attribute name="class">
             <xsl:text>__term</xsl:text>
@@ -186,14 +184,17 @@
             </xsl:otherwise>
           </xsl:choose>
         </span>
-      </xsl:when>
-      <xsl:otherwise>
-        <span>
-          <xsl:attribute name="class">__punctuation <xsl:if test="@isWhitespace='True'"> __whitespace</xsl:if>
-          </xsl:attribute>
-          <xsl:value-of select="."/>
-        </span>
-      </xsl:otherwise>
-    </xsl:choose>
+  </xsl:template>
+  <xsl:template match="whitespace">
+  	<span class="__nt __whitespace"><xsl:value-of select="."/></span>
+  </xsl:template>
+  <xsl:template match="number">
+  	<span class="__nt __number"><xsl:value-of select="."/></span>
+  </xsl:template>
+  <xsl:template match="punctuation">
+  	<span class="__nt"><xsl:value-of select="."/></span>
+  </xsl:template>
+  <xsl:template match="tag">
+  	<xsl:value-of select="." disable-output-escaping="yes" />
   </xsl:template>
 </xsl:stylesheet>

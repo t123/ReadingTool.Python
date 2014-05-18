@@ -1,4 +1,4 @@
-import os, re, datetime, math, logging
+import os, re, datetime, math, logging, time
 from lxml import etree
 from lib.services.service import UserService, ItemService, LanguageService, TermService
 from lib.models.model import User, Item, Language, LanguageDirection, TermState, ItemType
@@ -15,12 +15,10 @@ class BaseParser:
         self.htmlFile = None
     
     def splitIntoTerms(self, sentence, regex):
-        matches = regex.split(sentence)
+        matches = regex.findall(sentence)
         return matches
     
     def splitIntoSentences(self, paragraph, regex):
-        paragraph = paragraph or ""
-        
         if not paragraph.endswith('\n'):
             paragraph += '\n'
             
@@ -61,23 +59,11 @@ class BaseParser:
         
         return content;
     
-    def createTermNode(self, term, l1TermRegex, fragments):
-        if "__" in term:
-            if fragments is not None and term in fragments:
-                #fragmentNode = etree.Element(term)
-                return fragments[term]
-            
-            print("missing: %s" % term)
-            for k, v in fragments.items():
-                print("%s" %k)
-            
-            return None
-        
-        termLower = term.lower()
-        termNode = etree.Element("term")
-        termNode.text = term.rstrip('\n')
-        
-        if l1TermRegex.match(term):
+    def createTermNode(self, term, fragments):
+        if term[0]!="": #term
+            termNode = etree.Element("term")
+            termLower = term[0].lower()
+            termNode.text = term[0]
             self.po.stats.totalTerms += 1
             termNode.attrib["isTerm"] = "True"
             termNode.attrib["phrase"] = termLower
@@ -106,33 +92,61 @@ class BaseParser:
                 self.po.stats.notseen += 1
                 termNode.attrib["state"] = TermState.ToString(TermState.NotSeen).lower()
                 
-        else:
-            termNode.attrib["isTerm"] = "False"
+            return termNode
+        
+        if term[1]!="": #whitespace
+            termNode = etree.Element("whitespace")
+            termNode.text = term[1]
+            return termNode
+        
+        if term[2]!="": #punctuation
+            termNode = etree.Element("punctuation")
+            termNode.text = term[2]
+            return termNode
+        
+        if term[3]!="": #number
+            termNode = etree.Element("number")
+            termNode.text = term[3]
+            return termNode
+        
+        if term[4]!="": #fragment
+            if fragments is not None and term[4] in fragments:
+                return fragments[term[4]]
             
-            if term.isspace():
-                termNode.attrib["isWhitespace"] = "True"
-            else:
-                if "," in term:
-                    termNode.text = term.lstrip()
-                
-        return termNode
+            logging.debug("missing fragment: %s" % term[4])
+            
+        if term[5]!="":
+            termNode = etree.Element("tag")
+            termNode.attrib["isOpen"] = "True"
+            termNode.text = term[5]
+            return termNode
+        
+        if term[6]!="":
+            termNode = etree.Element("tag")
+            termNode.attrib["isClose"] = "True"
+            termNode.text = term[6]
+            return termNode
+            
+        return None
     
     def addFrequencyData(self, document):
+        time1 = time.time()
         totalTerms = sum(self.frequency.values())
         common = {}
         notseenState = TermState.ToString(TermState.NotSeen).lower()
         
         t = []
         for el in document.iter("term"):
-            if el.attrib["isTerm"]=="True":
-                el.attrib["occurrences"] = str(self.frequency[el.text.lower()])
-                el.attrib["frequency"] = str(round(self.frequency[el.text.lower()]/totalTerms*100, 2))
-                
-                if el.attrib["state"]==notseenState:
-                    t.append([el, el.attrib["phrase"], el.attrib["frequency"]])
-                    common[el.text.lower()] = self.frequency[el.text.lower()]
+            el.attrib["occurrences"] = str(self.frequency[el.text.lower()])
+            el.attrib["frequency"] = str(round(self.frequency[el.text.lower()]/totalTerms*100, 2))
+            
+            if el.attrib["state"]==notseenState:
+                t.append([el, el.attrib["phrase"], el.attrib["frequency"]])
+                common[el.text.lower()] = self.frequency[el.text.lower()]
                     
         t = sorted(t, key=lambda tup: tup[2], reverse=True)
+        time2 = time.time()
+        
         u = []
         counter = 0
         
@@ -144,7 +158,7 @@ class BaseParser:
                 continue
             
             for el in document.iter("term"):
-                if el.attrib["isTerm"]=="True" and el.attrib["phrase"]==i[1]:
+                if el.attrib["phrase"]==i[1]:
                     if counter<20:
                         el.attrib["commonness"] = "high"
                     elif counter<40:
@@ -154,13 +168,17 @@ class BaseParser:
                         
             u.append(i[1])
             counter += 1
+            
+        logging.debug("\taddFrequencyData 1={}".format(time2-time1))
+        logging.debug("\taddFrequencyData 2={}".format(time.time()-time2))
+        logging.debug("addFrequencyData total={}".format(time.time()-time1))
         
     def calculateUniqueTerms(self, document):
+        time1 = time.time()
         terms = {}
         
         for el in document.iter("term"):
-            if el.attrib["isTerm"]=="True":
-                terms[el.text.lower()] = el.attrib["state"]
+            terms[el.text.lower()] = el.attrib["state"]
                 
         self.po.stats.uniqueTerms = len(terms)
         
@@ -173,8 +191,11 @@ class BaseParser:
                 self.po.stats.uniqueIgnored += 1
             elif state==TermState.ToString(TermState.NotSeen).lower():
                 self.po.stats.uniqueNotSeen += 1
+                
+        logging.debug("calculateUniqueTerms={}".format(time.time()-time1))
         
     def applyTransform(self, document=None):
+        time1 = time.time()
         xsltContent = None
         
         with open (os.path.join(Application.pathParsing, self.xsltFile), "r") as xsltFile:
@@ -188,9 +209,12 @@ class BaseParser:
         else:
             result = transform(document)
         
+        logging.debug("applyTransform={}".format(time.time()-time1))
+        
         return result
         
     def parseFragments(self, content):
+        time1 = time.time()
         termRegex = re.compile(self.pi.language1.termRegex)
         
         mdict = { }
@@ -199,10 +223,10 @@ class BaseParser:
         
         for lower, t in self.pi.fragments.items():
             matches = re.findall(lower, content, re.IGNORECASE) 
-            
+             
             if len(matches)==0:
                 continue
-            
+             
             for match in matches:
                 if not match in mdict:
                     root = etree.Element("fragment")
@@ -210,26 +234,23 @@ class BaseParser:
                     root.attrib["lower"] = lower
                     root.attrib["phrase"] = match
                     root.attrib["state"] = TermState.ToString(t.state).lower()
-                    
+                     
                     definition = t.fullDefinition()
-                    
+                     
                     if not StringUtil.isEmpty(definition):
                         root.attrib["definition"] = t.fullDefinition()
-                    
+                     
                     terms = self.splitIntoTerms(match, termRegex)
-                        
+                         
                     for term in terms:
-                        if term is None or term=="":
-                            continue
-                        
-                        root.append(self.createTermNode(term, termRegex, None))
-        
+                        root.append(self.createTermNode(term, None))
+         
                     mdict[match] = root
                     rdict["__" + str(counter) + "__"]  = root
                     content = content.replace(match, "__" + str(counter) + "__")
                     counter += 1
-                    #print(etree.tostring(root, encoding="utf8").decode())
             
+        logging.debug("parseFragments={}".format(time.time()-time1))
         return (content, rdict)
 
 class TextParser(BaseParser):
@@ -241,6 +262,8 @@ class TextParser(BaseParser):
     def parse(self, parserInput):
         self.pi = parserInput
         self.po.item = parserInput.item
+
+        time1 = time.time()        
         
         l1Content = self.pi.item.getL1Content()
         l1Content, fragments = self.parseFragments(l1Content)
@@ -254,8 +277,15 @@ class TextParser(BaseParser):
         root = etree.Element("root")
         contentNode = self.createContentNode()
         
+        time2 = time.time()
+        logging.debug("\tparse (root)={}".format(time2-time1))
+        
         for i in range(0, len(l1Paragraphs)):
             l1Paragraph = l1Paragraphs[i]
+            
+            if l1Paragraph is None:
+                continue
+            
             l2Paragraph = l2Paragraphs[i] if l2Paragraphs and self.pi.asParallel and i<len(l2Paragraphs) else ''
             
             joinNode = etree.Element("join")
@@ -270,13 +300,13 @@ class TextParser(BaseParser):
             
             for sentence in sentences:
                 sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence, l1TermRegex)
+                terms = self.splitIntoTerms(sentence.rstrip("\n"), l1TermRegex)
                 
                 for term in terms:
-                    if term=="" or term is None:
-                        continue
+                    termNode = self.createTermNode(term, fragments)
                     
-                    sentenceNode.append(self.createTermNode(term, l1TermRegex, fragments))
+                    if termNode is not None:
+                        sentenceNode.append(termNode)
                     
                 l1ParagraphNode.append(sentenceNode)
                 
@@ -285,23 +315,33 @@ class TextParser(BaseParser):
             contentNode.append(joinNode)
         
         root.append(contentNode)
-        #self.addFrequencyData(root)
-        #self.calculateUniqueTerms(root)
+        
+        time3 = time.time()
+        logging.debug("\tparse (xml)={}".format(time3-time2))
+        
+        self.addFrequencyData(root)
+        self.calculateUniqueTerms(root)
                 
+        time4 = time.time()
+        logging.debug("\t parse (frequency)={}".format(time4-time3))
+        
         self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8")
         htmlContent = None
         
         with open (os.path.join(Application.pathParsing, self.htmlFile), "r") as htmlFile:
             htmlContent = htmlFile.read()
             
-        #WTF?? Newlines in XSLT transform cause extra spaces around punctuation. If anyone wants
-        #to try fix that... 
+        #WTF?? Newlines in XSLT transform cause extra spaces around punctuation. If anyone wants to try fix that... 
         transform = re.sub("span>\s+<span", "span><span", str(self.applyTransform(root)))
         
         self.po.html = htmlContent.replace("<!-- table -->", transform) \
                 .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \
                 .replace("<!-- webapi -->", Application.apiServer)
                 
+        time5 = time.time()
+        logging.debug("\tparse (html+xslt)={}".format(time5-time4))
+        logging.debug("parse total={}".format(time5-time1))
+        
         return self.po
     
 class LatexParser(BaseParser):

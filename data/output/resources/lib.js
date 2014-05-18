@@ -179,7 +179,7 @@ function Lib(options) {
         
         if(self.isFragment(element)) {
             fragment = '';
-            children = element.find('.__term,.__punctuation');
+            children = element.find('.__term,.__nt');
             for(var i=0; i<children.length; i++) {
                 child = $(children[i]);
                 
@@ -214,7 +214,7 @@ function Lib(options) {
             return '';
         }
 
-        parent = element.parent('p.__sentence');
+        parent = element.parents('p.__sentence');
         var sentence = self._sentenceText(parent); 
         
         if(sentence.length<30) {
@@ -232,7 +232,7 @@ function Lib(options) {
     
     self._sentenceText = function(element) {
     	var sentence = '';
-    	var children = element.children('span');
+    	var children = element.find('span.__term,span.__nt');
 
         for (var i = 0; i < children.length; i++) {
             sentence += $(children[i]).text();
@@ -720,7 +720,7 @@ function Lib(options) {
 			return;
 		}
 		
-		element.find('.__term,.__punctuation').each(function() {
+		element.find('.__term,.__nt').each(function() {
 			if($(this).hasClass('__known_t')) {
 				$(this).addClass('__known').removeClass('__known_t');
 			}
@@ -744,9 +744,9 @@ function Lib(options) {
 		
     	
 		if(element.prev().any()) {
-			element.prev().after(element.find('.__term,.__punctuation'));
+			element.prev().after(element.find('.__term,.__nt'));
 		} else {
-			element.parent().prepend(element.find('.__term,.__punctuation'));
+			element.parent().prepend(element.find('.__term,.__nt'));
 		}
 		
 		element.remove();
