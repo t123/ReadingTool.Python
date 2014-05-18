@@ -1,5 +1,6 @@
 import os, re, datetime, math, logging, time
 from lxml import etree
+from copy import deepcopy
 from lib.services.service import UserService, ItemService, LanguageService, TermService
 from lib.models.model import User, Item, Language, LanguageDirection, TermState, ItemType
 from lib.models.parser import ParserInput, ParserOutput, SRT
@@ -13,6 +14,7 @@ class BaseParser:
         self.frequency = {}
         self.xsltFile = None
         self.htmlFile = None
+        self.joinString = "<br/>"
     
     def splitIntoTerms(self, sentence, regex):
         matches = regex.findall(sentence)
@@ -65,7 +67,6 @@ class BaseParser:
             termLower = term[0].lower()
             termNode.text = term[0]
             self.po.stats.totalTerms += 1
-            termNode.attrib["isTerm"] = "True"
             termNode.attrib["phrase"] = termLower
             termNode.attrib["phraseClass"] = termLower.replace("'", "_").replace("\"", "_")
             
@@ -78,7 +79,8 @@ class BaseParser:
                 existing = self.pi.lookup[termLower]
                 termNode.attrib["state"] = TermState.ToString(existing.state).lower()
                 
-                definition = existing.fullDefinition() 
+                definition = existing.fullDefinition(self.joinString)
+                
                 if not StringUtil.isEmpty(definition):
                     termNode.attrib["definition"] = definition
                 
@@ -111,7 +113,8 @@ class BaseParser:
         
         if term[4]!="": #fragment
             if fragments is not None and term[4] in fragments:
-                return fragments[term[4]]
+                #return etree.fromstring(fragments[term[4]])
+                return deepcopy(fragments[term[4]])
             
             logging.debug("missing fragment: %s" % term[4])
             
@@ -235,16 +238,17 @@ class BaseParser:
                     root.attrib["phrase"] = match
                     root.attrib["state"] = TermState.ToString(t.state).lower()
                      
-                    definition = t.fullDefinition()
+                    definition = t.fullDefinition(self.joinString)
                      
                     if not StringUtil.isEmpty(definition):
-                        root.attrib["definition"] = t.fullDefinition()
+                        root.attrib["definition"] = definition
                      
                     terms = self.splitIntoTerms(match, termRegex)
                          
                     for term in terms:
                         root.append(self.createTermNode(term, None))
          
+                    #xml = etree.tostring(root, pretty_print=False, encoding="utf8")
                     mdict[match] = root
                     rdict["__" + str(counter) + "__"]  = root
                     content = content.replace(match, "__" + str(counter) + "__")
@@ -349,11 +353,12 @@ class LatexParser(BaseParser):
         super().__init__()
         self.xsltFile = "latex.xslt"
         self.htmlFile = ""
+        self.joinString = "\n"
         
     def createContentNode(self):
         content = etree.Element("content",
-                                author="travis",
-                                title="some title"
+                                author=Application.user.username,
+                                title=self.pi.item.l1Title
                                 )
         
         return content;
@@ -376,6 +381,9 @@ class LatexParser(BaseParser):
         for i in range(0, len(l1Paragraphs)):
             l1Paragraph = l1Paragraphs[i]
             
+            if l1Paragraph is None:
+                continue;
+            
             joinNode = etree.Element("join")
             l1ParagraphNode = etree.Element("paragraph")
             l1ParagraphNode.attrib["direction"] = "ltr" if self.pi.language1.direction==LanguageDirection.LeftToRight else "rtl"
@@ -388,18 +396,13 @@ class LatexParser(BaseParser):
             
             for sentence in sentences:
                 sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence, l1TermRegex)
+                terms = self.splitIntoTerms(sentence.rstrip("\n"), l1TermRegex)
                 
                 for term in terms:
-                    if term=="" or term is None:
-                        continue
+                    termNode = self.createTermNode(term, fragments)
                     
-                    termNode = self.createTermNode(term, l1TermRegex, fragments)
-                    
-                    if "definition" in termNode.attrib:
-                        termNode.attrib["definition"] = termNode.attrib["definition"].replace("<br/>", " ; ")
-                        
-                    sentenceNode.append(termNode)
+                    if termNode is not None:
+                        sentenceNode.append(termNode)
                     
                 l1ParagraphNode.append(sentenceNode)
                 
@@ -411,9 +414,9 @@ class LatexParser(BaseParser):
                 
         self.po.xml = etree.tostring(root, pretty_print=True, encoding="utf8")
         latex = str(self.applyTransform())
-        
-      
-        self.po.html = ' '.join(latex.split())
+        self.po.html = re.sub("/\*(.)*?\*/", lambda m: re.sub("\s+", " ", m.group(0).rstrip('\n').replace("/*", "").replace("*/", "")), latex, flags=re.DOTALL)
+        self.po.html = re.sub("\s+([”“,\-:\"/«»…\?!\.]\s+)", r"\1", self.po.html)
+        #self.po.html = ' '.join(latex.split())
                 
         return self.po
         
@@ -460,7 +463,11 @@ class VideoParser(BaseParser):
     def parse(self, parserInput):
         self.pi = parserInput
         self.po.item = parserInput.item
-        self.po.l1Srt = self.parseSrt(self.po.item.getL1Content())
+        
+        l1Content = self.pi.item.getL1Content()
+        l1Content, fragments = self.parseFragments(l1Content)
+        
+        self.po.l1Srt = self.parseSrt(l1Content)
         self.po.l2Srt = self.parseSrt(self.po.item.getL2Content()) if self.pi.asParallel else []
         
         l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
@@ -471,6 +478,10 @@ class VideoParser(BaseParser):
         
         for i in range(0,len(self.po.l1Srt)):
             l1Paragraph = self.po.l1Srt[i]
+            
+            if l1Paragraph is None:
+                continue
+            
             l2Paragraph = self.po.l2Srt[i] if self.po.l2Srt is not None and i<len(self.po.l2Srt) and self.pi.asParallel else None
              
             joinNode = etree.Element("join")
@@ -490,13 +501,13 @@ class VideoParser(BaseParser):
             
             for sentence in sentences:
                 sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence, l1TermRegex)
+                terms = self.splitIntoTerms(sentence.rstrip("\n"), l1TermRegex)
                 
                 for term in terms:
-                    if term is None or term=="":
-                        continue
+                    termNode = self.createTermNode(term, fragments)
                     
-                    sentenceNode.append(self.createTermNode(term, l1TermRegex))
+                    if termNode is not None:
+                        sentenceNode.append(termNode)
                     
                 l1ParagraphNode.append(sentenceNode)
                 

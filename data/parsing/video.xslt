@@ -74,7 +74,11 @@
         	<xsl:attribute name="class">
         		<xsl:text>__fragment</xsl:text>
         		<xsl:text> __</xsl:text><xsl:value-of select="@state"/>
+        		<xsl:text> __</xsl:text><xsl:value-of select="@termId"/>
         	</xsl:attribute>
+        	<xsl:attribute name="data-termid">
+        		<xsl:value-of select="@termId"/>
+       		</xsl:attribute>
         	<xsl:choose>
         	<xsl:when test="@definition">
               <a rel="tooltip">
@@ -89,7 +93,6 @@
         </span>
   </xsl:template>
   <xsl:template match="term">
-    <xsl:when test="@isTerm='True'">
         <span>
           <xsl:attribute name="class">
             <xsl:text>__term</xsl:text>
@@ -125,7 +128,7 @@
             <xsl:value-of select="@phrase"/>
           </xsl:attribute>
           <xsl:choose>
-            <xsl:when test="@definition">
+            <xsl:when test="not(ancestor::fragment) and @definition">
               <a rel="tooltip">
                 <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute>
                 <xsl:value-of select="."/>
@@ -136,14 +139,17 @@
             </xsl:otherwise>
           </xsl:choose>
         </span>
-      </xsl:when>
-      <xsl:otherwise>
-        <span>
-          <xsl:attribute name="class">__punctuation <xsl:if test="@isWhitespace='True'"> __whitespace</xsl:if>
-          </xsl:attribute>
-          <xsl:value-of select="."/>
-        </span>
-      </xsl:otherwise>
-    </xsl:choose>
+  </xsl:template>
+  <xsl:template match="whitespace">
+  	<span class="__nt __whitespace"><xsl:value-of select="."/></span>
+  </xsl:template>
+  <xsl:template match="number">
+  	<span class="__nt __number"><xsl:value-of select="."/></span>
+  </xsl:template>
+  <xsl:template match="punctuation">
+  	<span class="__nt"><xsl:value-of select="."/></span>
+  </xsl:template>
+  <xsl:template match="tag">
+  	<xsl:value-of select="." disable-output-escaping="yes" />
   </xsl:template>
 </xsl:stylesheet>

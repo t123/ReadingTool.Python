@@ -3,6 +3,7 @@ from datetime import datetime
 from lib.models.model import User
 
 class Application:
+    debug = False
     version = 1
     user = User()
     

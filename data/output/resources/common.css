@@ -9,6 +9,8 @@ textarea.changed, input.changed {
 
 #reading p.__sentence {
     display: inline;
+    margin: 0;
+    padding: 0;
 }
 
 /*

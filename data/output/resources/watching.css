@@ -6,11 +6,12 @@
 
 #reading {
     width: 70%;
-    margin-top: 20px;
+    margin-top: 12px;
     margin-left: auto;
     margin-right: auto;
     background: black;
     font-size: 20px;
+    line-height: 30px;
 }
 
 #popup {
@@ -21,17 +22,12 @@
     background-color: black;
 }
 
-#reading span.__term.__current {
-    -webkit-border-radius: 5px;
-    border-bottom: 2px solid #357ebd;
-}
-
 #reading span.__term.__unknown {
     background-color: #AC193D;
 }
 
 #reading span.__term.__notseen {
-    background-color: #8C0095;
+    background-color: #636BFF;
 }
 
 #reading span.__term.__ignored {
@@ -41,6 +37,24 @@
 #reading span.__term.__temp {
         background-color: #68B781;
     }
+
+#reading span.__term.__current {
+        border-bottom: 2px solid yellow;
+    }
+
+#reading span.__fragment.__current {
+    background-color: #FF8411;
+}
+
+#reading span.__fragment.__known {
+}
+
+#reading span.__fragment.__unknown {
+    border: 2px solid #AC193D;
+}
+
+#reading span.__fragment.__ignored {
+}
 
 #video {
     width: 730px;

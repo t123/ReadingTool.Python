@@ -663,6 +663,7 @@ class StorageService:
     
     SOFTWARE_VERSION = "software_version"
     SOFTWARE_CHECK_UPDATES = "software_check_updates"
+    SOFTWARE_DEBUG = "software_debug"
     
     def __init__(self):
         self.db = Db(Application.connectionString)
@@ -687,6 +688,17 @@ class StorageService:
     def find(self, key, default=None, uuid=""):
         """Returns the storage value for a given key and UUID"""
         result = self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+        
+        if result is None:
+            return default
+        
+        return result
+    
+    @staticmethod
+    def sfind(key, default=None, uuid=""):
+        """Returns the storage value for a given key and UUID"""
+        db = Db(Application.connectionString)
+        result = db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
         
         if result is None:
             return default

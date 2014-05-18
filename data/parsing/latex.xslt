@@ -25,36 +25,39 @@
     	<xsl:apply-templates select="paragraph" />
     </xsl:template>
     <xsl:template match="paragraph">
-    	<xsl:text>\paragraph{</xsl:text>
+    	<xsl:text>/*</xsl:text>
         <xsl:apply-templates select="sentence"/>
-        <xsl:text>}
+        <xsl:text>*/
 
-        </xsl:text>
+</xsl:text>
     </xsl:template>
     <xsl:template match="sentence">
     	<xsl:apply-templates />
     </xsl:template>
     <xsl:template match="fragment">
-   		<xsl:apply-templates select="term"/>
+   		<xsl:apply-templates />
    		<xsl:if test="string-length(@definition)>0 and @state='unknown'">
-      		<xsl:text> \protect\footnote{</xsl:text>
+      		<xsl:text> \footnote{</xsl:text>
             	<xsl:value-of select="@definition" />
             <xsl:text>}</xsl:text>
       	</xsl:if>
     </xsl:template>
     <xsl:template match="term">
-    	<xsl:choose> 
-      <xsl:when test="@isTerm='True'">
       	<xsl:value-of select="."/>
       	<xsl:if test="string-length(@definition)>0 and @state='unknown'">
-      		<xsl:text> \protect\footnote{</xsl:text>
+      		<xsl:text> \footnote{</xsl:text>
             	<xsl:value-of select="@definition" />
             <xsl:text>}</xsl:text>
       	</xsl:if>
-      </xsl:when>
-      <xsl:otherwise>
-          <xsl:value-of select="."/>
-      </xsl:otherwise>
-    </xsl:choose>
     </xsl:template>
+    <xsl:template match="whitespace">
+  	<xsl:value-of select="."/>
+  </xsl:template>
+  <xsl:template match="number">
+  	<xsl:value-of select="."/>
+  </xsl:template>
+  <xsl:template match="punctuation">
+  	<xsl:value-of select="."/>
+  </xsl:template>
+  <xsl:template match="tag"></xsl:template>
 </xsl:stylesheet>

@@ -356,12 +356,16 @@ class ReaderWindow(QtGui.QDialog):
                 else:
                     self.showNormal()
                     self.setGeometry(self.previousGeometry)
+                    
+                self.ui.widgetMenu.show()
+                    
             else:
                 self.previousState = self.windowState()
                 self.previousGeometry = self.geometry()
                 self.showNormal()
                 self.showFullScreen()
-            
+                self.ui.widgetMenu.hide()
+                
             return
         
         if event.key()==QtCore.Qt.Key_Escape:

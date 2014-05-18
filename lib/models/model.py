@@ -1,4 +1,4 @@
-import bz2
+import bz2, re
 from lib.stringutil import StringUtil
 
 class TermState:
@@ -153,16 +153,19 @@ class Term():
         self.language = ""
         self.itemSource = ""
         
-    def fullDefinition(self):
+    def fullDefinition(self, joinString="<br/>"):
         fullDef = ""
         
         if not StringUtil.isEmpty(self.basePhrase):
-            fullDef += self.basePhrase + "<br/>" 
+            fullDef += self.basePhrase + joinString 
             
         if not StringUtil.isEmpty(self.definition):
             fullDef += self.definition
          
-        return fullDef
+        if joinString=="\n":
+            return fullDef
+        
+        return re.sub(r"\n", "<br/>", fullDef)
         
     @property
     def phrase(self):

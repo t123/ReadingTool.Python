@@ -127,7 +127,7 @@
         	<xsl:choose>
         	<xsl:when test="@definition">
               <a rel="tooltip">
-                <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute>
+                <xsl:attribute name="title"><xsl:value-of select="@definition" disable-output-escaping="yes"/></xsl:attribute>
                 <xsl:apply-templates />
               </a>
             </xsl:when> 
@@ -175,7 +175,7 @@
           <xsl:choose>
             <xsl:when test="not(ancestor::fragment) and @definition">
               <a rel="tooltip">
-                <xsl:attribute name="title"><xsl:value-of select="@definition"/></xsl:attribute>
+                <xsl:attribute name="title"><xsl:value-of select="@definition" disable-output-escaping="yes"/></xsl:attribute>
                 <xsl:value-of select="."/>
               </a>
             </xsl:when> 
