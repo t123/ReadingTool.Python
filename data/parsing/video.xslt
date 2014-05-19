@@ -61,13 +61,8 @@
   <xsl:template match="paragraph">
     <td>
       <xsl:attribute name="id">l1_<xsl:value-of select="../@line"/></xsl:attribute>
-      <xsl:apply-templates select="sentence"/>
-    </td>
-  </xsl:template>
-  <xsl:template match="sentence">
-    <p class="__sentence">
       <xsl:apply-templates />
-    </p>
+    </td>
   </xsl:template>
   <xsl:template match="fragment">
         <span>

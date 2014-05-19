@@ -31,13 +31,10 @@
     </xsl:template>
     <xsl:template match="paragraph">
     	<xsl:text>/*</xsl:text>
-        <xsl:apply-templates select="sentence"/>
+        <xsl:apply-templates />
         <xsl:text>*/
 
 </xsl:text>
-    </xsl:template>
-    <xsl:template match="sentence">
-    	<xsl:apply-templates />
     </xsl:template>
     <xsl:template match="fragment">
    		<xsl:apply-templates />

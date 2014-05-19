@@ -2,9 +2,9 @@ function Lib(options) {
 	var self = this;
 	self.options = options;
 	self.currentElement = null;
-	self.sentenceMarkers = new RegExp(/[\.\?!]/);
+	self.sentenceMarkers = new RegExp(/[\.\?!。]/);
 	self.navTerms = { }
-    self.abbrs = ['dr','mr','mrs','mr'];
+    self.abbrs = ['dr','mr','mrs','mr', 'etc'];
 	
 	self.getOptions = function () {
         return self.options;
@@ -253,7 +253,11 @@ function Lib(options) {
 
         while(node[0]!==toNode[0] && counter<100) {
             counter++;
-            sentence += node.text();
+
+            if(node.is(':visible')) {
+                sentence += node.text();
+            }
+            
             node = node.next();
         }
 

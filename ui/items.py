@@ -74,8 +74,13 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
         
+        data = item.data(QtCore.Qt.UserRole)
+        
+        if data.itemType==ItemType.Video:
+            return
+        
         webService = WebService()
-        content = webService.createPdf(item.data(QtCore.Qt.UserRole).itemId)
+        content = webService.createPdf(data.itemId)
         
         if content is None:
             QtGui.QMessageBox.warning(self, "Create PDF failed", "Unfortunately your PDF could not be created.")

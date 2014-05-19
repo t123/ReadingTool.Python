@@ -109,11 +109,6 @@
       <xsl:apply-templates />
     </td>
   </xsl:template>
-  <xsl:template match="sentence">
-    <p class="__sentence">
-      <xsl:apply-templates />
-    </p>
-  </xsl:template>
   <xsl:template match="fragment">
         <span>
         	<xsl:attribute name="class">

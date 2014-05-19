@@ -211,7 +211,6 @@ class BaseParser:
         
     def parseFragments(self, content):
         time1 = time.time()
-        termRegex = re.compile(self.pi.language1.termRegex)
         
         mdict = { }
         rdict = { }
@@ -236,7 +235,7 @@ class BaseParser:
                     if not StringUtil.isEmpty(definition):
                         root.attrib["definition"] = definition
                      
-                    terms = self.splitIntoTerms(match, termRegex)
+                    terms = self.splitIntoTerms(match)
                          
                     for term in terms:
                         root.append(self.createTermNode(term, None))
@@ -259,7 +258,8 @@ class TextParser(BaseParser):
     def parse(self, parserInput):
         self.pi = parserInput
         self.po.item = parserInput.item
-
+        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
+        
         time1 = time.time()        
         
         l1Content = self.pi.item.getL1Content()
@@ -267,8 +267,6 @@ class TextParser(BaseParser):
         
         l1Paragraphs = self.splitIntoParagraphs(l1Content)
         l2Paragraphs = self.splitIntoParagraphs(self.pi.item.getL2Content())
-        
-        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         root = etree.Element("root")
         contentNode = self.createContentNode()
@@ -352,14 +350,12 @@ class LatexParser(BaseParser):
     def parse(self, parserInput):
         self.pi = parserInput
         self.po.item = parserInput.item
+        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         l1Content = self.pi.item.getL1Content()
         l1Content, fragments = self.parseFragments(l1Content)
         
         l1Paragraphs = self.splitIntoParagraphs(l1Content)
-        
-        self.l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
-        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         root = etree.Element("root")
         contentNode = self.createContentNode()
@@ -378,20 +374,14 @@ class LatexParser(BaseParser):
             l2ParagraphNode.text = ''
             l2ParagraphNode.attrib["direction"] = "ltr"
             
-            sentences = self.splitIntoSentences(l1Paragraph)
+            terms = self.splitIntoTerms(l1Paragraph)
             
-            for sentence in sentences:
-                sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence.rstrip("\n"))
+            for term in terms:
+                termNode = self.createTermNode(term, fragments)
                 
-                for term in terms:
-                    termNode = self.createTermNode(term, fragments)
+                if termNode is not None:
+                    l1ParagraphNode.append(termNode)
                     
-                    if termNode is not None:
-                        sentenceNode.append(termNode)
-                    
-                l1ParagraphNode.append(sentenceNode)
-                
             joinNode.append(l1ParagraphNode) 
             joinNode.append(l2ParagraphNode)
             contentNode.append(joinNode)
@@ -449,15 +439,13 @@ class VideoParser(BaseParser):
     def parse(self, parserInput):
         self.pi = parserInput
         self.po.item = parserInput.item
+        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         l1Content = self.pi.item.getL1Content()
         l1Content, fragments = self.parseFragments(l1Content)
         
         self.po.l1Srt = self.parseSrt(l1Content)
         self.po.l2Srt = self.parseSrt(self.po.item.getL2Content()) if self.pi.asParallel else []
-        
-        self.l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
-        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         root = etree.Element("root")
         contentNode = self.createContentNode()
@@ -483,19 +471,13 @@ class VideoParser(BaseParser):
             l1ParagraphNode.attrib["direction"] = "ltr" if self.pi.language1.direction==LanguageDirection.LeftToRight else "rtl"            
             l2ParagraphNode.attrib["direction"] = "ltr" if self.pi.language2 and self.pi.language2.direction==LanguageDirection.LeftToRight else "rtl"
             
-            sentences = self.splitIntoSentences(l1Paragraph.content)
-            
-            for sentence in sentences:
-                sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence.rstrip("\n"))
+            terms = self.splitIntoTerms(l1Paragraph.content)
                 
-                for term in terms:
-                    termNode = self.createTermNode(term, fragments)
-                    
-                    if termNode is not None:
-                        sentenceNode.append(termNode)
-                    
-                l1ParagraphNode.append(sentenceNode)
+            for term in terms:
+                termNode = self.createTermNode(term, fragments)
+                
+                if termNode is not None:
+                    l1ParagraphNode.append(termNode)
                 
             joinNode.append(l1ParagraphNode) 
             joinNode.append(l2ParagraphNode)
