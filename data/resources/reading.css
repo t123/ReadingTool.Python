@@ -1,11 +1,14 @@
-﻿body {
-	margin: 0 20px 200px 20px;
+﻿body
+{
+    margin: 0 20px 200px 20px;
+
     background-color: #565656;
 }
 
-#jp_container_1 {
+#jp_container_1
+{
     position: fixed;
     z-index: 100;
-    bottom: 0;
     right: 0;
+    bottom: 0;
 }

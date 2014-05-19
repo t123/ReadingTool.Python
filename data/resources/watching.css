@@ -1,92 +1,131 @@
-﻿body {
+﻿body
+{
     margin: 0 20px 200px 20px;
-    background: black;
+
     color: white;
+    background: black;
 }
 
-#reading {
-    width: 70%;
-    margin-top: 12px;
-    margin-left: auto;
-    margin-right: auto;
-    background: black;
+#reading
+{
     font-size: 20px;
     line-height: 30px;
+
+    width: 70%;
+    margin-top: 12px;
+    margin-right: auto;
+    margin-left: auto;
+
+    background: black;
 }
 
-#popup {
+#popup
+{
     color: black;
 }
 
-#reading span.__term.__known {
+#reading span.__term.__known
+{
     background-color: black;
 }
 
-#reading span.__term.__unknown {
-    background-color: #AC193D;
+#reading span.__term.__unknown
+{
+    border: 1px solid #ac193d;
+    background-color: rgba(172,25,61,.4);
 }
 
-#reading span.__term.__notseen {
-    background-color: #636BFF;
+#reading span.__term.__notseen
+{
+    border: 1px solid #636bff;
+    background-color: rgba(99,107,255,.4);
 }
 
-#reading span.__term.__ignored {
+#reading span.__term.__ignored
+{
     background-color: black;
 }
 
-#reading span.__term.__temp {
-        background-color: #68B781;
-    }
-
-#reading span.__term.__current {
-        border-bottom: 2px solid yellow;
-    }
-
-#reading span.__fragment.__current {
-    background-color: #FF8411;
+#reading span.__term.__temp
+{
+    background-color: #68b781;
 }
 
-#reading span.__fragment.__known {
+#reading span.__term.__current
+{
+    border-bottom: 2px solid yellow !important;
 }
 
-#reading span.__fragment.__unknown {
-    border: 2px solid #AC193D;
+#reading span.__term.__matching
+{
+    background-color: #4DA560 !important;
 }
 
-#reading span.__fragment.__ignored {
+#reading span.__term.__id
+{
+    border: none;
+    border-bottom: 1px solid #cecece;
 }
 
-#video {
+#reading span.__term.__kd
+{
+    border: none;
+    border-bottom: 1px solid #cecece;
+}
+
+#reading span.__fragment.__current
+{
+    background-color: #4DA560 !important;
+}
+
+
+
+#reading span.__fragment.__unknown
+{
+    border: 1px solid #ac193d;
+    background-color: rgba(172,25,61,.4);
+}
+
+
+
+#video
+{
     width: 730px;
     margin-top: 10px;
-    margin-left: auto;
     margin-right: auto;
+    margin-left: auto;
 }
 
-#l1Main {
+#l1Main
+{
     width: 100%;
     height: 50px;
     padding-bottom: 10px;
 }
 
-#l2Main {
+#l2Main
+{
     width: 100%;
     height: 50px;
 }
 
-div.jp-video-270p {
+div.jp-video-270p
+{
     width: 720px !important;
 }
 
-#modalContent {
+#modalContent
+{
     color: black;
 }
 
-.tooltip-inner {
-  color: #000000 !important;
-  background-color: #ffffff !important;
+.tooltip-inner
+{
+    color: #000 !important;
+    background-color: #fff !important;
 }
 
-.tooltip.top .tooltip-arrow {
-    border-top-color: #ffffff !important;
+.tooltip.top .tooltip-arrow
+{
+    border-top-color: #fff !important;
 }

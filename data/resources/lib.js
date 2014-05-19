@@ -223,7 +223,7 @@ function Lib(options) {
             endNode = current;
         }
 
-        searchableNodes = $(current).parents('td.__active').find('span.__term,span.__nt');
+        searchableNodes = current.parents('td.__active,#l1Main').find('span.__term,span.__nt');
         var startIndex = -1, endIndex = -1;
 
         for(var i=0; i<searchableNodes.length; i++) {
@@ -719,6 +719,7 @@ function Lib(options) {
 		}
 		
         var diff = startElement[0].offsetTop-stopElement[0].offsetTop;
+        cl(diff)
         if( (Math.abs(diff)<2 && startElement[0].offsetLeft>stopElement[0].offsetLeft) || 
 			diff>5
 			) { //Selected backwards, same height, further on OR anywhere above
