@@ -4,8 +4,8 @@ function Lib(options) {
 	self.currentElement = null;
 	self.sentenceMarkers = new RegExp(/[\.\?!。]/);
 	self.navTerms = { }
-    self.abbrs = ['dr','mr','mrs','mr', 'etc'];
-	
+    self.abbrs = [];
+
 	self.getOptions = function () {
         return self.options;
     };
@@ -806,4 +806,9 @@ function Lib(options) {
 		
 		element.remove();
 	};
+
+    if (typeof Abbreviations === 'function') {
+        var a = new Abbreviations();
+        self.abbrs = a.get(self.getL1Code());
+    }
 }
