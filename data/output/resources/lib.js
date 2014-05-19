@@ -254,10 +254,12 @@ function Lib(options) {
         while(node[0]!==toNode[0] && counter<100) {
             counter++;
 
-            if(node.is(':visible')) {
+            if(self.getL1Code()=='ja' && !node.hasClass("__whitespace")) {
+                sentence += node.text();
+            } else if(self.getL1Code()!='ja') {
                 sentence += node.text();
             }
-            
+
             node = node.next();
         }
 
