@@ -51,7 +51,7 @@ textarea.changed, input.changed {
     background-color: white;
 	border-collapse: collapse;
 	width: 100%;
-	margin-top: 5px;
+	margin-top: 1px;
 	font-family: 'Droid Sans', sans-serif;
 	font-size: 1.0em;
 	line-height: 25px;
@@ -74,11 +74,12 @@ textarea.changed, input.changed {
     }
 
     #reading span.__term.__unknown {
-        background-color: #F5B8A9;
+        background: rgba(245,184,169,0.3);
+        border: 1px solid #F5B8A9;
     }
 
     #reading span.__term.__notseen {
-        background-color: #DAE5EB;
+        background-color: rgba(0,38,255,0.05)
     }
 
     #reading span.__term.__ignored {
@@ -101,14 +102,15 @@ textarea.changed, input.changed {
     }
     
 #reading span.__fragment.__current {
-	background-color: #FFE97F;
+	background-color: #FFE97F !important;
 }
 
 #reading span.__fragment.__known {
 }
 
 #reading span.__fragment.__unknown {
-	border: 2px solid #F5B8A9;
+	background: rgba(245,184,169,0.3);
+	border: 1px solid #F5B8A9;
 }
 
 #reading span.__fragment.__ignored {
