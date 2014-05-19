@@ -1,0 +1,92 @@
+﻿body {
+    margin: 0 20px 200px 20px;
+    background: black;
+    color: white;
+}
+
+#reading {
+    width: 70%;
+    margin-top: 12px;
+    margin-left: auto;
+    margin-right: auto;
+    background: black;
+    font-size: 20px;
+    line-height: 30px;
+}
+
+#popup {
+    color: black;
+}
+
+#reading span.__term.__known {
+    background-color: black;
+}
+
+#reading span.__term.__unknown {
+    background-color: #AC193D;
+}
+
+#reading span.__term.__notseen {
+    background-color: #636BFF;
+}
+
+#reading span.__term.__ignored {
+    background-color: black;
+}
+
+#reading span.__term.__temp {
+        background-color: #68B781;
+    }
+
+#reading span.__term.__current {
+        border-bottom: 2px solid yellow;
+    }
+
+#reading span.__fragment.__current {
+    background-color: #FF8411;
+}
+
+#reading span.__fragment.__known {
+}
+
+#reading span.__fragment.__unknown {
+    border: 2px solid #AC193D;
+}
+
+#reading span.__fragment.__ignored {
+}
+
+#video {
+    width: 730px;
+    margin-top: 10px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#l1Main {
+    width: 100%;
+    height: 50px;
+    padding-bottom: 10px;
+}
+
+#l2Main {
+    width: 100%;
+    height: 50px;
+}
+
+div.jp-video-270p {
+    width: 720px !important;
+}
+
+#modalContent {
+    color: black;
+}
+
+.tooltip-inner {
+  color: #000000 !important;
+  background-color: #ffffff !important;
+}
+
+.tooltip.top .tooltip-arrow {
+    border-top-color: #ffffff !important;
+}

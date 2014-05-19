@@ -253,7 +253,7 @@ class ResourceController(object):
         return htmlContent.encode()
         
     def getLocalResource(self, name):
-        file = os.path.join(Application.pathOutput, "resources", name)
+        file = os.path.join(Application.path, "resources", name)
         
         if not os.path.isfile(file):
             raise cherrypy.HTTPError(404)
