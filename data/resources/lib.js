@@ -714,18 +714,19 @@ function Lib(options) {
 			return null;
 		}
 		
-		if(startElement.parent()[0]!==stopElement.parent()[0]) { //Different sentences
+		if(startElement.parent()[0]!==stopElement.parent()[0]) { //Different paragraphs
 			return null;
 		}
 		
-		if( (startElement[0].offsetTop==stopElement[0].offsetTop && startElement[0].offsetLeft>stopElement[0].offsetLeft) || 
-			stopElement[0].offsetTop<startElement[0].offsetTop
+        var diff = startElement[0].offsetTop-stopElement[0].offsetTop;
+        if( (Math.abs(diff)<2 && startElement[0].offsetLeft>stopElement[0].offsetLeft) || 
+			diff>5
 			) { //Selected backwards, same height, further on OR anywhere above
 			var temp = startElement;
 			startElement = stopElement;
 			stopElement = temp;
 		}
-		
+
 		startElement.addClass("__temp_fragment");
 		startElement.nextUntil(stopElement).addClass("__temp_fragment");
 		stopElement.addClass("__temp_fragment");
@@ -744,6 +745,18 @@ function Lib(options) {
 		
 		$('.__temp_fragment').wrapAll('<span class="__fragment"> </span>')
 		$('.__temp_fragment').each(function() {
+            if($(this).hasClass('__kd')) {
+                $(this).removeClass('__kd').addClass('__kd_t');
+            }
+
+            if($(this).hasClass('__ud')) {
+                $(this).removeClass('__ud').addClass('__ud_t');
+            }
+
+            if($(this).hasClass('__id')) {
+                $(this).removeClass('__id').addClass('__id_t');
+            }
+
 			if($(this).hasClass('__known')) {
 				$(this).removeClass('__known').addClass('__known_t');
 			}
@@ -776,6 +789,18 @@ function Lib(options) {
 		}
 		
 		element.find('.__term,.__nt').each(function() {
+            if($(this).hasClass('__kd_t')) {
+                $(this).addClass('__kd').removeClass('__kd_t');
+            }
+
+            if($(this).hasClass('__ud_t')) {
+                $(this).addClass('__ud').removeClass('__ud_t');
+            }
+
+            if($(this).hasClass('__id_t')) {
+                $(this).addClass('__id').removeClass('__id_t');
+            }
+
 			if($(this).hasClass('__known_t')) {
 				$(this).addClass('__known').removeClass('__known_t');
 			}

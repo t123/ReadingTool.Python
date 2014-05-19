@@ -3,10 +3,6 @@
     width: 100%;
 }
 
-textarea.changed, input.changed {
-    background-color: #f5b8a9;
-}
-
 #reading p.__sentence {
     display: inline;
     margin: 0;
@@ -66,11 +62,11 @@ textarea.changed, input.changed {
     }
 
     #reading span.__term.__current {
-        border-bottom: 2px solid red;
+        border-bottom: 2px solid red !important;
     }
 
     #reading span.__term.__matching {
-        background-color: yellow !important;
+        background-color: #FFE97F !important;
     }
 
     #reading span.__term.__unknown {
@@ -88,11 +84,13 @@ textarea.changed, input.changed {
     }
 	
 	#reading span.__term.__kd {
-        border-bottom: 1px dashed black;
+        background-color: rgba(205,205,205,0.1);
+        border: 1px solid #cecece;
     }
 	
 	#reading span.__term.__id {
-        border-bottom: 1px dashed black;
+        background-color: rgba(205,205,205,0.1);
+        border: 1px solid #cecece;
     }
 	
 	#reading span.__term.__ud {
@@ -104,6 +102,7 @@ textarea.changed, input.changed {
     
 #reading span.__fragment.__current {
 	background-color: #FFE97F !important;
+	border: none;
 }
 
 #reading span.__fragment.__known {
@@ -119,7 +118,7 @@ textarea.changed, input.changed {
 
 #popup {
     border: 1px solid black;
-    background-color: #F7F7F7;
+    background-color: #fbfbfb;
     min-width: 500px;
     position: absolute;
     z-index: 500;
@@ -150,7 +149,7 @@ textarea.changed, input.changed {
 	border-radius: 0px;
 	height: 26px;
 	font-size: 12px;
-	color: #555;
+	color: #000;
 	vertical-align: middle;
 	width: 390px;
 }
@@ -161,9 +160,13 @@ textarea.changed, input.changed {
 	border-radius: 0px;
 	height: 70px;
 	font-size: 12px;
-	color: #555;
+	color: #000;
 	vertical-align: middle;
 	width: 390px;
+}
+
+#popup textarea.changed, input.changed {
+    background-color: #FFD4C6;
 }
 
 #popup img {
@@ -175,11 +178,12 @@ textarea.changed, input.changed {
 
 #popup input[type='button'] {
 	border-radius: 3px;
-	margin-bottom: 0px;
+	margin-bottom: 1px;
 	text-align: center;
 	vertical-align: middle;
 	cursor: pointer;
 	-webkit-appearance: button;
+	font-weight: bold;
 }
 
 #popup .blue {
@@ -190,7 +194,7 @@ textarea.changed, input.changed {
 
 #popup tr.top {
 	border-bottom: 1px solid #aeaeae;
-	background-color: #e7e7e7;
+	background-color: #f5f5f5;
 }
 
 #popup tr.top td {
@@ -199,7 +203,7 @@ textarea.changed, input.changed {
 
 #popup tr.bottom {
 	border-top: 1px solid #aeaeae;
-	background-color: #e7e7e7;
+	background-color: #f5f5f5;
 }
 
 #popup tr.bottom  td {
