@@ -17,7 +17,6 @@ class LanguagesForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteLanguage)
         QtCore.QObject.connect(self.ui.pbCancel, QtCore.SIGNAL("clicked()"), self.cancel)
         QtCore.QObject.connect(self.ui.leName, QtCore.SIGNAL("textChanged(QString)"), self.changed)
-        QtCore.QObject.connect(self.ui.leSentenceRegex, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.leTermRegex, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.cbIsArchived, QtCore.SIGNAL("stateChanged(int)"), self.changed)
         QtCore.QObject.connect(self.ui.cbLanguageCodes, QtCore.SIGNAL("currentIndexChanged(int)"), self.changed)
@@ -64,7 +63,6 @@ class LanguagesForm(QtGui.QDialog):
         
         language = self.languageService.findOne(current.data(QtCore.Qt.UserRole).languageId)
         self.ui.leName.setText(language.name)
-        self.ui.leSentenceRegex.setText(language.sentenceRegex)
         self.ui.leTermRegex.setText(language.termRegex)
         self.ui.cbIsArchived.setChecked(language.isArchived)
 
@@ -110,7 +108,6 @@ class LanguagesForm(QtGui.QDialog):
         currentRow = self.ui.lvLanguages.currentRow()
         
         language.name = self.ui.leName.text()
-        language.sentenceRegex = self.ui.leSentenceRegex.text()
         language.termRegex = self.ui.leTermRegex.text()
         language.isArchived = self.ui.cbIsArchived.isChecked()
         language.direction = LanguageDirection.LeftToRight if self.ui.rbLTR.isChecked() else LanguageDirection.RightToLeft

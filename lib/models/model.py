@@ -88,8 +88,8 @@ class User():
         return True
         
 class Language():
-    SENTENCE_REGEX = "“*[^\.!\?]+(?:[\.?!][\s]*[”»]|[\.!\?\n]+)"
-    TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\’-]+)|(\s+|[”“,\-:\"/«»…\?!\.])|(\d+)|(__\d+__)|(<[a-z][A-Z0-9]*[^>]*>)|(</[a-z][A-Z0-9]*[^>]*>)"
+    #TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\’-]+)|(\d+)|(__\d+__)|(<(?:\"[^\"]*\"['\"]*|'[^']*'['\"]*|[^'\">])+>|(\s+)|(.)"
+    TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\’\'-]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)"
     
     def __init__(self):
         self.languageId = 0
@@ -99,7 +99,6 @@ class Language():
         self.isArchived = False
         self.languageCode = "--"
         self.userId = None
-        self.sentenceRegex = Language.SENTENCE_REGEX
         self.termRegex = Language.TERM_REGEX
         self.direction = LanguageDirection.LeftToRight
         
@@ -113,7 +112,6 @@ class Language():
         d["isArchived"] = self.isArchived
         d["languageCode"] = self.languageCode
         d["userId"] = self.userId
-        d["sentenceRegex"] = self.sentenceRegex
         d["termRegex"] = self.termRegex
         d["direction"] = self.direction
         

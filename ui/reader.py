@@ -194,6 +194,7 @@ class ReaderWindow(QtGui.QDialog):
         self.webView.setRenderHints(QtGui.QPainter.Antialiasing|QtGui.QPainter.HighQualityAntialiasing|QtGui.QPainter.SmoothPixmapTransform|QtGui.QPainter.TextAntialiasing)
         self.webView.setObjectName("webView")
         self.ui.verticalLayout.addWidget(self.webView)
+        self.ui.lblMessage.setText("")
         
         self.__openTime = datetime.datetime.now()
         self.setWindowFlags(QtCore.Qt.Window)

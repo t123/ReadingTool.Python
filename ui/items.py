@@ -202,7 +202,7 @@ class ItemsForm(QtGui.QDialog):
         for item in items:
             i = QtGui.QTableWidgetItem(item.l1Language)
             i.setData(QtCore.Qt.UserRole, item)
-
+            
             self.ui.tItems.setItem(index, 0, i)
             self.ui.tItems.setItem(index, 1, QtGui.QTableWidgetItem(item.collectionName))
             self.ui.tItems.setItem(index, 2, QtGui.QTableWidgetItem(str(item.collectionNo) if item.collectionNo is not None else ""))
@@ -212,6 +212,13 @@ class ItemsForm(QtGui.QDialog):
             self.ui.tItems.setItem(index, 6, QtGui.QTableWidgetItem(Time.toHuman(item.lastRead)))
             self.ui.tItems.setItem(index, 7, QtGui.QTableWidgetItem("Yes" if item.hasMedia() else "No"))
             self.ui.tItems.setItem(index, 8, QtGui.QTableWidgetItem("Yes" if item.isParallel() else "No"))
+            
+            if item.itemType==ItemType.Video:
+                colour = Qt.QColor("#FFE97F")
+                
+                for j in range(0, self.ui.tItems.columnCount()):
+                    it = self.ui.tItems.item(index, j)
+                    it.setBackgroundColor(colour)
             
             index +=1
         

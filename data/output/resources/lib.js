@@ -2,8 +2,9 @@ function Lib(options) {
 	var self = this;
 	self.options = options;
 	self.currentElement = null;
-	
+	self.sentenceMarkers = new RegExp(/[\.\?!]/);
 	self.navTerms = { }
+    self.abbrs = ['dr','mr','mrs','mr'];
 	
 	self.getOptions = function () {
         return self.options;
@@ -214,31 +215,79 @@ function Lib(options) {
             return '';
         }
 
-        parent = element.parents('p.__sentence');
-        var sentence = self._sentenceText(parent); 
-        
-        if(sentence.length<30) {
-        	previous = parent.prev('.__sentence');
-        	sentence = self._sentenceText(previous) + sentence; 
+        if(self.isFragment(current)) {
+            startNode = current.find('span.__term,span.__nt').first();
+            endNode = current.find('span.__term,span.__nt').last();
+        } else {
+            startNode = current;
+            endNode = current;
         }
-        
-        if(sentence.length<30) {
-        	next = parent.next('.__sentence');
-        	sentence += self._sentenceText(next); 
+
+        searchableNodes = $(current).parents('td.__active').find('span.__term,span.__nt');
+        var startIndex = -1, endIndex = -1;
+
+        for(var i=0; i<searchableNodes.length; i++) {
+            if(searchableNodes[i]===startNode[0]) {
+                startIndex = i;
+            }
+
+            if(searchableNodes[i]===endNode[0]) {
+                endIndex = i;
+            }
+
+            if(startIndex>=0 && endIndex>=0) {
+                break;
+            }
         }
+
+        var sentence  = '';
+        var fromNode = self._backwards(searchableNodes, startIndex);
+        var toNode = self._forwards(searchableNodes, endIndex);
         
-        return sentence.trim();
+        counter = 0;
+        var node = fromNode;
+
+        if(node.hasClass('__punctuation') && self.sentenceMarkers.test(node.text())) {
+            node = node.next();
+        }
+
+        while(node[0]!==toNode[0] && counter<100) {
+            counter++;
+            sentence += node.text();
+            node = node.next();
+        }
+
+        sentence += node.text();
+
+        return sentence.replace(/\s+/g, ' ').trim();
     };
-    
-    self._sentenceText = function(element) {
-    	var sentence = '';
-    	var children = element.find('span.__term,span.__nt');
 
-        for (var i = 0; i < children.length; i++) {
-            sentence += $(children[i]).text();
+    self._forwards = function(searchableNodes, index) {
+        for(var i=index+1; i<searchableNodes.length; i++) {
+            node = $(searchableNodes[i]);
+
+            if(node.hasClass('__punctuation') && self.sentenceMarkers.test(node.text())) {
+                if(i>0 && self.abbrs.indexOf($(searchableNodes[i-1]).text().toLowerCase())<0) {
+                    return node;
+                }
+            }
         }
 
-        return sentence;    	
+        return $(searchableNodes[searchableNodes.length-1]);
+    };
+
+    self._backwards = function(searchableNodes, index) {
+        for(var i=index-1; i>=0; i--) {
+            node = $(searchableNodes[i]);
+
+            if(node.hasClass('__punctuation') && self.sentenceMarkers.test(node.text())) {
+                if(i>0 && self.abbrs.indexOf($(searchableNodes[i-1]).text().toLowerCase())<0) {
+                    return node;
+                }
+            }
+        }
+
+        return $(searchableNodes[0]);
     };
     
     //AJAX calls

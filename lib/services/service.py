@@ -62,7 +62,7 @@ class LanguageService:
         
     def save(self, language, plugins=None):
         if(language.languageId == 0):
-            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, sentenceRegex, termRegex, direction) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :sentenceRegex, :termRegex, :direction)",
+            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction)",
                             languageId=None,
                             name=language.name,
                             created=time.time(),
@@ -70,18 +70,16 @@ class LanguageService:
                             isArchived=language.isArchived,
                             languageCode=language.languageCode,
                             userId=Application.user.userId,
-                            sentenceRegex=language.sentenceRegex,
                             termRegex=language.termRegex,
                             direction=language.direction
                             )
         else:        
-            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, sentenceRegex=:sentenceRegex, termRegex=:termRegex, direction=:direction WHERE languageId=:languageId",
+            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, termRegex=:termRegex, direction=:direction WHERE languageId=:languageId",
                             languageId=language.languageId,
                             name=language.name,
                             modified=time.time(),
                             isArchived=language.isArchived,
                             languageCode=language.languageCode,
-                            sentenceRegex=language.sentenceRegex,
                             termRegex=language.termRegex,
                             direction=language.direction
                             )

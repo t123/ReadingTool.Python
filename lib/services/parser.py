@@ -16,15 +16,15 @@ class BaseParser:
         self.htmlFile = None
         self.joinString = "<br/>"
     
-    def splitIntoTerms(self, sentence, regex):
-        matches = regex.findall(sentence)
+    def splitIntoTerms(self, sentence):
+        matches = self.l1TermRegex.findall(sentence)
         return matches
     
-    def splitIntoSentences(self, paragraph, regex):
+    def splitIntoSentences(self, paragraph):
         if not paragraph.endswith('\n'):
             paragraph += '\n'
             
-        matches = regex.findall(paragraph)
+        matches = self.l1SentenceRegex.findall(paragraph)
       
         if len(matches)==0:
             return [paragraph.strip()]
@@ -101,35 +101,28 @@ class BaseParser:
             termNode.text = term[1]
             return termNode
         
-        if term[2]!="": #punctuation
-            termNode = etree.Element("punctuation")
+        if term[2]!="": #number
+            termNode = etree.Element("number")
             termNode.text = term[2]
             return termNode
         
-        if term[3]!="": #number
-            termNode = etree.Element("number")
-            termNode.text = term[3]
-            return termNode
+        if term[3]!="": #fragment
+            if fragments is not None and term[3] in fragments:
+                return deepcopy(fragments[term[3]])
+            
+            logging.debug("missing fragment: %s" % term[3])
+            return None
         
-        if term[4]!="": #fragment
-            if fragments is not None and term[4] in fragments:
-                #return etree.fromstring(fragments[term[4]])
-                return deepcopy(fragments[term[4]])
-            
-            logging.debug("missing fragment: %s" % term[4])
-            
-        if term[5]!="":
+        if term[4]!="": #tag
             termNode = etree.Element("tag")
-            termNode.attrib["isOpen"] = "True"
+            termNode.text = term[4]
+            return termNode
+            
+        if term[5]!="": #punctuation
+            termNode = etree.Element("punctuation")
             termNode.text = term[5]
             return termNode
         
-        if term[6]!="":
-            termNode = etree.Element("tag")
-            termNode.attrib["isClose"] = "True"
-            termNode.text = term[6]
-            return termNode
-            
         return None
     
     def addFrequencyData(self, document):
@@ -275,8 +268,7 @@ class TextParser(BaseParser):
         l1Paragraphs = self.splitIntoParagraphs(l1Content)
         l2Paragraphs = self.splitIntoParagraphs(self.pi.item.getL2Content())
         
-        l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
-        l1TermRegex = re.compile(self.pi.language1.termRegex)
+        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         root = etree.Element("root")
         contentNode = self.createContentNode()
@@ -300,19 +292,13 @@ class TextParser(BaseParser):
             l2ParagraphNode.text = l2Paragraph
             l2ParagraphNode.attrib["direction"] = "ltr" if self.pi.language2 and self.pi.language2.direction==LanguageDirection.LeftToRight else "rtl"
             
-            sentences = self.splitIntoSentences(l1Paragraph, l1SentenceRegex)
-            
-            for sentence in sentences:
-                sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence.rstrip("\n"), l1TermRegex)
+            terms = self.splitIntoTerms(l1Paragraph)
+            for term in terms:
+                termNode = self.createTermNode(term, fragments)
                 
-                for term in terms:
-                    termNode = self.createTermNode(term, fragments)
-                    
-                    if termNode is not None:
-                        sentenceNode.append(termNode)
-                    
-                l1ParagraphNode.append(sentenceNode)
+                if termNode is not None:
+                    l1ParagraphNode.append(termNode)
+                    #l1ParagraphNode.append(sentenceNode)
                 
             joinNode.append(l1ParagraphNode) 
             joinNode.append(l2ParagraphNode)
@@ -372,8 +358,8 @@ class LatexParser(BaseParser):
         
         l1Paragraphs = self.splitIntoParagraphs(l1Content)
         
-        l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
-        l1TermRegex = re.compile(self.pi.language1.termRegex)
+        self.l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
+        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         root = etree.Element("root")
         contentNode = self.createContentNode()
@@ -392,11 +378,11 @@ class LatexParser(BaseParser):
             l2ParagraphNode.text = ''
             l2ParagraphNode.attrib["direction"] = "ltr"
             
-            sentences = self.splitIntoSentences(l1Paragraph, l1SentenceRegex)
+            sentences = self.splitIntoSentences(l1Paragraph)
             
             for sentence in sentences:
                 sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence.rstrip("\n"), l1TermRegex)
+                terms = self.splitIntoTerms(sentence.rstrip("\n"))
                 
                 for term in terms:
                     termNode = self.createTermNode(term, fragments)
@@ -470,8 +456,8 @@ class VideoParser(BaseParser):
         self.po.l1Srt = self.parseSrt(l1Content)
         self.po.l2Srt = self.parseSrt(self.po.item.getL2Content()) if self.pi.asParallel else []
         
-        l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
-        l1TermRegex = re.compile(self.pi.language1.termRegex)
+        self.l1SentenceRegex = re.compile(self.pi.language1.sentenceRegex)
+        self.l1TermRegex = re.compile(self.pi.language1.termRegex)
         
         root = etree.Element("root")
         contentNode = self.createContentNode()
@@ -497,11 +483,11 @@ class VideoParser(BaseParser):
             l1ParagraphNode.attrib["direction"] = "ltr" if self.pi.language1.direction==LanguageDirection.LeftToRight else "rtl"            
             l2ParagraphNode.attrib["direction"] = "ltr" if self.pi.language2 and self.pi.language2.direction==LanguageDirection.LeftToRight else "rtl"
             
-            sentences = self.splitIntoSentences(l1Paragraph.content, l1SentenceRegex)
+            sentences = self.splitIntoSentences(l1Paragraph.content)
             
             for sentence in sentences:
                 sentenceNode = etree.Element("sentence")
-                terms = self.splitIntoTerms(sentence.rstrip("\n"), l1TermRegex)
+                terms = self.splitIntoTerms(sentence.rstrip("\n"))
                 
                 for term in terms:
                     termNode = self.createTermNode(term, fragments)
