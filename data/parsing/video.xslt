@@ -147,7 +147,7 @@
   	<span class="__nt __number"><xsl:value-of select="."/></span>
   </xsl:template>
   <xsl:template match="punctuation">
-  	<span class="__nt"><xsl:value-of select="."/></span>
+  	<span class="__nt __punctuation"><xsl:value-of select="."/></span>
   </xsl:template>
   <xsl:template match="tag">
   	<xsl:value-of select="." disable-output-escaping="yes" />
