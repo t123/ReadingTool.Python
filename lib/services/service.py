@@ -743,7 +743,6 @@ CREATE TABLE "language" (
 "languageCode" VARCHAR NOT NULL,
 "userId" INTEGER NOT NULL, 
 "direction" INTEGER NOT NULL, 
-"sentenceRegex" VARCHAR NOT NULL, 
 "termRegex" VARCHAR NOT NULL
 );
 CREATE TABLE "language_plugin" ("languageId" INTEGER NOT NULL , "pluginId" INTEGER NOT NULL , PRIMARY KEY ("languageId", "pluginId"));
