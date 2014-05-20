@@ -665,6 +665,8 @@ class StorageService:
     SOFTWARE_CHECK_UPDATES = "software_check_updates"
     SOFTWARE_DEBUG = "software_debug"
     
+    MEDIA_PLUGIN = "media_plugin"
+    
     def __init__(self):
         self.db = Db(Application.connectionString)
         

@@ -88,10 +88,7 @@
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <layout class="QFormLayout" name="formLayout">
-         <property name="fieldGrowthPolicy">
-          <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-         </property>
+        <layout class="QGridLayout" name="gridLayout">
          <item row="0" column="0">
           <widget class="QLabel" name="label">
            <property name="text">
@@ -102,45 +99,45 @@
          <item row="0" column="1">
           <widget class="QLineEdit" name="leName"/>
          </item>
-         <item row="2" column="0">
+         <item row="1" column="0">
           <widget class="QLabel" name="label_2">
            <property name="text">
             <string>Language Code</string>
            </property>
           </widget>
          </item>
-         <item row="2" column="1">
+         <item row="1" column="1">
           <widget class="QComboBox" name="cbLanguageCodes"/>
          </item>
-         <item row="3" column="0">
+         <item row="2" column="0">
           <widget class="QLabel" name="label_3">
            <property name="text">
             <string>Direction</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="2" column="1">
           <widget class="QRadioButton" name="rbLTR">
            <property name="text">
             <string>Left to Right</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="1">
+         <item row="3" column="1">
           <widget class="QRadioButton" name="rbRTL">
            <property name="text">
             <string>Right to Left</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="0">
+         <item row="4" column="0">
           <widget class="QLabel" name="label_5">
            <property name="text">
             <string>Term Regex</string>
            </property>
           </widget>
          </item>
-         <item row="6" column="1">
+         <item row="4" column="1">
           <widget class="QLineEdit" name="leTermRegex">
            <property name="font">
             <font>
@@ -151,15 +148,36 @@
            </property>
           </widget>
          </item>
-         <item row="7" column="0">
+         <item row="5" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>Is Archived</string>
            </property>
           </widget>
          </item>
-         <item row="7" column="1">
+         <item row="5" column="1">
           <widget class="QCheckBox" name="cbIsArchived">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="label_8">
+           <property name="text">
+            <string>Theme</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QLineEdit" name="leTheme">
+           <property name="font">
+            <font>
+             <family>MS Shell Dlg 2</family>
+             <weight>50</weight>
+             <bold>false</bold>
+            </font>
+           </property>
            <property name="text">
             <string/>
            </property>

@@ -121,6 +121,10 @@ div.jp-video-270p
     color: black;
 }
 
+.tooltip.in {
+    opacity: 1 !important;
+}
+
 .tooltip-inner
 {
     color: #000 !important;

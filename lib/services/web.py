@@ -25,6 +25,7 @@ class WebService:
             logging.debug(data["message"])
         except Exception as e:
             logging.debug(str(e))
+            logging.debug(response.content)
              
     def createJsonSignatureHeaders(self, dictionary, contentType="application/json", secret=None):
         data = json.dumps(dictionary, sort_keys=True)

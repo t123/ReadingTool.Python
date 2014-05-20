@@ -459,19 +459,23 @@ function Lib(options) {
     };
     
     self.getWebAPI = function() { 
-    	return self._getItemData('webapi');    	
+    	return self._getItemData('webapi');
     };
     
     self.getMediaUri = function() {
-    	return self._getItemData('mediauri');    	
+    	return self._getItemData('mediauri');
+    };
+
+    self.getMediaPlugin  = function() {
+        return self._getItemData('mediaplugin');
     };
     
     self.getL1Code = function() {
-    	return self._getItemData('l1code');    	
+    	return self._getItemData('l1code');
     };
     
     self.getL2Code = function() {
-    	return self._getItemData('l2code');    	
+    	return self._getItemData('l2code');
     };
     
     self.getCollectionName = function() {

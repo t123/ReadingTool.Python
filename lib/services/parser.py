@@ -1,7 +1,7 @@
 import os, re, datetime, math, logging, time
 from lxml import etree
 from copy import deepcopy
-from lib.services.service import UserService, ItemService, LanguageService, TermService
+from lib.services.service import UserService, ItemService, LanguageService, TermService, StorageService
 from lib.models.model import User, Item, Language, LanguageDirection, TermState, ItemType
 from lib.models.parser import ParserInput, ParserOutput, SRT
 from lib.misc import Time, Application
@@ -56,7 +56,8 @@ class BaseParser:
                                 l1Direction=str(self.pi.language1.direction),
                                 l2Direction=str(self.pi.language2.direction) if self.pi.language2 else "",
                                 l1Code=self.pi.language1.languageCode,
-                                l2Code=self.pi.language2.languageCode if self.pi.language2 else ""
+                                l2Code=self.pi.language2.languageCode if self.pi.language2 else "",
+                                mediaPlugin=StorageService.sfind(StorageService.MEDIA_PLUGIN, "jplayer")
                                 )
         
         return content;

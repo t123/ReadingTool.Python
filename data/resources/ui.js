@@ -33,7 +33,6 @@ $(function() {
 	});
 
 	if (window.lib.getMediaUri() != '') {
-		$("#jquery_jplayer_1").show()
 		var mediaUri = window.lib.getMediaUri();
 		var webApiEndPoint = window.lib.getWebAPI();
 
@@ -41,40 +40,80 @@ $(function() {
 			mediaUri = webApiEndPoint + '/resource/v1/media/' + window.lib.getItemId(); 
 		}
 
-		if (window.lib.getItemType() == 'text') {
-			$("#jquery_jplayer_1").jPlayer({
-				ready : function() {
-					$(this).jPlayer("setMedia", {
-						mp3 : mediaUri
-					});
-				},
-				swfPath : webApiEndPoint + "/resource/v1/local/Jplayer.swf",
-				supplied : "mp3",
-				//warningAlerts: true,
-				//errorAlerts: true,
-				solution : "flash",
-				wmode : "window"
-			});
+		if(window.lib.getMediaPlugin()=='jplayer') {
+			$('#mediaPlugin').html('<div id="jquery_jplayer_1" class="jp-jplayer"></div> \
+        <div id="jp_container_1" class="jp-audio"> \
+            <div class="jp-type-single"> \
+                <div class="jp-gui jp-interface"> \
+                    <ul class="jp-controls"> \
+                        <li><a href="javascript:;" class="jp-play">play</a></li> \
+                        <li><a href="javascript:;" class="jp-pause">pause</a></li> \
+                        <li><a href="javascript:;" class="jp-stop">stop</a></li> \
+                        <li><a href="javascript:;" class="jp-mute" title="mute">mute</a></li> \
+                        <li><a href="javascript:;" class="jp-unmute" title="unmute">unmute</a></li> \
+                        <li><a href="javascript:;" class="jp-volume-max" title="max volume">max volume</a></li> \
+                    </ul> \
+                    <div class="jp-progress"> \
+                        <div class="jp-seek-bar"> \
+                            <div class="jp-play-bar"></div> \
+                        </div> \
+                    </div> \
+                    <div class="jp-volume-bar"> \
+                        <div class="jp-volume-bar-value"></div> \
+                    </div> \
+                    <div class="jp-time-holder"> \
+                        <div class="jp-current-time"></div> \
+                        <div class="jp-duration"></div> \
+                    </div> \
+                </div> \
+                <div class="jp-no-solution"> \
+                    <span>Update Required</span> \
+                    To play the media you will need to either update your browser to a recent version or update your <a href="http://get.adobe.com/flashplayer/" target="_blank">Flash plugin</a>. \
+                </div> \
+            </div> \
+        </div>');
+
+			$("#jquery_jplayer_1").show()
+
+			if (window.lib.getItemType() == 'text') {
+				$("#jquery_jplayer_1").jPlayer({
+					ready : function() {
+						$(this).jPlayer("setMedia", {
+							mp3 : mediaUri
+						});
+					},
+					swfPath : webApiEndPoint + "/resource/v1/local/Jplayer.swf",
+					supplied : "mp3",
+					//warningAlerts: true,
+					//errorAlerts: true,
+					solution : "flash",
+					wmode : "window"
+				});
+			} else {
+				$("#jquery_jplayer_1").jPlayer({
+					ready : function() {
+						$(this).jPlayer("setMedia", {
+							m4v : mediaUri
+						});
+					},
+					swfPath : webApiEndPoint + "/resource/v1/local/Jplayer.swf",
+					supplied : "m4v",
+					// warningAlerts: true,
+					// errorAlerts: true,
+					solution : "flash",
+					size : {
+						width : "720px",
+						height : "405px"
+					}
+				});
+			}
 		} else {
-			$("#jquery_jplayer_1").jPlayer({
-				ready : function() {
-					$(this).jPlayer("setMedia", {
-						m4v : mediaUri
-					});
-				},
-				swfPath : webApiEndPoint + "/resource/v1/local/Jplayer.swf",
-				supplied : "m4v",
-				// warningAlerts: true,
-				// errorAlerts: true,
-				solution : "flash",
-				size : {
-					width : "720px",
-					height : "405px"
-				}
-			});
+			if(window.lib.getItemType() == 'text') {
+				$('#mediaPlugin').html('<embed branding="false" height="35" type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" id="vlc" autoplay="false" src="' + mediaUri + '"></embed>');
+			} else {
+				$('#mediaPlugin').html('<embed branding="false" type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" id="vlc" autoplay="false" src="' + mediaUri + '"></embed>');
+			}
 		}
-	} else {
-		$('#jp_container_1').hide();
 	}
 
 	var reading = new Reading({});

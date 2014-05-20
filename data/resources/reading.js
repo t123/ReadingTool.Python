@@ -4,8 +4,8 @@
     self.modal = $('#popup');
     self.currentElement = null;
     self.options = options;
-    self.wasPlaying = false;
-    self.jplayer = $('#jquery_jplayer_1');
+    // self.wasPlaying = false;
+    self.mediaPlayer = new MediaPlayerFactory(window.lib.getMediaPlugin());
     
     self.getOptions = function () {
         return self.options;
@@ -223,30 +223,6 @@
         return self.hasChanged;
     };
 
-    self.hasPlayer = function() {
-    	if(self.jplayer==undefined || self.jplayer==null) {
-    		return false;
-    	}
-    	
-    	if(self.jplayer.data()==null || self.jplayer.data().jPlayer==undefined) {
-    		return false;
-    	}
-    	
-    	return true;
-    };
-    
-    self.setWasPlaying = function () {
-    	self.wasPlaying = false;
-    	
-    	if(self.hasPlayer() && !self.jplayer.data().jPlayer.status.paused) {
-    		self.wasPlaying = true;
-    	}
-    };
-
-    self.getWasPlaying = function () {
-        return self.wasPlaying;
-    };
-
     self.copy = function () {
         $.event.trigger("preDialogWordCopy");
 
@@ -343,12 +319,8 @@
         $.event.trigger("postCloseModal");
     };
 
-    self.getPlayer = function () {
-    	if(window.lib.getMediaUri()=='') {
-            return null;
-        }
-
-        return self.jplayer;
+    self.getMediaPlayer = function () {
+        return self.mediaPlayer;
     };
 
     self._showOverlayModal = function (content) {
@@ -404,34 +376,4 @@
     	$('body').css('cursor', 'auto');
     	self._setOverlayModalContent('Operation failed.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
     };
-
-    if (window.lib.getItemType() == 'video' && self.hasPlayer()) {
-    	lastL1 = -2;
-    	lastL2 = -2;
-    	
-        self.jplayer.bind($.jPlayer.event.timeupdate, function (event) {
-            l1 = rtjscript.getSrtL1(event.jPlayer.status.currentTime);
-            l2 = rtjscript.getSrtL2(event.jPlayer.status.currentTime);
-            
-            if(l1!=lastL1) {
-            	if(l1==-1) {
-            		$('#l1Main').html('');
-            	} else {
-            		$('#l1Main').html($('#l1_' + l1).html());
-            	}
-            	
-            	lastL1 = l1;
-            }
-            
-            if(l2!=lastL2) {
-            	if(l2==-1) {
-            		$('#l2Main').html('');
-            	} else {
-            		$('#l2Main').html($('#l2_' + l2).html());
-            	}
-            	
-            	lastL2 = l2;
-            }
-        });
-    }
 }
