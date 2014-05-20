@@ -209,7 +209,7 @@ function JPlayerMediaPlayer() {
     };
 
     self.isStopped = function() {
-        return self.isPaused() && self.getCurrentTime()<=0); //Close enough
+        return self.isPaused() && self.getCurrentTime()<=0; //Close enough
     };
 
     self.getDuration = function() {
