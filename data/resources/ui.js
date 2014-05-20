@@ -86,7 +86,7 @@ $(function() {
 					supplied : "mp3",
 					//warningAlerts: true,
 					//errorAlerts: true,
-					solution : "flash",
+					solution: "html,flash",
 					wmode : "window"
 				});
 			} else {
@@ -98,9 +98,10 @@ $(function() {
 					},
 					swfPath : webApiEndPoint + "/resource/v1/local/Jplayer.swf",
 					supplied : "m4v",
-					// warningAlerts: true,
-					// errorAlerts: true,
-					solution : "flash",
+					//warningAlerts: true,
+					//errorAlerts: true,
+					solution: "html,flash",
+					wmode : "window",
 					size : {
 						width : "720px",
 						height : "405px"
