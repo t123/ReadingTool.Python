@@ -112,7 +112,7 @@ $(function() {
 			if(window.lib.getItemType() == 'text') {
 				$('#mediaPlugin').html('<embed branding="false" height="35" type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" id="vlc" autoplay="false" src="' + mediaUri + '"></embed>');
 			} else {
-				$('#mediaPlugin').html('<embed branding="false" type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" id="vlc" autoplay="false" src="' + mediaUri + '"></embed>');
+				$('#mediaPlugin').html('<embed branding="false" width="720" height="405" type="application/x-vlc-plugin" pluginspage="http://www.videolan.org" id="vlc" autoplay="false" src="' + mediaUri + '"></embed>');
 			}
 		}
 	}

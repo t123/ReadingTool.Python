@@ -1,4 +1,4 @@
-import cherrypy, json, urllib, os, time, threading
+import cherrypy, json, urllib, os, time, threading, mimetypes
 from lib.models.model import TermState, Term, Item, TermType
 from lib.services.service import TermService, ItemService, PluginService, LanguageService, StorageService
 from lib.misc import Application, Time
@@ -208,21 +208,13 @@ class ResourceController(object):
         if not os.path.isfile(item.mediaUri):
             raise cherrypy.HTTPError(404)
         
-        fileName, fileExtension = os.path.splitext(item.mediaUri)
-        content = ""
         size = os.path.getsize(item.mediaUri)
         
         file = open (item.mediaUri, "rb")
                 
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Length"] = size
-             
-        if fileExtension.lower()==".mp3":
-            cherrypy.response.headers["Content-Type"] = "audio/mpeg3"
-        elif fileExtension.lower()==".mp4":
-            cherrypy.response.headers["Content-Type"] = "video/mp4"
-        else:
-            raise cherrypy.HTTPError(404)
+        cherrypy.response.headers["Content-Type"] = mimetypes.guess_type(item.mediaUri)[0]     
         
         def stream():
             data = file.read(65000)
@@ -264,19 +256,7 @@ class ResourceController(object):
         with open (file, "rb") as file:
             content = file.read()
             
-        if fileExtension.lower()==".js":
-            cherrypy.response.headers["Content-Type"] = "application/javascript"
-        elif fileExtension.lower()==".css":
-            cherrypy.response.headers["Content-Type"] = "text/css"
-        elif fileExtension.lower()==".swf":
-            cherrypy.response.headers["Content-Type"] = "application/x-shockwave-flash"
-        elif fileExtension.lower()==".jpg":
-            cherrypy.response.headers["Content-Type"] = "image/jpeg"
-        elif fileExtension.lower()==".png":
-            cherrypy.response.headers["Content-Type"] = "image/png"
-        else:        
-            cherrypy.response.headers["Content-Type"] = "text/html"
-        
+        cherrypy.response.headers["Content-Type"] = mimetypes.guess_type(name)[0]
         cherrypy.response.status = 200
         
         return content

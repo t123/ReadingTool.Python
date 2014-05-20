@@ -162,6 +162,12 @@ function VlcMediaPlayer() {
 
     self._updateSubs = function(e) {
         if (self.player!=null && window.lib.getItemType() == 'video') {
+            if(!window.lib.hasEmbeddedScript()) {
+                $('#l1Main').html('Missing rtjscript');
+                $('#l2Main').html('Missing rtjscript');
+                return;
+            }
+            
             l1 = rtjscript.getSrtL1(e*1000);
             l2 = rtjscript.getSrtL2(e*1000);
                 
@@ -285,6 +291,12 @@ function JPlayerMediaPlayer() {
         lastL2 = -2;
         
         self.player.bind($.jPlayer.event.timeupdate, function (event) {
+            if(!window.lib.hasEmbeddedScript()) {
+                $('#l1Main').html('Missing rtjscript');
+                $('#l2Main').html('Missing rtjscript');
+                return;
+            }
+
             l1 = rtjscript.getSrtL1(event.jPlayer.status.currentTime);
             l2 = rtjscript.getSrtL2(event.jPlayer.status.currentTime);
             
