@@ -62,7 +62,7 @@ class LanguageService:
         
     def save(self, language, plugins=None):
         if(language.languageId == 0):
-            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction)",
+            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction, theme) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction, :theme)",
                             languageId=None,
                             name=language.name,
                             created=time.time(),
@@ -71,17 +71,19 @@ class LanguageService:
                             languageCode=language.languageCode,
                             userId=Application.user.userId,
                             termRegex=language.termRegex,
-                            direction=language.direction
+                            direction=language.direction,
+                            theme=language.theme
                             )
         else:        
-            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, termRegex=:termRegex, direction=:direction WHERE languageId=:languageId",
+            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, termRegex=:termRegex, direction=:direction, theme=:theme WHERE languageId=:languageId",
                             languageId=language.languageId,
                             name=language.name,
                             modified=time.time(),
                             isArchived=language.isArchived,
                             languageCode=language.languageCode,
                             termRegex=language.termRegex,
-                            direction=language.direction
+                            direction=language.direction,
+                            theme=language.theme
                             )
             
         if plugins is not None:

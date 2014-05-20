@@ -101,6 +101,7 @@ class Language():
         self.userId = None
         self.termRegex = Language.TERM_REGEX
         self.direction = LanguageDirection.LeftToRight
+        self.theme = None
         
     def toDict(self):
         d = {}
@@ -114,6 +115,7 @@ class Language():
         d["userId"] = self.userId
         d["termRegex"] = self.termRegex
         d["direction"] = self.direction
+        d["theme"] = self.theme
         
         return d
     

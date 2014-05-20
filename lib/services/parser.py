@@ -322,8 +322,19 @@ class TextParser(BaseParser):
         #WTF?? Newlines in XSLT transform cause extra spaces around punctuation. If anyone wants to try fix that... 
         transform = re.sub("span>\s+<span", "span><span", str(self.applyTransform(root)))
         
+        theme = ""
+        if not StringUtil.isEmpty(self.pi.language1.theme):
+            theme = self.pi.language1.theme + "_reading.css"
+                
+        joined = os.path.join(Application.path, os.path.join("resources", theme))
+        if StringUtil.isEmpty(theme) or not os.path.exists(joined):
+                theme = "reading.css"
+                    
+        logging.debug("Using css: %s" % theme)
+        
         self.po.html = htmlContent.replace("<!-- table -->", transform) \
                 .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \
+                .replace('<!-- theme -->', theme) \
                 .replace("<!-- webapi -->", Application.apiServer)
                 
         time5 = time.time()
@@ -494,7 +505,22 @@ class VideoParser(BaseParser):
         with open (os.path.join(Application.pathParsing, self.htmlFile), "r") as htmlFile:
             htmlContent = htmlFile.read()
             
-        self.po.html = htmlContent.replace("<!-- table -->", str(self.applyTransform(root))).replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>").replace("<!-- webapi -->", Application.apiServer)
+        theme = ""
+        if not StringUtil.isEmpty(self.pi.language1.theme):
+            theme = self.pi.language1.theme + "_watching.css"
+                
+        joined = os.path.join(Application.path, os.path.join("resources", theme))
+        if StringUtil.isEmpty(theme) or not os.path.exists(joined):
+                theme = "watching.css"
+                    
+        logging.debug("Using css: %s" % theme)
+        
+        self.po.html = htmlContent \
+                        .replace("<!-- table -->", str(self.applyTransform(root))) \
+                        .replace('<!-- theme -->', theme) \
+                        .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \
+                        .replace("<!-- webapi -->", Application.apiServer)
+                        
         self.po.html = re.sub("span>\s+<span", "span><span", self.po.html)
         
         return self.po

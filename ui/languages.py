@@ -17,6 +17,7 @@ class LanguagesForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteLanguage)
         QtCore.QObject.connect(self.ui.pbCancel, QtCore.SIGNAL("clicked()"), self.cancel)
         QtCore.QObject.connect(self.ui.leName, QtCore.SIGNAL("textChanged(QString)"), self.changed)
+        QtCore.QObject.connect(self.ui.leTheme, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.leTermRegex, QtCore.SIGNAL("textChanged(QString)"), self.changed)
         QtCore.QObject.connect(self.ui.cbIsArchived, QtCore.SIGNAL("stateChanged(int)"), self.changed)
         QtCore.QObject.connect(self.ui.cbLanguageCodes, QtCore.SIGNAL("currentIndexChanged(int)"), self.changed)
@@ -65,6 +66,7 @@ class LanguagesForm(QtGui.QDialog):
         self.ui.leName.setText(language.name)
         self.ui.leTermRegex.setText(language.termRegex)
         self.ui.cbIsArchived.setChecked(language.isArchived)
+        self.ui.leTheme.setText(language.theme)
 
         index = self.ui.cbLanguageCodes.findData(language.languageCode)
         
@@ -112,6 +114,7 @@ class LanguagesForm(QtGui.QDialog):
         language.isArchived = self.ui.cbIsArchived.isChecked()
         language.direction = LanguageDirection.LeftToRight if self.ui.rbLTR.isChecked() else LanguageDirection.RightToLeft
         language.languageCode = self.ui.cbLanguageCodes.itemData(self.ui.cbLanguageCodes.currentIndex())
+        language.theme = self.ui.leTheme.text()
         
         plugins = []
         
