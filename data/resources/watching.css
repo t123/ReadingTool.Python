@@ -48,17 +48,19 @@
 
 #reading span.__term.__temp
 {
-    background-color: #68b781;
+    background-color: rgba(87,153,106,0.7);
+    border: 1px solid #57996A;
 }
 
 #reading span.__term.__current
 {
-    border-bottom: 2px solid yellow !important;
+    border-bottom: 2px solid red !important;
 }
 
 #reading span.__term.__matching
 {
-    background-color: #4DA560 !important;
+    background-color: #FFE792 !important;
+    color: black;
 }
 
 #reading span.__term.__id
@@ -75,7 +77,7 @@
 
 #reading span.__fragment.__current
 {
-    background-color: #4DA560 !important;
+    background-color: #4da560;
 }
 
 
