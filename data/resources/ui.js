@@ -1,11 +1,23 @@
-﻿window.onerror = function(msg, url, line) {
+/*global $:false */
+/*global rtjscript:false */
+/*global jQuery:false */
+/*global Lib:false */
+/*global Reading:false */
+/*jslint devel:true */
+/*jslint browser:true */
+/*jshint multistr: true */
+
+window.onerror = function(msg, url, line) {
+        "use strict";
 		console.error(line, msg);
-		//alert('An unhandled error has occurred. You might want to reload the page. See the console for more information.')
+		alert('An unhandled error has occurred. You might want to reload the page. See the console for more information.');
 		return false;
 	};
 	
 $(function() {
-	cl = function() {
+    "use strict";
+    
+	var cl = function() {
 		return console.log.apply(console, arguments); 
 	};
 	
@@ -13,7 +25,7 @@ $(function() {
 	jQuery.support.cors = true;
 	window.reading = undefined;
 
-	jQuery.fn['any'] = function() {
+	jQuery.fn.any = function() {
 		return (this.length > 0);
 	};
 
@@ -32,11 +44,11 @@ $(function() {
 		animation : false
 	});
 
-	if (window.lib.getMediaUri() != '') {
+	if (window.lib.getMediaUri() !== '') {
 		var mediaUri = window.lib.getMediaUri();
 		var webApiEndPoint = window.lib.getWebAPI();
 
-		if (mediaUri.indexOf('http://') != 0 && mediaUri.indexOf('https://') != 0) {
+		if (mediaUri.indexOf('http://') !== 0 && mediaUri.indexOf('https://') !== 0) {
 			mediaUri = webApiEndPoint + '/resource/v1/media/' + window.lib.getItemId(); 
 		}
 
@@ -73,7 +85,7 @@ $(function() {
             </div> \
         </div>');
 
-			$("#jquery_jplayer_1").show()
+			$("#jquery_jplayer_1").show();
 
 			if (window.lib.getItemType() == 'text') {
 				$("#jquery_jplayer_1").jPlayer({
@@ -159,7 +171,7 @@ $(function() {
 			mouseTrack.dragged = true;
 			$('body').css('cursor', 'copy');
 			
-			if(mouseTrack.originalSpan==null) {
+			if(mouseTrack.originalSpan===null) {
 				mouseTrack.originalSpan = $(this);
 			}
 		}
@@ -169,12 +181,12 @@ $(function() {
 		if(e.which==1) {
 			mouseTrack.mouseDown = false;
 			$('body').css('cursor', 'auto');
-			element = $(this);
+			var element = $(this);
 			
 			if(mouseTrack.dragged && element[0]!==mouseTrack.originalSpan[0]) {
-				fragment = window.lib.createFragment(mouseTrack.originalSpan, element);
+				var fragment = window.lib.createFragment(mouseTrack.originalSpan, element);
 				
-				if(fragment==null) {
+				if(fragment===null) {
 					return;
 				}
 				

@@ -1,12 +1,18 @@
-﻿function Reading(options) {
+/*global $:false */
+/*global MediaPlayerFactory:false */
+/*jslint devel:true */
+/*jslint browser:true */
+
+function Reading(options) {
+    "use strict";
+    
     var self = this;
     self.hasChanged = false;
     self.modal = $('#popup');
     self.currentElement = null;
     self.options = options;
-    // self.wasPlaying = false;
     self.mediaPlayer = new MediaPlayerFactory(window.lib.getMediaPlugin());
-    
+
     self.getOptions = function () {
         return self.options;
     };
@@ -31,25 +37,25 @@
 
         window.lib.find(text, self.getLanguageId(), self._findDone, self._findFail);
     };
-    
-    self._findDone = function(phrase, languageId, data, status, xhr) {
-    	if(data.state=="known" && data.sentence=="") {
-    		self.setDSentence(window.lib.getSentence());
-    	} else {
-    		self.setDSentence(data.sentence);    		
-    	}
-    	
-    	self.setDPhrase(data.phrase);
+
+    self._findDone = function (phrase, languageId, data, status, xhr) {
+        if (data.state == "known" && data.sentence === "") {
+            self.setDSentence(window.lib.getSentence());
+        } else {
+            self.setDSentence(data.sentence);
+        }
+
+        self.setDPhrase(data.phrase);
         self.setDState(data.state);
         self.setDBase(data.basePhrase);
         self.setDDefinition(data.definition);
-        self.setFocus($('#dDefinition'))
-        
+        self.setFocus($('#dDefinition'));
+
         self.setHasChanged(false);
     };
-    
-    self._findFail = function(phrase, languageId, data, status, xhr) {
-    	if (data.status == 404) {
+
+    self._findFail = function (phrase, languageId, data, status, xhr) {
+        if (data.status == 404) {
             self.setDPhrase(phrase);
             self.setDState('unknown');
             self.setDDefinition('');
@@ -57,13 +63,13 @@
             self.changed($('#dSentence'));
 
             self.setDMessage('New word, defaulting to unknown');
-            
-            if(window.lib.isCurrentFragment()) {
-            	self.setDBase(phrase);
-            	self.setFocus($('#dDefinition'))
+
+            if (window.lib.isCurrentFragment()) {
+                self.setDBase(phrase);
+                self.setFocus($('#dDefinition'));
             } else {
-            	self.setFocus($('#dBase'))
-            	self.setDBase('');
+                self.setFocus($('#dBase'));
+                self.setDBase('');
             }
 
             self.setHasChanged(false);
@@ -94,7 +100,7 @@
     };
 
     self.getItemId = function () {
-    	return window.lib.getItemId();
+        return window.lib.getItemId();
     };
 
     self.setDState = function (state) {
@@ -137,41 +143,40 @@
 
     self.save = function (close) {
         var phrase = window.lib.getCurrentWordAsText();
-        
-        if(phrase=='') {
-        	return;
-        }
-        
-        if(close==null) {
-        	close = false;
-        }
-        
-        state = self.getDState();
 
-        window.lib.save( {
-        			"phrase": phrase,
-        			"basePhrase": self.getDBase(),
-        			"sentence": self.getDSentence(),
-        			"definition": self.getDDefinition(),
-        			"languageId": self.getLanguageId(),
-        			"itemId": self.getItemId(),
-        			"state": state
-        		}, 
-                window.lib.getCurrentElement(),
-                {
-            		"close": close        		
-                }, 
-        		self._saveDone, 
-        		self._saveFail
-        		);
+        if (phrase === '') {
+            return;
+        }
+
+        if (close === null) {
+            close = false;
+        }
+
+        var state = self.getDState();
+
+        window.lib.save({
+                "phrase": phrase,
+                "basePhrase": self.getDBase(),
+                "sentence": self.getDSentence(),
+                "definition": self.getDDefinition(),
+                "languageId": self.getLanguageId(),
+                "itemId": self.getItemId(),
+                "state": state
+            },
+            window.lib.getCurrentElement(), {
+                "close": close
+            },
+            self._saveDone,
+            self._saveFail
+        );
     };
-    
-    self._saveFail = function(obj, element, optional, data, status, xhr) {
+
+    self._saveFail = function (obj, element, optional, data, status, xhr) {
         self.setDMessage('Save failed');
     };
-    
-    self._saveDone = function(obj, element, optional, data, status, xhr) {
-    	if (xhr.status == 200) {
+
+    self._saveDone = function (obj, element, optional, data, status, xhr) {
+        if (xhr.status == 200) {
             self.setDMessage('Term updated');
         } else if (xhr.status == 201) {
             self.setDMessage('New term saved');
@@ -182,29 +187,29 @@
         self._removeChanged();
         self.setHasChanged(false);
 
-        if(optional.close) {
-        	self.closeModal();
+        if (optional.close) {
+            self.closeModal();
         }
     };
 
     self.reset = function () {
-        var phrase = window.lib.getCurrentWordAsText();
+        var element = window.lib.getCurrentElement();
 
         window.lib.reset(element, null, self._resetDone, self._resetFail);
     };
-    
-    self._resetDone = function(element, optional, data, status, xhr) {
-    	if (xhr.status == 200) {
+
+    self._resetDone = function (element, optional, data, status, xhr) {
+        if (xhr.status == 200) {
             self.setDMessage('Term reset, use save to keep data.');
         } else {
             self.setDMessage('Term reset');
         }
     };
-    
-    self._resetFail = function(optional, data, status,xhr) {
-    	self.setDMessage('Reset failed');    	
+
+    self._resetFail = function (optional, data, status, xhr) {
+        self.setDMessage('Reset failed');
     };
-    
+
     self.changed = function (element) {
         if (element && element.any()) {
             element.addClass('changed');
@@ -215,8 +220,8 @@
     };
 
     self.setHasChanged = function (value) {
-    	$.event.trigger("dialogDataHasChanged", [value]);
-    	self.hasChanged = value;
+        $.event.trigger("dialogDataHasChanged", [value]);
+        self.hasChanged = value;
     };
 
     self.getHasChanged = function () {
@@ -235,7 +240,7 @@
     };
 
     self.refresh = function () {
-    	$.event.trigger("preDialogSentenceRefresh");
+        $.event.trigger("preDialogSentenceRefresh");
 
         self.setDSentence(window.lib.getSentence());
         self.changed($('#dSentence'));
@@ -270,7 +275,10 @@
         }
 
         self.modal.css('display', 'inline-block');
-        self.modal.offset({ top: nt, left: nl });
+        self.modal.offset({
+            top: nt,
+            left: nl
+        });
     };
 
     self._clearInputs = function () {
@@ -281,15 +289,15 @@
         self.setHasChanged(false);
     };
 
-    self.isModalVisible = function() {
-    	return self.modal.is(':visible');
+    self.isModalVisible = function () {
+        return self.modal.is(':visible');
     };
-    
+
     self.showModal = function (element) {
         if (self.isModalVisible() && self.hasChanged) {
             return;
         }
-        
+
         self._clearInputs();
         window.lib.setCurrentElement(element);
 
@@ -303,17 +311,17 @@
     };
 
     self.closeModal = function () {
-    	$.event.trigger("preCloseModal");
+        $.event.trigger("preCloseModal");
 
         self.hasChanged = false;
         self.modal.hide();
-        
-        if(window.lib.isCurrentFragment()) {
-        	var current = window.lib.getCurrentElement();
-        	
-        	if(!current.hasClass('__known') && !current.hasClass('__unknown') && !current.hasClass('__ignored')) {
-        		window.lib.deleteFragment(current);
-        	}
+
+        if (window.lib.isCurrentFragment()) {
+            var current = window.lib.getCurrentElement();
+
+            if (!current.hasClass('__known') && !current.hasClass('__unknown') && !current.hasClass('__ignored')) {
+                window.lib.deleteFragment(current);
+            }
         }
 
         $.event.trigger("postCloseModal");
@@ -339,41 +347,41 @@
     };
 
     self.markRemainingAsKnown = function () {
-    	if(self.isModalVisible()) {
-    		self.closeModal();
-    	}
-    	
-        var termArray = Array();
+        if (self.isModalVisible()) {
+            self.closeModal();
+        }
+
+        var termArray = [];
         var languageId = self.getLanguageId();
         var itemId = self.getItemId();
 
         $('.__notseen').each(function (index, x) {
-            var word = $(x).data('lower')
+            var word = $(x).data('lower');
 
-            if(termArray.indexOf(word) > -1)
-            	return;
-            
+            if (termArray.indexOf(word) > -1)
+                return;
+
             termArray.push(word);
         });
-        
-        data = JSON.stringify({
-        		"languageId": languageId,
-        		"itemId": itemId,
-        		"phrases": termArray
+
+        var data = JSON.stringify({
+            "languageId": languageId,
+            "itemId": itemId,
+            "phrases": termArray
         });
-        
+
         self._showOverlayModal('Please wait, sending <strong>' + termArray.length + '</strong> terms.<br/>This may take a few seconds.');
         $('body').css('cursor', 'wait');
         window.lib.markRemainingAsKnown(data, self._doneMarkRemainingAsKnown, self._failMarkRemainingAsKnown);
     };
-    
-    self._doneMarkRemainingAsKnown = function(data, status, xhr) {
-    	$('body').css('cursor', 'auto');
-    	self._setOverlayModalContent('Marked <strong>' + data + '</strong> words as known.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
+
+    self._doneMarkRemainingAsKnown = function (data, status, xhr) {
+        $('body').css('cursor', 'auto');
+        self._setOverlayModalContent('Marked <strong>' + data + '</strong> words as known.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
     };
-    
-    self._failMarkRemainingAsKnown = function(data, status, xhr) {
-    	$('body').css('cursor', 'auto');
-    	self._setOverlayModalContent('Operation failed.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
+
+    self._failMarkRemainingAsKnown = function (data, status, xhr) {
+        $('body').css('cursor', 'auto');
+        self._setOverlayModalContent('Operation failed.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
     };
 }
