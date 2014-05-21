@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>783</width>
+    <width>706</width>
     <height>323</height>
    </rect>
   </property>
@@ -82,7 +82,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>783</width>
+     <width>706</width>
      <height>21</height>
     </rect>
    </property>
@@ -98,7 +98,6 @@
     <property name="title">
      <string>Profiles</string>
     </property>
-    <addaction name="actionManage_Profiles"/>
    </widget>
    <widget class="QMenu" name="menuPlugins">
     <property name="title">
@@ -110,11 +109,23 @@
     <property name="title">
      <string>Help</string>
     </property>
-    <addaction name="actionAbout_ReadingTool"/>
+    <addaction name="actionCheck_for_updates"/>
     <addaction name="actionAbout_ReadingTool_2"/>
+   </widget>
+   <widget class="QMenu" name="menuRecently_Seen_Items">
+    <property name="title">
+     <string>Recently Seen Items</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuRecently_Created_Items">
+    <property name="title">
+     <string>Recently Created Items</string>
+    </property>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuProfiles"/>
+   <addaction name="menuRecently_Seen_Items"/>
+   <addaction name="menuRecently_Created_Items"/>
    <addaction name="menuPlugins"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -122,10 +133,16 @@
    <property name="text">
     <string>&amp;New Item</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+N</string>
+   </property>
   </action>
   <action name="actionNew_Language">
    <property name="text">
     <string>New &amp;Language</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+N</string>
    </property>
   </action>
   <action name="actionQuit">
@@ -142,8 +159,11 @@
    <property name="text">
     <string>Manage Plugins</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+P</string>
+   </property>
   </action>
-  <action name="actionAbout_ReadingTool">
+  <action name="actionCheck_for_updates">
    <property name="text">
     <string>Check for updates</string>
    </property>

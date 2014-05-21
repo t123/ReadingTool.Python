@@ -85,26 +85,37 @@ class ItemsForm(QtGui.QDialog):
         self.ui.twItems.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
          
         action = QAction("Edit", self.ui.twItems)
+        action.setShortcut("Ctrl+E")
+        action.setToolTip("Edit this item")
         self.ui.twItems.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.editItem)
          
         action = QAction("Delete", self.ui.twItems)
+        action.setShortcut("Del")
+        action.setToolTip("Delete this item")
         self.ui.twItems.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.deleteItem)
          
         action = QAction("Copy", self.ui.twItems)
+        action.setShortcut("Ctrl+C")
+        action.setToolTip("Create a copy of this item")
         self.ui.twItems.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.copyItem)
          
         action = QAction("Read", self.ui.twItems)
+        action.setShortcut("Ctrl+Enter")
+        action.setToolTip("Read/Watch this item in single mode")
         self.ui.twItems.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.readItem(asParallel=False))
          
         action = QAction("Read Parallel", self.ui.twItems)
+        action.setShortcut("Enter")
+        action.setToolTip("Read/Watch this item in parellel")
         self.ui.twItems.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.readItem(asParallel=True))
          
         action = QAction("Create PDF", self.ui.twItems)
+        action.setToolTip("Create a PDF of this item")
         self.ui.twItems.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.createPdf)
          
@@ -140,6 +151,7 @@ class ItemsForm(QtGui.QDialog):
         self.dialog = ItemDialogForm(self)
         self.dialog.setItem(item.data(QtCore.Qt.UserRole).itemId)
         self.dialog.show()
+        #TODO refresh items
          
     def copyItem(self):
         item = self.ui.twItems.item(self.ui.twItems.currentRow(), 0)
@@ -149,7 +161,7 @@ class ItemsForm(QtGui.QDialog):
          
         copy = self.itemService.copyItem(item.data(QtCore.Qt.UserRole).itemId)
         self.itemService.save(copy)
-        self.updateItems()
+        self.bindItems()
          
     def deleteItem(self):
         item = self.ui.twItems.item(self.ui.twItems.currentRow(), 0)
@@ -158,7 +170,7 @@ class ItemsForm(QtGui.QDialog):
             return
          
         self.itemService.delete(item.data(QtCore.Qt.UserRole).itemId)
-        self.updateItems()
+        self.bindItems()
          
     def readItem(self, asParallel=None):
         item = self.ui.twItems.item(self.ui.twItems.currentRow(), 0)
@@ -174,40 +186,3 @@ class ItemsForm(QtGui.QDialog):
         if event.key()==QtCore.Qt.Key_Escape:
             self.ui.leFilter.setText("")
             event.ignore()
-            
-#     def keyPressEvent(self, event):
-#         if event.key()==QtCore.Qt.Key_Escape:
-#             return
-#             
-#         if self.ui.twItems.hasFocus():
-#             if not event.modifiers() & QtCore.Qt.ControlModifier and (event.key()==QtCore.Qt.Key_Return or event.key()==QtCore.Qt.Key_Enter):
-#                 self.readItem(None)
-#                 return
-#             
-#             if event.key()==QtCore.Qt.Key_Delete:
-#                 self.deleteItem()
-#                 return
-#                 
-#             if event.modifiers() & QtCore.Qt.ControlModifier:
-#                 if event.key()==QtCore.Qt.Key_Return or event.key()==QtCore.Qt.Key_Enter:
-#                     self.readItem(False)
-#                     return
-#                     
-#                 if event.key()==QtCore.Qt.Key_E:
-#                     self.editItem()
-#                     return
-#                 
-#                 if event.key()==QtCore.Qt.Key_D:    
-#                     self.addItem()
-#                     return
-#                     
-#                 if event.key()==QtCore.Qt.Key_C:    
-#                     self.copyItem()
-#                     return
-#                 
-#                 if event.key()==QtCore.Qt.Key_L or event.key()==QtCore.Qt.Key_F:    
-#                     self.ui.leFilter.setFocus()
-#                     return
-#             
-#         return QtGui.QDialog.keyPressEvent(self, event)
-#===============================================================================

@@ -32,25 +32,21 @@ class MainWindow(QtGui.QMainWindow):
         self.showMaximized()
 
         QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemSelectionChanged()"), self.bindCollectionNames)
+        QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.editLanguage)
         QtCore.QObject.connect(self.ui.lwCollections, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
         QtCore.QObject.connect(self.ui.lwFilters, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
         QtCore.QObject.connect(self.ui.tabWidget, QtCore.SIGNAL("currentChanged(int)"), self.bindData)
 
-        #=======================================================================
-        # self.mainWindow.verticalLayout.setStretch(2, 1)
-        # self.changeView("items")
-        #  
-        # QtCore.QObject.connect(self.mainWindow.pbLanguages, QtCore.SIGNAL("clicked()"), lambda view = "languages": self.changeView(view))
-        # QtCore.QObject.connect(self.mainWindow.tbProfiles, QtCore.SIGNAL("clicked()"), lambda view = "profiles": self.changeView(view))
-        # QtCore.QObject.connect(self.mainWindow.pbPlugins, QtCore.SIGNAL("clicked()"), lambda view = "plugins": self.changeView(view))
-        # QtCore.QObject.connect(self.mainWindow.tbItems, QtCore.SIGNAL("clicked()"), lambda view = "items": self.changeView(view))
-        # QtCore.QObject.connect(self.mainWindow.pbTerms, QtCore.SIGNAL("clicked()"), lambda view = "terms": self.changeView(view))
-        #  
-        # self.showMaximized()
-        # self.checkVersion()
-        #=======================================================================
+        QtCore.QObject.connect(self.ui.action_New_item, QtCore.SIGNAL("triggered(bool)"), self.addItem)
+        QtCore.QObject.connect(self.ui.actionNew_Language, QtCore.SIGNAL("triggered(bool)"), self.addLanguage)
+        QtCore.QObject.connect(self.ui.actionQuit, QtCore.SIGNAL("triggered(bool)"), self.close)
+        QtCore.QObject.connect(self.ui.actionCheck_for_updates, QtCore.SIGNAL("triggered(bool)"), self.checkForUpdates)
         
     def setupUserLayout(self):
+        self.setWindowTitle(self.tr("ReadingTool - {0}").format(Application.user.username))
+        
+        self.setupMenus()
+        
         self.ui.lwLanguages.clear()
         self.ui.lwFilters.clear()
         
@@ -58,7 +54,57 @@ class MainWindow(QtGui.QMainWindow):
         self.bindCollectionNames()
         self.bindFilters()
         
+    def setupMenus(self):
+        readItems = self.itemService.findRecentlyRead()
+        newItems = self.itemService.findRecentlyCreated()
+         
+        self.ui.menuRecently_Seen_Items.clear()
+        self.ui.menuRecently_Created_Items.clear()
+        
+        if len(readItems)==0:
+            self.ui.menuRecently_Seen_Items.setEnabled(False)
+        else:
+            self.ui.menuRecently_Seen_Items.setEnabled(True)
+            
+            for item in readItems:
+                action = QtGui.QAction(self.ui.menuRecently_Seen_Items)
+                action.setText(item.name())
+                action.setData(item)
+                action.connect(action, QtCore.SIGNAL("triggered()"), lambda item=action.data(): self.readItem(item))
+                self.ui.menuRecently_Seen_Items.addAction(action)
+              
+        if len(readItems)==0:
+            self.ui.menuRecently_Created_Items.setEnabled(False)
+        else:
+            self.ui.menuRecently_Created_Items.setEnabled(True)
+            
+            for item in newItems:
+                action = QtGui.QAction(self.ui.menuRecently_Created_Items)
+                action.setText(item.name())
+                action.setData(item)
+                action.connect(action, QtCore.SIGNAL("triggered()"), lambda item=action.data(): self.readItem(item))
+                self.ui.menuRecently_Created_Items.addAction(action)
+            
+        users = self.userService.findAll(orderBy="username")
+        
+        self.ui.menuProfiles.clear()
+        action = QtGui.QAction(self.ui.menuProfiles)
+        action.setText("Manage profiles")
+        
+        if len(users)>0:
+            #action.connect(action, QtCore.SIGNAL("triggered()"), lambda item=action.data(): self.readItem(item))
+            self.ui.menuProfiles.addAction(action)
+            self.ui.menuProfiles.addSeparator()
+            
+            for user in users:
+                action = QtGui.QAction(self.ui.menuProfiles)
+                action.setText(user.username)
+                action.setData(user)
+                action.connect(action, QtCore.SIGNAL("triggered()"), lambda user=action.data(): self.changeProfile(user))
+                self.ui.menuProfiles.addAction(action)
+         
     def bindLanguages(self):
+        self.ui.lwLanguages.clear()
         languages = self.languageService.findAll()
         
         for language in languages:
@@ -133,130 +179,61 @@ class MainWindow(QtGui.QMainWindow):
             self.ui.tabTerms.setLayout(verticalLayout)
             
         self.termsForm.bindTerms()
+        
+    def addItem(self):
+        self.dialog = ItemDialogForm()
+        self.dialog.setItem(0)
+        self.dialog.show()
+        #TODO refresh items
+        
+    def readItem(self, item):
+        self.reader = ReaderWindow()
+        self.reader.readItem(item.itemId)
+        self.reader.show()
+        
+    def addLanguage(self):
+        self.dialog = LanguagesForm()
+        self.dialog.setLanguage()
+        self.dialog.bindLanguage()
+        self.dialog.exec_()
+        
+        if self.dialog.hasSaved:
+            self.bindLanguages()
+        
+    def editLanguage(self, item):
+        languageId = item.data(QtCore.Qt.UserRole).languageId
+        self.dialog = LanguagesForm()
+        self.dialog.setLanguage(languageId)
+        self.dialog.bindLanguage()
+        self.dialog.exec_()
+        
+        if self.dialog.hasSaved:
+            self.bindLanguages()            
+        
+    def checkForUpdates(self):
+        try:
+            storageService = StorageService()
+            checkForUpdate = storageService.find(StorageService.SOFTWARE_CHECK_UPDATES, "true")
+             
+            if not StringUtil.isTrue(checkForUpdate):
+                return
+         
+            softwareVersion = storageService.find(StorageService.SOFTWARE_VERSION, "0.0")
+            webService = WebService()
+             
+            result = webService.checkForNewVersion()
+             
+            if not result:
+                return
+             
+            if float(result["version"])>float(softwareVersion):
+                Qt.QMessageBox.information(self, result["title"], result["message"], Qt.QMessageBox.Ok)
+            else:
+                Qt.QMessageBox.information(self, "No new versions", "You are using the lastest version.", Qt.QMessageBox.Ok)
+        except Exception as e:
+            logging.error(str(e))        
     
-    #===========================================================================
-    # def checkVersion(self):
-    #     try:
-    #         storageService = StorageService()
-    #         checkForUpdate = storageService.find(StorageService.SOFTWARE_CHECK_UPDATES, "true")
-    #         
-    #         if not StringUtil.isTrue(checkForUpdate):
-    #             return
-    #     
-    #         softwareVersion = storageService.find(StorageService.SOFTWARE_VERSION, "0.0")
-    #         webService = WebService()
-    #         
-    #         result = webService.checkForNewVersion()
-    #         
-    #         if not result:
-    #             return
-    #         
-    #         if float(result["version"])>float(softwareVersion):
-    #             Qt.QMessageBox.information(self, result["title"], result["message"], Qt.QMessageBox.Ok)
-    #     except Exception as e:
-    #         logging.error(str(e))
-    #             
-    # def updateItems(self):
-    #     readItems = self.itemService.findRecentlyRead()
-    #     newItems = self.itemService.findRecentlyCreated()
-    #     
-    #     menu = QtGui.QMenu()
-    #     
-    #     action = QtGui.QAction(self)
-    #     action.setText("Add item")
-    #     action.connect(action, QtCore.SIGNAL("triggered()"), self.addItem)
-    #     menu.addAction(action)
-    #         
-    #     readMenu = QtGui.QMenu("Recently Read", self)
-    #     newMenu = QtGui.QMenu("Recently Created", self)
-    #     
-    #     for item in readItems:
-    #         action = QtGui.QAction(self)
-    #         action.setText(item.name())
-    #         action.setData(item)
-    #         action.connect(action, QtCore.SIGNAL("triggered()"), lambda item=action.data(): self.readItem(item))
-    #         readMenu.addAction(action)
-    #          
-    #     for item in newItems:
-    #         action = QtGui.QAction(self)
-    #         action.setText(item.name())
-    #         action.setData(item)
-    #         action.connect(action, QtCore.SIGNAL("triggered()"), lambda item=action.data(): self.readItem(item))
-    #         newMenu.addAction(action)
-    #     
-    #     menu.addMenu(readMenu)
-    #     menu.addMenu(newMenu)
-    #     self.mainWindow.tbItems.setMenu(menu)
-    #     
-    # def addItem(self):
-    #     self.dialog = ItemDialogForm()
-    #     self.dialog.setItem(0)
-    #     self.dialog.show()
-    #     
-    # def readItem(self, item):
-    #     reader = ReaderWindow()
-    #     reader.readItem(item.itemId)
-    #     reader.show()
-    # 
-    # def updateProfiles(self):
-    #     users = self.userService.findAll(orderBy="username")
-    #      
-    #     menu = QtGui.QMenu()
-    #     
-    #     for user in users:
-    #         action = QtGui.QAction(menu)
-    #         action.setText(user.username)
-    #         action.setData(user)
-    #         action.connect(action, QtCore.SIGNAL("triggered()"), lambda user=action.data(): self.changeProfile(user))
-    #         menu.addAction(action)
-    #     
-    #     self.mainWindow.tbProfiles.setMenu(menu)
-    #     
-    # def changeProfile(self, user):
-    #     Application.user = user
-    #     self.changeView(self.currentView)
-    # 
-    # def _removeChild(self):
-    #     count = self.mainWindow.verticalLayout.count()
-    #     
-    #     if count>2:
-    #         layout = self.mainWindow.verticalLayout.takeAt(count-1)
-    #         
-    #         if layout is not None:
-    #             widget = layout.widget()
-    #             if widget is not None:
-    #                 widget.deleteLater()
-    #                 
-    # def changeView(self, viewName):
-    #     self.currentView = viewName
-    #     viewName = viewName.lower()
-    #     
-    #     if viewName=="profiles":
-    #         self._removeChild()
-    #         profilesForm = ProfilesForm()
-    #         self.mainWindow.verticalLayout.addWidget(profilesForm)
-    #         
-    #     elif viewName=="languages":
-    #         self._removeChild()
-    #         languagesForm = LanguagesForm()
-    #         self.mainWindow.verticalLayout.addWidget(languagesForm)
-    #         
-    #     elif viewName=="plugins":
-    #         self._removeChild()
-    #         pluginsForm = PluginsForm()
-    #         self.mainWindow.verticalLayout.addWidget(pluginsForm)
-    #         
-    #     elif viewName=="items":
-    #         self._removeChild()
-    #         itemsForm = ItemsForm()
-    #         self.mainWindow.verticalLayout.addWidget(itemsForm)
-    #         
-    #     elif viewName=="terms":
-    #         self._removeChild()
-    #         termsForm = TermsForm()
-    #         self.mainWindow.verticalLayout.addWidget(termsForm)
-    #         
-    #     self.updateItems()
-    #     self.updateProfiles()
-    #     self.setWindowTitle("ReadingTool - %s" % Application.user.username)
-    #===========================================================================
+    
+    def changeProfile(self, user):
+        Application.user = user
+        self.setupUserLayout()
