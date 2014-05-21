@@ -22,6 +22,8 @@ class TermInfoForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteTerm)
         
     def saveTerm(self):
+        #TODO check if already exists
+        
         term = self.termService.findOne(self.termId)
         
         term.basePhrase = self.ui.leBasePhrase.text()

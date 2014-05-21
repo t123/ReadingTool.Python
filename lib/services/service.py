@@ -561,6 +561,17 @@ class ItemService:
             
     def collectionsByLanguage(self, languageId):
         return self.db.list("SELECT DISTINCT(CollectionName) as X FROM item WHERE X<>'' AND userId=:userId AND l1LanguageId=:languageId ORDER BY x COLLATE NOCASE", userId=Application.user.userId, languageId=languageId)
+    
+    def collectionsByLanguages(self, languageIds=[]):
+        if languageIds is None or languageIds==[]:
+            return self.db.list("SELECT DISTINCT(CollectionName) as X FROM item WHERE X<>'' AND userId=:userId ORDER BY x COLLATE NOCASE", userId=Application.user.userId)
+            
+        stmt = """SELECT DISTINCT(item.collectionName) as X  
+FROM item item, language language
+WHERE X<>'' AND item.userId=:userId AND item.l1LanguageId=language.languageId AND item.l1LanguageId IN (%s)
+ORDER BY language.name COLLATE NOCASE, X COLLATE NOCASE""" % ("?," * len(languageIds))[:-1]
+        
+        return self.db.list(stmt, Application.user.userId, *languageIds)
         
     def changeState(self, itemId, type, value):
         if value<0:
@@ -595,7 +606,6 @@ class ItemService:
                 query += " AND (item.L2Content IS NOT NULL AND item.L2Content<>'') "
             elif exp == "media":
                 query += " AND (item.mediaUri IS NOT NULL AND item.mediaUri<>'') "
-                pass
             elif exp == "text":
                 query += " AND item.itemType=%d" % ItemType.Text
             elif exp == "video":

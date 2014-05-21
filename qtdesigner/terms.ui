@@ -6,26 +6,33 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>726</width>
-    <height>528</height>
+    <width>683</width>
+    <height>481</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
      <item>
-      <widget class="QLineEdit" name="leFilter"/>
+      <widget class="QLineEdit" name="leFilter">
+       <property name="placeholderText">
+        <string>Type to filter, search executes on return</string>
+       </property>
+      </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="cbCollections"/>
+      <widget class="QComboBox" name="cbTags"/>
      </item>
     </layout>
    </item>
    <item>
-    <widget class="QTableWidget" name="tTerms">
+    <widget class="QTableWidget" name="twTerms">
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
@@ -37,9 +44,6 @@
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
-     </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
      </property>
     </widget>
    </item>

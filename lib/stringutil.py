@@ -51,6 +51,8 @@ class FilterParser():
         if StringUtil.isEmpty(text):
             return
         
+        text = text.strip().lower()
+        
         for char in text:
             if char=="#":
                 self.isTag = True

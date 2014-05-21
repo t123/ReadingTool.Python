@@ -6,118 +6,73 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1125</width>
-    <height>527</height>
+    <width>783</width>
+    <height>323</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
-    <property name="margin">
-     <number>0</number>
-    </property>
+   <layout class="QVBoxLayout" name="verticalLayout" stretch="0">
     <item>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="0,0,0,0,0,0,1" rowminimumheight="30">
-      <property name="leftMargin">
-       <number>20</number>
-      </property>
-      <property name="rightMargin">
-       <number>20</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="QToolButton" name="tbProfiles">
-        <property name="minimumSize">
-         <size>
-          <width>75</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Profiles</string>
-        </property>
-        <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
-        </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextOnly</enum>
-        </property>
-        <property name="arrowType">
-         <enum>Qt::DownArrow</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QPushButton" name="pbLanguages">
-        <property name="text">
-         <string>Languages</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="2">
-       <widget class="QToolButton" name="tbItems">
-        <property name="minimumSize">
-         <size>
-          <width>75</width>
-          <height>23</height>
-         </size>
-        </property>
-        <property name="text">
-         <string>Items</string>
-        </property>
-        <property name="popupMode">
-         <enum>QToolButton::MenuButtonPopup</enum>
-        </property>
-        <property name="toolButtonStyle">
-         <enum>Qt::ToolButtonTextOnly</enum>
-        </property>
-        <property name="arrowType">
-         <enum>Qt::DownArrow</enum>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="pbTerms">
-        <property name="text">
-         <string>Terms</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="4">
-       <widget class="QPushButton" name="pbPlugins">
-        <property name="text">
-         <string>Plugins</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="5">
-       <widget class="QPushButton" name="pbSettings">
-        <property name="text">
-         <string>Settings</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="6">
-       <spacer name="horizontalSpacer">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="Line" name="line">
+     <widget class="QSplitter" name="verticalSplitter">
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Vertical</enum>
       </property>
+      <widget class="QSplitter" name="splitter">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <widget class="QListWidget" name="lwLanguages">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
+        <property name="selectionRectVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="lwCollections">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
+        <property name="selectionRectVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+       <widget class="QListWidget" name="lwFilters">
+        <property name="editTriggers">
+         <set>QAbstractItemView::NoEditTriggers</set>
+        </property>
+        <property name="selectionMode">
+         <enum>QAbstractItemView::ExtendedSelection</enum>
+        </property>
+        <property name="selectionRectVisible">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QTabWidget" name="tabWidget">
+       <property name="currentIndex">
+        <number>0</number>
+       </property>
+       <widget class="QWidget" name="tabItems">
+        <attribute name="title">
+         <string>Items</string>
+        </attribute>
+       </widget>
+       <widget class="QWidget" name="tabTerms">
+        <attribute name="title">
+         <string>Terms</string>
+        </attribute>
+       </widget>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -127,15 +82,78 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1125</width>
+     <width>783</width>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+    <addaction name="action_New_item"/>
+    <addaction name="actionNew_Language"/>
+    <addaction name="actionQuit"/>
+   </widget>
+   <widget class="QMenu" name="menuProfiles">
+    <property name="title">
+     <string>Profiles</string>
+    </property>
+    <addaction name="actionManage_Profiles"/>
+   </widget>
+   <widget class="QMenu" name="menuPlugins">
+    <property name="title">
+     <string>Plugins</string>
+    </property>
+    <addaction name="actionManage_Plugins"/>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout_ReadingTool"/>
+    <addaction name="actionAbout_ReadingTool_2"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuProfiles"/>
+   <addaction name="menuPlugins"/>
+   <addaction name="menuHelp"/>
   </widget>
+  <action name="action_New_item">
+   <property name="text">
+    <string>&amp;New Item</string>
+   </property>
+  </action>
+  <action name="actionNew_Language">
+   <property name="text">
+    <string>New &amp;Language</string>
+   </property>
+  </action>
+  <action name="actionQuit">
+   <property name="text">
+    <string>Quit</string>
+   </property>
+  </action>
+  <action name="actionManage_Profiles">
+   <property name="text">
+    <string>Manage Profiles</string>
+   </property>
+  </action>
+  <action name="actionManage_Plugins">
+   <property name="text">
+    <string>Manage Plugins</string>
+   </property>
+  </action>
+  <action name="actionAbout_ReadingTool">
+   <property name="text">
+    <string>Check for updates</string>
+   </property>
+  </action>
+  <action name="actionAbout_ReadingTool_2">
+   <property name="text">
+    <string>About ReadingTool</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
- <slots>
-  <slot>changeView()</slot>
- </slots>
 </ui>
