@@ -75,7 +75,19 @@ function VlcMediaPlayer() {
     self.lastL2 = -2;
 
     self.hasPlayer = function() {
-        return self.player!=null;
+        if(self.player==null) {
+            return false;
+        }
+
+        try {  //Crashes if no permission to run yet
+            if(typeof self.player.versionInfo!=='function') {
+                return false;
+            }
+        } catch(error) {
+            return false;
+        }
+
+        return true;
     };
 
     self.isPaused = function() {
@@ -152,48 +164,48 @@ function VlcMediaPlayer() {
         return self.player.input.time/1000;
     };
 
-    self.setVolume(0);
-    self.play();
+    if(self.hasPlayer()) {
+        self.setVolume(0);
+        self.play();
 
-    setTimeout(function () {
-            self.setVolume(75);
-            self.stop();
-        }, 150);
+        setTimeout(function () {
+                self.setVolume(75);
+                self.stop();
+            }, 150);
+    }
 
     self._updateSubs = function(e) {
-        if (self.player!=null && window.lib.getItemType() == 'video') {
-            if(!window.lib.hasEmbeddedScript()) {
+        if(!window.lib.hasEmbeddedScript()) {
                 $('#l1Main').html('Missing rtjscript');
                 $('#l2Main').html('Missing rtjscript');
                 return;
+        }
+
+        l1 = rtjscript.getSrtL1(e*1000);
+        l2 = rtjscript.getSrtL2(e*1000);
+            
+        if(l1!=self.lastL1) {
+            if(l1==-1) {
+                $('#l1Main').html('');
+            } else {
+                $('#l1Main').html($('#l1_' + l1).html());
             }
             
-            l1 = rtjscript.getSrtL1(e*1000);
-            l2 = rtjscript.getSrtL2(e*1000);
-                
-            if(l1!=self.lastL1) {
-                if(l1==-1) {
-                    $('#l1Main').html('');
-                } else {
-                    $('#l1Main').html($('#l1_' + l1).html());
-                }
-                
-                self.lastL1 = l1;
+            self.lastL1 = l1;
+        }
+            
+        if(l2!=self.lastL2) {
+            if(l2==-1) {
+                $('#l2Main').html('');
+            } else {
+                $('#l2Main').html($('#l2_' + l2).html());
             }
-                
-            if(l2!=self.lastL2) {
-                if(l2==-1) {
-                    $('#l2Main').html('');
-                } else {
-                    $('#l2Main').html($('#l2_' + l2).html());
-                }
-                
-                self.lastL2 = l2;
-            }
+            
+            self.lastL2 = l2;
         }
     };
-    
-    if (self.hasPlayer() && window.lib.getItemType() == 'video') {
+
+    if(window.lib.getItemType()=='video' && self.hasPlayer()) {
         self.player.addEventListener("MediaPlayerPositionChanged", self._updateSubs, false);
     }
 }

@@ -385,3 +385,6 @@ class ReaderWindow(QtGui.QDialog):
              
         self.setWindowTitle(title)
         threading.Timer(5, self.updateTitle).start()
+        
+    def closeEvent(self, event):
+        self.webView.setUrl(QtCore.QUrl("about:blank"))

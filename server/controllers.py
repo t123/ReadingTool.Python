@@ -208,22 +208,62 @@ class ResourceController(object):
         if not os.path.isfile(item.mediaUri):
             raise cherrypy.HTTPError(404)
         
-        size = os.path.getsize(item.mediaUri)
+        from cherrypy.lib import httputil
+        
+        file = os.stat(item.mediaUri)
+        contentLength = file.st_size
+        
+        begin = 0
+        end = contentLength - 1
+        
+        r = httputil.get_ranges(cherrypy.request.headers.get("Range"), contentLength)        
+        
+        if r is None:
+            pass
+        else:
+            if r==[]:
+                pass
+            else:
+                begin, end = r[0]
+                
+        if range in cherrypy.request.headers:
+            cherrypy.response.status = "206 Partial Content"
+        else:
+            cherrypy.response.status = "200 OK"
+        
+        cherrypy.response.headers["Content-Type"] = mimetypes.guess_type(item.mediaUri)[0]
+        cherrypy.response.headers["Cache-Control"] = "public, must-revalidate, max-age=0"
+        cherrypy.response.headers["Pragma"] = "no-cache"
+        cherrypy.response.headers["Accept-Ranges"] = "bytes"
+        cherrypy.response.headers["Content-Length"] = str(end-begin+1)
+        
+        if range in cherrypy.request.headers:
+            cherrypy.response.headers["Content-Range"] = "bytes {0}-{1}/{contentLength}".format(begin, end, contentLength)
+            
+        cherrypy.response.headers["Content-Disposition"] = "inline; filename="  + os.path.basename(item.mediaUri)
+        cherrypy.response.headers["Content-Transfer-Encoding"] = "binary"
+        cherrypy.response.headers["Last-Modified"] = file.st_mtime
         
         file = open (item.mediaUri, "rb")
-                
-        cherrypy.response.status = 200
-        cherrypy.response.headers["Content-Length"] = size
-        cherrypy.response.headers["Content-Type"] = mimetypes.guess_type(item.mediaUri)[0]     
+        current = begin
+        file.seek(current, 0)
         
-        def stream():
-            data = file.read(65000)
+        def stream(file, current, end):
+            bufferSize = 1024*128
             
-            while len(data)>0:
-                yield data
-                data = file.read(65000)
+            while current<=end:
+                data = file.read(min(bufferSize, (end-current)+1))
                 
-        return stream()
+                if len(data)==0:
+                    if file is not None:
+                        file.close()
+                        
+                    return
+                
+                yield data
+                current += bufferSize
+                
+        return stream(file, current, end)
         
     def getItem(self, id):
         if not self.isValidId(id):
@@ -245,21 +285,13 @@ class ResourceController(object):
         return htmlContent.encode()
         
     def getLocalResource(self, name):
+        from cherrypy.lib import static
         file = os.path.join(Application.path, "resources", name)
         
         if not os.path.isfile(file):
             raise cherrypy.HTTPError(404)
         
-        fileName, fileExtension = os.path.splitext(file)
-        content = None
-        
-        with open (file, "rb") as file:
-            content = file.read()
-            
-        cherrypy.response.headers["Content-Type"] = mimetypes.guess_type(name)[0]
-        cherrypy.response.status = 200
-        
-        return content
+        return static.serve_file(file, name=name)
    
 class ApiV1Controller(object):
     def isValidId(self, id):
