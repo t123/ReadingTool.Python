@@ -12,6 +12,7 @@ from ui.plugins import PluginsForm
 from ui.items import ItemsForm
 from ui.terms import TermsForm
 from ui.settings import SettingsForm
+from ui.about import AboutForm
 from ui.itemdialog import ItemDialogForm
 from lib.stringutil import StringUtil
 
@@ -34,6 +35,7 @@ class MainWindow(QtGui.QMainWindow):
 
         QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemSelectionChanged()"), self.bindCollectionNames)
         QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.editLanguage)
+        QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.onLanguageContextMenu)
         QtCore.QObject.connect(self.ui.lwCollections, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
         QtCore.QObject.connect(self.ui.lwFilters, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
         QtCore.QObject.connect(self.ui.tabWidget, QtCore.SIGNAL("currentChanged(int)"), self.onTabChanged)
@@ -45,12 +47,14 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.actionDelete_language, QtCore.SIGNAL("triggered(bool)"), self.deleteLanguage)
         QtCore.QObject.connect(self.ui.actionSettings, QtCore.SIGNAL("triggered(bool)"), self.manageSettings)
         QtCore.QObject.connect(self.ui.actionManage_Plugins, QtCore.SIGNAL("triggered(bool)"), self.managePlugins)
+        QtCore.QObject.connect(self.ui.actionAbout_ReadingTool, QtCore.SIGNAL("triggered(bool)"), self.showAbout)
+        
+        self.ui.lwLanguages.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         
     def setupUserLayout(self):
         self.setWindowTitle(self.tr("ReadingTool - {0}").format(Application.user.username))
         
         self.setupMenus()
-        self.setupContextMenus()
         
         self.ui.lwLanguages.clear()
         self.ui.lwFilters.clear()
@@ -110,9 +114,22 @@ class MainWindow(QtGui.QMainWindow):
                 action.setToolTip("Switch to profile {0}".format(user.username))
                 self.ui.menuProfiles.addAction(action)
          
-    def setupContextMenus(self):
-        self.ui.lwLanguages.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
-        self.ui.lwLanguages.addAction(self.ui.actionDelete_language)
+    def onLanguageContextMenu(self, point):
+        item = self.ui.lwLanguages.itemAt(point)
+        
+        if item is None:
+            return
+        
+        menu = QtGui.QMenu(self.ui.lwLanguages)
+        
+        action = QtGui.QAction(menu)
+        action.setText("Edit language")
+        action.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.editLanguage(item))        
+        menu.addAction(action)
+          
+        menu.addAction(self.ui.actionDelete_language)
+        
+        menu.exec_(QtGui.QCursor.pos())
         
     def bindLanguages(self):
         self.ui.lwLanguages.clear()
@@ -201,7 +218,9 @@ class MainWindow(QtGui.QMainWindow):
         self.itemsForm.bindItems()
         
         self.ui.tabWidget.setTabText(0, "Items ({0})".format(self.itemsForm.getCount()))
+        self.ui.tabWidget.setTabToolTip(0, "Found {0} items in the search".format(self.itemsForm.getCount()))
         self.ui.tabWidget.setTabText(1, "Terms")
+        self.ui.tabWidget.setTabToolTip(1, "")
         
     def bindTerms(self):
         if len(self.ui.tabTerms.children())==0:
@@ -220,7 +239,9 @@ class MainWindow(QtGui.QMainWindow):
         self.termsForm.bindTerms()
         
         self.ui.tabWidget.setTabText(0, "Items")
+        self.ui.tabWidget.setTabToolTip(0, "")
         self.ui.tabWidget.setTabText(1, "Terms ({0})".format(self.termsForm.getCount()))
+        self.ui.tabWidget.setTabToolTip(1, "Found {0} terms in the search".format(self.itemsForm.getCount()))
         
     def addItem(self):
         self.dialog = ItemDialogForm()
@@ -280,12 +301,13 @@ class MainWindow(QtGui.QMainWindow):
             result = webService.checkForNewVersion()
              
             if not result:
+                Qt.QMessageBox.information(self, "Unable to check", "Could not connect to server or invalid response. Please try again later.", Qt.QMessageBox.Ok)
                 return
              
             if float(result["version"])>float(softwareVersion):
                 Qt.QMessageBox.information(self, result["title"], result["message"], Qt.QMessageBox.Ok)
             else:
-                Qt.QMessageBox.information(self, "No new versions", "You are using the lastest version.", Qt.QMessageBox.Ok)
+                Qt.QMessageBox.information(self, "No new version", "You are using the lastest version.", Qt.QMessageBox.Ok)
         except Exception as e:
             logging.error(str(e))        
     
@@ -311,4 +333,8 @@ class MainWindow(QtGui.QMainWindow):
     def managePlugins(self):
         self.dialog = PluginsForm()
         self.dialog.bindPlugins()
+        self.dialog.exec_()
+        
+    def showAbout(self):
+        self.dialog = AboutForm()
         self.dialog.exec_()

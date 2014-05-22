@@ -21,8 +21,17 @@
        <enum>Qt::Vertical</enum>
       </property>
       <widget class="QSplitter" name="splitter">
+       <property name="frameShape">
+        <enum>QFrame::NoFrame</enum>
+       </property>
+       <property name="frameShadow">
+        <enum>QFrame::Plain</enum>
+       </property>
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="handleWidth">
+        <number>7</number>
        </property>
        <widget class="QListWidget" name="lwLanguages">
         <property name="editTriggers">
@@ -106,7 +115,7 @@
      <string>Help</string>
     </property>
     <addaction name="actionCheck_for_updates"/>
-    <addaction name="actionAbout_ReadingTool_2"/>
+    <addaction name="actionAbout_ReadingTool"/>
    </widget>
    <widget class="QMenu" name="menuRecently_Seen_Items">
     <property name="title">
@@ -163,7 +172,7 @@
     <string>Check for updates</string>
    </property>
   </action>
-  <action name="actionAbout_ReadingTool_2">
+  <action name="actionAbout_ReadingTool">
    <property name="text">
     <string>About ReadingTool</string>
    </property>

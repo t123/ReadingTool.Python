@@ -87,7 +87,7 @@ class WebService:
     
     def checkForNewVersion(self):
         uri = Application.remoteServer + "/api/v1/latestversion"
-        r = requests.get(uri)
+        r = requests.get(uri, headers={"X-Client": "RT"})
         
         if r.status_code!=200:
             self.logError(r)

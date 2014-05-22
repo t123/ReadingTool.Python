@@ -39,7 +39,7 @@ class ItemDialogForm(QtGui.QDialog):
         if parent is None or not isinstance(parent, ItemsForm):
             return
         
-        parent.updateItems()
+        parent.bindItems()
         
     def segmentText(self):
         webService = WebService()
@@ -50,7 +50,7 @@ class ItemDialogForm(QtGui.QDialog):
         
     def chooseFile(self):
         storageService = StorageService()
-        mediaDirectory = storageService.find("last_media_directory")
+        mediaDirectory = storageService.find("last_media_directory", uuid=str(Application.user.userId))
         
         if StringUtil.isEmpty(mediaDirectory):
             filename = QtGui.QFileDialog.getOpenFileName(caption="Choose a media file", filter="Media files (*.mp3 *.mp4)")
@@ -59,7 +59,7 @@ class ItemDialogForm(QtGui.QDialog):
                     
         if not StringUtil.isEmpty(filename):
             path, file = os.path.split(filename)
-            storageService.save("last_media_directory", path)
+            storageService.save("last_media_directory", path, str(Application.user.userId))
             self.ui.leMediaURI.setText(filename)
         
     def splitItem(self):
@@ -113,6 +113,7 @@ class ItemDialogForm(QtGui.QDialog):
             self.ui.rbText.setChecked(True)
             self.ui.rbVideo.setChecked(False)
             self.setWindowTitle("New item")
+            self.checkLanguageCode(-1)
             return
         
         self.ui.pbCopy.setEnabled(True)

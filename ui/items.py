@@ -62,6 +62,7 @@ class ItemsForm(QtGui.QDialog):
                      " ".join(self.filters)
                      
         index = 0
+        mod = 0
         items = self.itemService.search(filterText)
         self.ui.twItems.setRowCount(len(items))
          
@@ -80,11 +81,18 @@ class ItemsForm(QtGui.QDialog):
             self.ui.twItems.setItem(index, 8, QtGui.QTableWidgetItem("Yes" if item.isParallel() else "No"))
              
             if item.itemType==ItemType.Video:
-                colour = Qt.QColor("#FFE97F")
+                if mod%2==0:
+                    colour = Qt.QColor("#FFE97F")
+                else:
+                    colour = Qt.QColor("#FFE1BA")
                  
+                mod += 1
+                
                 for j in range(0, self.ui.twItems.columnCount()):
                     it = self.ui.twItems.item(index, j)
                     it.setBackgroundColor(colour)
+            else:
+                mod = 0
              
             index +=1
         

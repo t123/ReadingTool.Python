@@ -61,6 +61,9 @@
              <property name="inputMask">
               <string/>
              </property>
+             <property name="placeholderText">
+              <string>Use this field to group items together</string>
+             </property>
             </widget>
            </item>
            <item row="2" column="0">
@@ -75,6 +78,9 @@
              <property name="inputMask">
               <string/>
              </property>
+             <property name="placeholderText">
+              <string>Your items will appear in this order</string>
+             </property>
             </widget>
            </item>
            <item row="3" column="0">
@@ -83,9 +89,6 @@
               <string>Media URI</string>
              </property>
             </widget>
-           </item>
-           <item row="3" column="1" colspan="2">
-            <widget class="QLineEdit" name="leMediaURI"/>
            </item>
            <item row="4" column="0">
             <widget class="QLabel" name="label_5">
@@ -101,6 +104,9 @@
              </property>
              <property name="text">
               <string/>
+             </property>
+             <property name="placeholderText">
+              <string>The title of your item</string>
              </property>
             </widget>
            </item>
@@ -119,6 +125,9 @@
              <property name="text">
               <string/>
              </property>
+             <property name="placeholderText">
+              <string>The title in the parallel language (if any)</string>
+             </property>
             </widget>
            </item>
            <item row="5" column="0">
@@ -129,7 +138,11 @@
             </widget>
            </item>
            <item row="5" column="1" colspan="2">
-            <widget class="QComboBox" name="cbL1Language"/>
+            <widget class="QComboBox" name="cbL1Language">
+             <property name="toolTip">
+              <string>This is the language you are learning</string>
+             </property>
+            </widget>
            </item>
            <item row="5" column="3">
             <widget class="QLabel" name="label_7">
@@ -139,12 +152,23 @@
             </widget>
            </item>
            <item row="5" column="4">
-            <widget class="QComboBox" name="cbL2Language"/>
+            <widget class="QComboBox" name="cbL2Language">
+             <property name="toolTip">
+              <string>This is the language you already know</string>
+             </property>
+            </widget>
            </item>
-           <item row="3" column="3">
+           <item row="3" column="4">
             <widget class="QPushButton" name="pbChoose">
              <property name="text">
               <string>Choose</string>
+             </property>
+            </widget>
+           </item>
+           <item row="3" column="1" colspan="3">
+            <widget class="QLineEdit" name="leMediaURI">
+             <property name="placeholderText">
+              <string>Select a media file or your computer or paste a URL address</string>
              </property>
             </widget>
            </item>
@@ -176,29 +200,15 @@
         <layout class="QGridLayout" name="gridLayout_2">
          <item row="0" column="0">
           <widget class="QLabel" name="label_9">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
            <property name="text">
-            <string>L1 Content</string>
+            <string>&lt;b&gt;Language 1 Content&lt;/b&gt; (language you are learning)</string>
            </property>
           </widget>
          </item>
          <item row="0" column="1">
           <widget class="QLabel" name="label_10">
-           <property name="font">
-            <font>
-             <pointsize>8</pointsize>
-             <weight>75</weight>
-             <bold>true</bold>
-            </font>
-           </property>
            <property name="text">
-            <string>L2 Content</string>
+            <string>&lt;b&gt;Language 2 Content&lt;/b&gt; (language you know, not required)</string>
            </property>
           </widget>
          </item>

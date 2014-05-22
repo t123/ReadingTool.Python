@@ -43,7 +43,11 @@
           </widget>
          </item>
          <item row="0" column="1" colspan="2">
-          <widget class="QLineEdit" name="leName"/>
+          <widget class="QLineEdit" name="leName">
+           <property name="placeholderText">
+            <string>Your name for the language you are learning</string>
+           </property>
+          </widget>
          </item>
          <item row="1" column="0">
           <widget class="QLabel" name="label_2">
@@ -53,7 +57,11 @@
           </widget>
          </item>
          <item row="1" column="1" colspan="2">
-          <widget class="QComboBox" name="cbLanguageCodes"/>
+          <widget class="QComboBox" name="cbLanguageCodes">
+           <property name="toolTip">
+            <string>This is the ISO code of the language. Most services use this to identify a language.</string>
+           </property>
+          </widget>
          </item>
          <item row="2" column="0">
           <widget class="QLabel" name="label_3">
@@ -85,6 +93,9 @@
          </item>
          <item row="3" column="1" colspan="2">
           <widget class="QComboBox" name="cbTermRegex">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;This is the regualar expression that splits the text into individual terms. The expression uses the following fixed groups:&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Group 1&lt;/span&gt;: Term&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Group 2&lt;/span&gt;: Whitespace&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Group 3&lt;/span&gt;: Numbers&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Group 4&lt;/span&gt;: Fragments&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Group 5&lt;/span&gt;: HTML tags&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Group 6&lt;/span&gt;: Everything else (usually punctuation)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="editable">
             <bool>true</bool>
            </property>
@@ -106,8 +117,14 @@
              <bold>false</bold>
             </font>
            </property>
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;To start perform the following steps:&lt;/p&gt;&lt;p&gt;	1. Locate the data\resources folder&lt;/p&gt;&lt;p&gt;	2. Copy the file reading.css to a new name with the ending &lt;span style=&quot; font-weight:600;&quot;&gt;_reading.css&lt;/span&gt; (eg: mytheme_reading.css)&lt;/p&gt;&lt;p&gt;	3. Copy the file watching.css to a new name with the ending&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;_watching.css&lt;/span&gt; (eg: mytheme.watching.css)&lt;/p&gt;&lt;p&gt;	4. Edit your new files CSS files&lt;/p&gt;&lt;p&gt;	5. Fill in the name of the theme without the ending, eg: &lt;span style=&quot; font-weight:600;&quot;&gt;mytheme&lt;/span&gt;&lt;/p&gt;&lt;p&gt;	6. It is only necessary to create one of the files, otherwise the default is used.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
            <property name="text">
             <string/>
+           </property>
+           <property name="placeholderText">
+            <string>The name of a CSS theme</string>
            </property>
           </widget>
          </item>
@@ -118,10 +135,10 @@
            </property>
           </widget>
          </item>
-         <item row="5" column="1">
+         <item row="5" column="1" colspan="2">
           <widget class="QCheckBox" name="cbIsArchived">
            <property name="text">
-            <string/>
+            <string>(appears after other languages in search)</string>
            </property>
           </widget>
          </item>
@@ -141,20 +158,6 @@
         </spacer>
        </item>
       </layout>
-      <zorder>leTheme</zorder>
-      <zorder>label</zorder>
-      <zorder>label_3</zorder>
-      <zorder>label_6</zorder>
-      <zorder>label_8</zorder>
-      <zorder>rbLTR</zorder>
-      <zorder>label_5</zorder>
-      <zorder>cbLanguageCodes</zorder>
-      <zorder>label_2</zorder>
-      <zorder>leName</zorder>
-      <zorder>rbRTL</zorder>
-      <zorder>cbIsArchived</zorder>
-      <zorder>horizontalSpacer</zorder>
-      <zorder>cbTermRegex</zorder>
       <zorder>verticalSpacer</zorder>
      </widget>
      <widget class="QWidget" name="tabPlugins">

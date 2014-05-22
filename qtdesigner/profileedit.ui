@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>485</width>
-    <height>152</height>
+    <height>155</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -30,7 +30,11 @@
       </widget>
      </item>
      <item row="0" column="1">
-      <widget class="QLineEdit" name="leUsername"/>
+      <widget class="QLineEdit" name="leUsername">
+       <property name="placeholderText">
+        <string>The name of your profile</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="0">
       <widget class="QLabel" name="label_2">
@@ -40,7 +44,24 @@
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="leAccessKey"/>
+      <widget class="QLineEdit" name="leAccessKey">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;access key&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;access secret&lt;/span&gt; currently allow a few extra plugin services, for example Japanese text segmentation and the creation of PDFs with unknown words as footnotes.&lt;/p&gt;&lt;p&gt;The key/secret allows you to communicate to the server without a password. You can generate as many key/secret pairs as necessary and can revoke them at any time. If a plugin needs a key/secret pair, you should generate a new one from your account at &lt;a href=&quot;http://api.readingtool.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://api.readingtool.net&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="placeholderText">
+        <string>Access Key from a ReadingTool server</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>&lt;a href=&quot;http://api.readingtool.net&quot;&gt;Get a key&lt;/a&gt;</string>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="label_3">
@@ -50,7 +71,14 @@
       </widget>
      </item>
      <item row="2" column="1">
-      <widget class="QLineEdit" name="leAccessSecret"/>
+      <widget class="QLineEdit" name="leAccessSecret">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The &lt;span style=&quot; font-weight:600;&quot;&gt;access key&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;access secret&lt;/span&gt; currently allow a few extra plugin services, for example Japanese text segmentation and the creation of PDFs with unknown words as footnotes.&lt;/p&gt;&lt;p&gt;The key/secret allows you to communicate to the server without a password. You can generate as many key/secret pairs as necessary and can revoke them at any time. If a plugin needs a key/secret pair, you should generate a new one from your account at &lt;a href=&quot;http://api.readingtool.net&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;http://api.readingtool.net&lt;/span&gt;&lt;/a&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="placeholderText">
+        <string>Access Secret from a ReadingTool server</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

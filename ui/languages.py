@@ -1,3 +1,4 @@
+import re
 from PyQt4 import QtCore, QtGui, Qt
 
 from lib.misc import Application
@@ -17,9 +18,13 @@ class LanguagesForm(QtGui.QDialog):
         
         self.hasSaved = False
         self.setLanguageCodes()
+        self.setTermExpressions()
 
         QtCore.QObject.connect(self.ui.actionSave, QtCore.SIGNAL("triggered(bool)"), self.saveLanguage)
         QtCore.QObject.connect(self.ui.actionCancel, QtCore.SIGNAL("triggered(bool)"), self.resetLanguage)
+        QtCore.QObject.connect(self.ui.cbTermRegex, QtCore.SIGNAL("currentIndexChanged(int)"), self.onTermRegexChanged)
+        
+        QtCore.QObject.connect(self.ui.cbTermRegex, QtCore.SIGNAL("editTextChanged(QString)"), self.testRegex)
         
     def setLanguage(self, id=None):
         if id==0 or id is None:
@@ -35,10 +40,45 @@ class LanguagesForm(QtGui.QDialog):
          
         for code in codes:
             self.ui.cbLanguageCodes.addItem(code.name, code.code)
+            
+    def setTermExpressions(self):
+        self.ui.cbTermRegex.addItem("Latin Script - apostrophes and hyphens are one word", r"([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\’\'-]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Latin Script - apostrophes and hyphens are separate words", r"([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Chinese Script", r"([一-龥]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Cyrillic Script", r"([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏЀ-ӹ\’'-]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Greek Script", r"([\u0370-\u03FF\u1F00-\u1FFF]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Greek Script", r"([\u0590-\u05FF]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Japanese Script", r"([一-龥ぁ-ヾ]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Korean Script", r"([가-힣ᄀ-ᇂ]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
+        self.ui.cbTermRegex.addItem("Thai Script", r"([ก-๛]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
 
+    def onTermRegexChanged(self, index):
+        data = self.ui.cbTermRegex.itemData(index)
+        self.ui.cbTermRegex.setEditText(data)
+        
+    def testRegex(self, regex):
+        p = Qt.QPalette()
+
+        try:
+            re.compile(regex)
+            p.setColor(QtGui.QPalette.Base, QtGui.QColor("#96D899"))
+            self.ui.actionSave.setEnabled(True)
+            self.ui.pbSave.setEnabled(True)
+        except:
+            p.setColor(QtGui.QPalette.Base, QtGui.QColor("#FBE3E4"))
+            self.ui.actionSave.setEnabled(False)
+            self.ui.pbSave.setEnabled(False)
+        
+        self.ui.cbTermRegex.lineEdit().setPalette(p)
+        
     def bindLanguage(self):
         self.ui.leName.setText(self.language.name)
-        #self.ui.leTermRegex.setText(self.language.termRegex)
+        
+        if self.language.languageId==0:
+            self.ui.cbTermRegex.setEditText("Pick a script below or enter your own regular expression")
+        else:
+            self.ui.cbTermRegex.setEditText(self.language.termRegex)
+            
         self.ui.cbIsArchived.setChecked(self.language.isArchived)
         self.ui.leTheme.setText(self.language.theme)
  
@@ -75,7 +115,7 @@ class LanguagesForm(QtGui.QDialog):
                      
     def saveLanguage(self):
         self.language.name = self.ui.leName.text()
-        #self.language.termRegex = self.ui.leTermRegex.text()
+        self.language.termRegex = self.ui.cbTermRegex.lineEdit().text()
         self.language.isArchived = self.ui.cbIsArchived.isChecked()
         self.language.direction = LanguageDirection.LeftToRight if self.ui.rbLTR.isChecked() else LanguageDirection.RightToLeft
         self.language.languageCode = self.ui.cbLanguageCodes.itemData(self.ui.cbLanguageCodes.currentIndex())

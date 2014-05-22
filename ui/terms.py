@@ -72,6 +72,13 @@ class TermsForm(QtGui.QDialog):
         for term in terms:
             i = QtGui.QTableWidgetItem(TermState.ToString(term.state))
             i.setData(QtCore.Qt.UserRole, term)
+            
+            if term.state==TermState.Known:
+                i.setBackgroundColor(Qt.QColor("#dae5eb"))
+            elif term.state==TermState.Unknown:
+                i.setBackgroundColor(Qt.QColor("#f5b8a9"))
+            elif term.state==TermState.Ignored:
+                i.setBackgroundColor(Qt.QColor("#ffe97f"))
  
             self.ui.twTerms.setItem(index, 0, i)
             self.ui.twTerms.setItem(index, 1, QtGui.QTableWidgetItem(term.language))

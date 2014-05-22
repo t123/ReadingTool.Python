@@ -111,6 +111,9 @@
              <height>80</height>
             </size>
            </property>
+           <property name="toolTip">
+            <string>Your definition of this term</string>
+           </property>
           </widget>
          </item>
          <item row="9" column="0">
@@ -121,13 +124,25 @@
           </widget>
          </item>
          <item row="9" column="1" colspan="3">
-          <widget class="QComboBox" name="cbState"/>
+          <widget class="QComboBox" name="cbState">
+           <property name="toolTip">
+            <string>The current state of this term</string>
+           </property>
+          </widget>
          </item>
          <item row="7" column="1" colspan="3">
-          <widget class="QLineEdit" name="leSentence"/>
+          <widget class="QLineEdit" name="leSentence">
+           <property name="placeholderText">
+            <string>An example sentence illustrating this term</string>
+           </property>
+          </widget>
          </item>
          <item row="6" column="1" colspan="3">
-          <widget class="QLineEdit" name="leBasePhrase"/>
+          <widget class="QLineEdit" name="leBasePhrase">
+           <property name="placeholderText">
+            <string>The base phrase of this term, usually the dictionary form</string>
+           </property>
+          </widget>
          </item>
          <item row="3" column="1" colspan="3">
           <widget class="QLineEdit" name="leItemSource">
@@ -153,6 +168,9 @@
           <widget class="QLineEdit" name="lePhrase">
            <property name="enabled">
             <bool>false</bool>
+           </property>
+           <property name="toolTip">
+            <string/>
            </property>
            <property name="readOnly">
             <bool>true</bool>

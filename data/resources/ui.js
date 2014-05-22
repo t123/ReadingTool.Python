@@ -34,6 +34,22 @@ $(function() {
 
 	if(window.lib.getL1Code()=='ja') {
 		$('.__whitespace').hide();
+        $('#reading span.__term.__unknown').css('border-left', 'none');
+        $('#reading span.__term.__unknown').css('border-right', 'none');
+        $('#reading span.__term.__notseen').css('border-left', 'none');
+        $('#reading span.__term.__notseen').css('border-right', 'none');
+        $('#reading span.__term.__ignored').css('border-left', 'none');
+        $('#reading span.__term.__ignored').css('border-right', 'none');
+        $('#reading span.__term.__known').css('border-left', 'none');
+        $('#reading span.__term.__known').css('border-right', 'none');
+        $('#reading span.__term.__kd').css('border-left', 'none');
+        $('#reading span.__term.__kd').css('border-right', 'none');
+        $('#reading span.__term.__id').css('border-left', 'none');
+        $('#reading span.__term.__id').css('border-right', 'none');
+        $('#reading span.__term.__temp').css('border-left', 'none');
+        $('#reading span.__term.__temp').css('border-right', 'none');
+        $('#reading span.__term.__current').css('border-left', 'none');
+        $('#reading span.__term.__current').css('border-right', 'none');
 	}
 
 	var lastL1 = -2, lastL2 = -2;

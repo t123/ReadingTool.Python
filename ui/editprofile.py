@@ -44,7 +44,7 @@ class ChangeProfileForm(QtGui.QDialog):
          
         if not StringUtil.isEmpty(self.profile.accessKey) and not StringUtil.isEmpty(self.profile.accessSecret): 
             if not webService.validateCredentials(self.profile.accessKey, self.profile.accessSecret):
-                Qt.QMessageBox.critical(self, "Could not save", "Either your Access Key or Access Secret is incorrect.")
+                Qt.QMessageBox.critical(self, "Profile not saved", "Your profile could not be saved because either your <b>Access Key</b> or <b>Access Secret</b> is incorrect.")
                 return
                 
         self.userService.save(self.profile)

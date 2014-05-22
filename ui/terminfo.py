@@ -32,8 +32,10 @@ class TermInfoForm(QtGui.QDialog):
             self.setWindowTitle("Edit term - {0}".format(self.term.phrase))
         
     def bindTerm(self):
-        self.ui.lblCreated.setText(Time.toLocal(self.term.created))        
+        self.ui.lblCreated.setText(Time.toLocal(self.term.created))
+        self.ui.lblCreated.setToolTip(Time.toHuman(self.term.created))        
         self.ui.lblModified.setText(Time.toLocal(self.term.modified))
+        self.ui.lblModified.setToolTip(Time.toHuman(self.term.modified))
         self.ui.lePhrase.setText(self.term.phrase)        
         self.ui.leBasePhrase.setText(self.term.basePhrase)
         self.ui.leSentence.setText(self.term.sentence)
@@ -46,7 +48,7 @@ class TermInfoForm(QtGui.QDialog):
         history = self.termService.findHistory(self.term.termId)
         self.ui.twHistory.clear()
         
-        headers = ["Date", "State", "Type"]
+        headers = ["Date", "When", "State", "Type"]
         self.ui.twHistory.setColumnCount(len(headers))
         self.ui.twHistory.setHorizontalHeaderLabels(headers)
         self.ui.twHistory.setSortingEnabled(True)
@@ -55,8 +57,9 @@ class TermInfoForm(QtGui.QDialog):
         index = 0
         for item in history:
             self.ui.twHistory.setItem(index, 0, QtGui.QTableWidgetItem(Time.toLocal(item.entryDate)))
-            self.ui.twHistory.setItem(index, 1, QtGui.QTableWidgetItem(TermState.ToString(item.state)))
-            self.ui.twHistory.setItem(index, 2, QtGui.QTableWidgetItem(TermType.ToString(item.type)))
+            self.ui.twHistory.setItem(index, 1, QtGui.QTableWidgetItem(Time.toHuman(item.entryDate)))
+            self.ui.twHistory.setItem(index, 2, QtGui.QTableWidgetItem(TermState.ToString(item.state)))
+            self.ui.twHistory.setItem(index, 3, QtGui.QTableWidgetItem(TermType.ToString(item.type)))
             
             index += 1
             

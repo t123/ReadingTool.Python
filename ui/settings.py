@@ -11,6 +11,7 @@ class SettingsForm(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_Settings()
         self.ui.setupUi(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         
         self.storageService = StorageService()
         QtCore.QObject.connect(self.ui.actionCancel, QtCore.SIGNAL("triggered()"), self.reset)
