@@ -23,9 +23,15 @@ class ItemsForm(QtGui.QDialog):
         self.itemService = ItemService()
         self.setupContextMenu()
         
-        QtCore.QObject.connect(self.ui.twItems, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), lambda: self.readItem(asParallel=None))
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.onTextChanged)
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("returnPressed()"), self.bindItems)
+        
+        QtCore.QObject.connect(self.ui.actionEdit_item, QtCore.SIGNAL("triggered()"), self.editItem)
+        QtCore.QObject.connect(self.ui.actionDelete_item, QtCore.SIGNAL("triggered()"), self.deleteItem)
+        QtCore.QObject.connect(self.ui.actionCopy_item, QtCore.SIGNAL("triggered()"), self.copyItem)
+        QtCore.QObject.connect(self.ui.actionRead_item, QtCore.SIGNAL("triggered()"), lambda: self.readItem(False))
+        QtCore.QObject.connect(self.ui.actionRead_in_parallel, QtCore.SIGNAL("triggered()"), lambda: self.readItem(True))
+        QtCore.QObject.connect(self.ui.actionCreate_PDF, QtCore.SIGNAL("triggered()"), self.createPdf)
 
     def onTextChanged(self, text):
         if text.strip()!="":
@@ -84,40 +90,12 @@ class ItemsForm(QtGui.QDialog):
     def setupContextMenu(self):
         self.ui.twItems.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
          
-        action = QAction("Edit", self.ui.twItems)
-        action.setShortcut("Ctrl+E")
-        action.setToolTip("Edit this item")
-        self.ui.twItems.addAction(action)
-        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.editItem)
-         
-        action = QAction("Delete", self.ui.twItems)
-        action.setShortcut("Del")
-        action.setToolTip("Delete this item")
-        self.ui.twItems.addAction(action)
-        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.deleteItem)
-         
-        action = QAction("Copy", self.ui.twItems)
-        action.setShortcut("Ctrl+C")
-        action.setToolTip("Create a copy of this item")
-        self.ui.twItems.addAction(action)
-        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.copyItem)
-         
-        action = QAction("Read", self.ui.twItems)
-        action.setShortcut("Ctrl+Enter")
-        action.setToolTip("Read/Watch this item in single mode")
-        self.ui.twItems.addAction(action)
-        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.readItem(asParallel=False))
-         
-        action = QAction("Read Parallel", self.ui.twItems)
-        action.setShortcut("Enter")
-        action.setToolTip("Read/Watch this item in parellel")
-        self.ui.twItems.addAction(action)
-        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.readItem(asParallel=True))
-         
-        action = QAction("Create PDF", self.ui.twItems)
-        action.setToolTip("Create a PDF of this item")
-        self.ui.twItems.addAction(action)
-        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.createPdf)
+        self.ui.twItems.addAction(self.ui.actionEdit_item)
+        self.ui.twItems.addAction(self.ui.actionCopy_item)
+        self.ui.twItems.addAction(self.ui.actionRead_item)
+        self.ui.twItems.addAction(self.ui.actionRead_in_parallel)
+        self.ui.twItems.addAction(self.ui.actionCreate_PDF)
+        self.ui.twItems.addAction(self.ui.actionDelete_item)
          
     def createPdf(self):
         item = self.ui.twItems.item(self.ui.twItems.currentRow(), 0)
@@ -128,6 +106,7 @@ class ItemsForm(QtGui.QDialog):
         data = item.data(QtCore.Qt.UserRole)
          
         if data.itemType==ItemType.Video:
+            QtGui.QMessageBox.information(self, "Cannot create PDF", "PDFs can only be created for text items.")
             return
          
         webService = WebService()

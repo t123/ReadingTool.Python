@@ -41,11 +41,13 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.actionNew_Language, QtCore.SIGNAL("triggered(bool)"), self.addLanguage)
         QtCore.QObject.connect(self.ui.actionQuit, QtCore.SIGNAL("triggered(bool)"), self.close)
         QtCore.QObject.connect(self.ui.actionCheck_for_updates, QtCore.SIGNAL("triggered(bool)"), self.checkForUpdates)
+        QtCore.QObject.connect(self.ui.actionDelete_language, QtCore.SIGNAL("triggered(bool)"), self.deleteLanguage)
         
     def setupUserLayout(self):
         self.setWindowTitle(self.tr("ReadingTool - {0}").format(Application.user.username))
         
         self.setupMenus()
+        self.setupContextMenus()
         
         self.ui.lwLanguages.clear()
         self.ui.lwFilters.clear()
@@ -103,6 +105,10 @@ class MainWindow(QtGui.QMainWindow):
                 action.connect(action, QtCore.SIGNAL("triggered()"), lambda user=action.data(): self.changeProfile(user))
                 self.ui.menuProfiles.addAction(action)
          
+    def setupContextMenus(self):
+        self.ui.lwLanguages.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+        self.ui.lwLanguages.addAction(self.ui.actionDelete_language)
+        
     def bindLanguages(self):
         self.ui.lwLanguages.clear()
         languages = self.languageService.findAll()
@@ -210,6 +216,20 @@ class MainWindow(QtGui.QMainWindow):
         if self.dialog.hasSaved:
             self.bindLanguages()            
         
+    def deleteLanguage(self, item):
+        languages = self.ui.lwLanguages.selectedItems()
+        names = "\n".join([x.data(QtCore.Qt.UserRole).name for x in languages])
+        result = QtGui.QMessageBox.question(self, "Delete Language", "Are you sure you want to delete:\n{0}".format(names), QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
+        
+        if result==QtGui.QMessageBox.Yes:
+            for languageId in [x.data(QtCore.Qt.UserRole).languageId for x in languages]:
+                self.languageService.delete(languageId)
+                
+            self.bindLanguages()
+            self.bindCollectionNames()
+        else:
+            print("skipped")
+            
     def checkForUpdates(self):
         try:
             storageService = StorageService()

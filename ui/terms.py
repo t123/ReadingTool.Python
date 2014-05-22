@@ -14,11 +14,13 @@ class TermsForm(QtGui.QDialog):
         
         self.termService = TermService()
         self.setupTags()
+        self.setupContextMenu()
         
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.onTextChanged)
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("returnPressed()"), self.bindTerms)
         QtCore.QObject.connect(self.ui.cbTags, QtCore.SIGNAL("currentIndexChanged(int)"), self.onTagChanged)
-        QtCore.QObject.connect(self.ui.twTerms, QtCore.SIGNAL("itemDoubleClicked(QTableWidgetItem*)"), self.showInfo)
+        QtCore.QObject.connect(self.ui.actionEdit_term, QtCore.SIGNAL("triggered()"), self.editTerm)
+        QtCore.QObject.connect(self.ui.actionDelete_term, QtCore.SIGNAL("triggered()"), self.deleteTerm)
     
     def onTextChanged(self, text):
         if text.strip()!="":
@@ -34,6 +36,21 @@ class TermsForm(QtGui.QDialog):
          
         self.ui.leFilter.setText(self.ui.leFilter.text() + " " + item)
         self.bindTerms()
+        
+    def setupContextMenu(self):
+        self.ui.twTerms.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+         
+        action = QtGui.QAction("Edit", self.ui.twTerms)
+        action.setShortcut("Enter")
+        action.setToolTip("Edit this term")
+        self.ui.twTerms.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.ui.actionEdit_term.trigger)
+         
+        action = QtGui.QAction("Delete", self.ui.twTerms)
+        action.setShortcut("Del")
+        action.setToolTip("Delete this term")
+        self.ui.twTerms.addAction(action)
+        QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.ui.actionDelete_term.trigger)
         
     def setupTags(self):
         self.ui.cbTags.addItem("Choose a tag", "")
@@ -72,14 +89,34 @@ class TermsForm(QtGui.QDialog):
         self.ui.twTerms.resizeColumnsToContents()
         self.ui.twTerms.horizontalHeader().setStretchLastSection(True)
     
-    def showInfo(self, data):
+    def editTerm(self):
         term = self.ui.twTerms.item(self.ui.twTerms.currentRow(), 0)
         termId = term.data(QtCore.Qt.UserRole).termId
          
-        self.popup = TermInfoForm()
-        self.popup.setTerm(termId)
-        self.popup.show() 
-     
+        self.dialog = TermInfoForm()
+        self.dialog.setTerm(termId)
+        self.dialog.bindTerm()
+        self.dialog.exec_()
+        
+        if self.dialog.hasSaved:
+            term = self.dialog.term
+            i = QtGui.QTableWidgetItem(TermState.ToString(term.state))
+            i.setData(QtCore.Qt.UserRole, term)
+            
+            index = self.ui.twTerms.currentRow()
+            
+            self.ui.twTerms.setItem(index, 0, i)
+            self.ui.twTerms.setItem(index, 1, QtGui.QTableWidgetItem(term.language))
+            self.ui.twTerms.setItem(index, 2, QtGui.QTableWidgetItem(term.phrase))
+            self.ui.twTerms.setItem(index, 3, QtGui.QTableWidgetItem(term.basePhrase))
+            self.ui.twTerms.setItem(index, 4, QtGui.QTableWidgetItem(term.sentence))
+            
+    def deleteTerm(self):
+        term = self.ui.twTerms.item(self.ui.twTerms.currentRow(), 0)
+        termId = term.data(QtCore.Qt.UserRole).termId
+        self.termService.delete(termId)
+        self.ui.twTerms.removeRow(self.ui.twTerms.currentRow())
+        
     def keyPressEvent(self, event):
         if event.key()==QtCore.Qt.Key_Escape:
             self.ui.leFilter.setText("")

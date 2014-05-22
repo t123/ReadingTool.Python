@@ -44,7 +44,87 @@
     </widget>
    </item>
   </layout>
+  <action name="actionEdit_item">
+   <property name="text">
+    <string>Edit item</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit item</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionCopy_item">
+   <property name="text">
+    <string>Copy item</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a copy of this item</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+C</string>
+   </property>
+  </action>
+  <action name="actionDelete_item">
+   <property name="text">
+    <string>Delete item</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete this item</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actionRead_item">
+   <property name="text">
+    <string>Read item</string>
+   </property>
+   <property name="toolTip">
+    <string>Read/Watch item in single mode</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Enter</string>
+   </property>
+  </action>
+  <action name="actionRead_in_parallel">
+   <property name="text">
+    <string>Read in parallel</string>
+   </property>
+   <property name="toolTip">
+    <string>Read/Watch item in parallel mode</string>
+   </property>
+   <property name="shortcut">
+    <string>Enter</string>
+   </property>
+  </action>
+  <action name="actionCreate_PDF">
+   <property name="text">
+    <string>Create PDF</string>
+   </property>
+   <property name="toolTip">
+    <string>Create a PDF from this item</string>
+   </property>
+  </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>twItems</sender>
+   <signal>itemDoubleClicked(QTableWidgetItem*)</signal>
+   <receiver>actionRead_in_parallel</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>345</x>
+     <y>190</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

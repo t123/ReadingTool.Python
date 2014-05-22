@@ -48,7 +48,62 @@
     </widget>
    </item>
   </layout>
+  <action name="actionEdit_term">
+   <property name="text">
+    <string>Edit term</string>
+   </property>
+   <property name="toolTip">
+    <string>Edit this term</string>
+   </property>
+   <property name="shortcut">
+    <string>Enter</string>
+   </property>
+  </action>
+  <action name="actionDelete_term">
+   <property name="text">
+    <string>Delete term</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete this term</string>
+   </property>
+   <property name="shortcut">
+    <string>Del</string>
+   </property>
+  </action>
+  <action name="actionFocus_on_filter">
+   <property name="text">
+    <string>Focus on filter</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionClear_filter_text">
+   <property name="text">
+    <string>Clear filter text</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
+   </property>
+  </action>
  </widget>
  <resources/>
- <connections/>
+ <connections>
+  <connection>
+   <sender>twTerms</sender>
+   <signal>itemDoubleClicked(QTableWidgetItem*)</signal>
+   <receiver>actionEdit_term</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>341</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
 </ui>

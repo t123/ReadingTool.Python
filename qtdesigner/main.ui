@@ -173,6 +173,14 @@
     <string>About ReadingTool</string>
    </property>
   </action>
+  <action name="actionDelete_language">
+   <property name="text">
+    <string>Delete language</string>
+   </property>
+   <property name="toolTip">
+    <string>Delete this language</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

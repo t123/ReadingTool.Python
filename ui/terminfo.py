@@ -12,52 +12,40 @@ class TermInfoForm(QtGui.QDialog):
         self.ui.setupUi(self)
         
         self.termService = TermService()
-        self.setWindowFlags(QtCore.Qt.Window | QtCore.Qt.Popup)
         
         self.ui.cbState.addItem("Known", TermState.Known)
         self.ui.cbState.addItem("Unknown", TermState.Unknown)
         self.ui.cbState.addItem("Ignored", TermState.Ignored)
         
-        QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.saveTerm)
-        QtCore.QObject.connect(self.ui.pbDelete, QtCore.SIGNAL("clicked()"), self.deleteTerm)
+        QtCore.QObject.connect(self.ui.actionSave, QtCore.SIGNAL("triggered()"), self.saveTerm)
+        QtCore.QObject.connect(self.ui.actionCancel, QtCore.SIGNAL("triggered()"), self.resetTerm)
         
-    def saveTerm(self):
-        #TODO check if already exists
+        self.ui.leBasePhrase.setFocus()
+        self.hasSaved = False
         
-        term = self.termService.findOne(self.termId)
+    def setTerm(self, termId=None):
+        if termId is None or termId==0:
+            self.term = Term()
+            self.setWindowTitle("Add a new term")
+        else:
+            self.term = self.termService.findOne(termId)
+            self.setWindowTitle("Edit term - {0}".format(self.term.phrase))
         
-        term.basePhrase = self.ui.leBasePhrase.text()
-        term.definition = self.ui.pteDefinition.toPlainText()
-        term.sentence = self.ui.leSentence.text()
-        term.state = self.ui.cbState.itemData(self.ui.cbState.currentIndex())
+    def bindTerm(self):
+        self.ui.lblCreated.setText(Time.toLocal(self.term.created))        
+        self.ui.lblModified.setText(Time.toLocal(self.term.modified))
+        self.ui.lePhrase.setText(self.term.phrase)        
+        self.ui.leBasePhrase.setText(self.term.basePhrase)
+        self.ui.leSentence.setText(self.term.sentence)
+        self.ui.pteDefinition.setPlainText(self.term.definition)
+        self.ui.leLanguage.setText(self.term.language)
+        self.ui.leItemSource.setText(self.term.itemSource)
         
-        self.termService.save(term)
-        self.setTerm(self.termId)
+        self.ui.cbState.setCurrentIndex(self.ui.cbState.findData(self.term.state))
         
-    def deleteTerm(self):
-        self.termService.delete(self.termId)
-        self.close()
-        
-    def setTerm(self, termId):
-        self.termId = termId
-        term = self.termService.findOne(termId)
-        
-        if term is None:
-            return
-        
-        self.ui.lblCreated.setText(Time.toLocal(term.created))        
-        self.ui.lblModified.setText(Time.toLocal(term.modified))
-        self.ui.lePhrase.setText(term.phrase)        
-        self.ui.leBasePhrase.setText(term.basePhrase)
-        self.ui.leSentence.setText(term.sentence)
-        self.ui.pteDefinition.setPlainText(term.definition)
-        self.ui.leLanguage.setText(term.language)
-        self.ui.leItemSource.setText(term.itemSource)
-        
-        self.ui.cbState.setCurrentIndex(self.ui.cbState.findData(term.state))
-        
-        history = self.termService.findHistory(termId)
+        history = self.termService.findHistory(self.term.termId)
         self.ui.twHistory.clear()
+        
         headers = ["Date", "State", "Type"]
         self.ui.twHistory.setColumnCount(len(headers))
         self.ui.twHistory.setHorizontalHeaderLabels(headers)
@@ -72,8 +60,25 @@ class TermInfoForm(QtGui.QDialog):
             
             index += 1
             
-        self.ui.twHistory.horizontalHeader().setResizeMode(Qt.QHeaderView.Stretch)
+        self.ui.twHistory.resizeColumnsToContents()
+        self.ui.twHistory.horizontalHeader().setStretchLastSection(True)
+        
+    def saveTerm(self):
+        self.term.basePhrase = self.ui.leBasePhrase.text()
+        self.term.definition = self.ui.pteDefinition.toPlainText()
+        self.term.sentence = self.ui.leSentence.text()
+        self.term.state = self.ui.cbState.itemData(self.ui.cbState.currentIndex())
+        
+        self.term = self.termService.save(self.term)
+        self.setTerm(self.term.termId)
+        self.bindTerm()
+        
+        self.hasSaved = True
+        
+    def resetTerm(self):
+        self.setTerm(self.term.termId)
+        self.bindTerm()
         
     def keyPressEvent(self, event):
         if event.key()==QtCore.Qt.Key_Escape:
-            return
+            self.close()
