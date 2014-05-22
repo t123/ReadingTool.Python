@@ -6,69 +6,47 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>689</width>
-    <height>529</height>
+    <width>637</width>
+    <height>308</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>Manage Plugins</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
-    <widget class="QSplitter" name="splitter">
-     <property name="orientation">
-      <enum>Qt::Horizontal</enum>
+    <widget class="QTabWidget" name="tabWidget">
+     <property name="currentIndex">
+      <number>2</number>
      </property>
-     <property name="childrenCollapsible">
-      <bool>false</bool>
-     </property>
-     <widget class="QWidget" name="layoutWidget">
-      <layout class="QVBoxLayout" name="verticalLayout_2">
+     <widget class="QWidget" name="tabInstalled">
+      <attribute name="title">
+       <string>Installed Plugins</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout">
        <item>
-        <widget class="QListWidget" name="lvPlugins">
-         <property name="minimumSize">
-          <size>
-           <width>0</width>
-           <height>0</height>
-          </size>
+        <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1">
+         <property name="rightMargin">
+          <number>0</number>
          </property>
-        </widget>
+         <item>
+          <widget class="QListWidget" name="lwInstalled">
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPlainTextEdit" name="pteInstalled">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
-         <item>
-          <widget class="QToolButton" name="tbExport">
-           <property name="minimumSize">
-            <size>
-             <width>75</width>
-             <height>23</height>
-            </size>
-           </property>
-           <property name="text">
-            <string>Export</string>
-           </property>
-           <property name="popupMode">
-            <enum>QToolButton::MenuButtonPopup</enum>
-           </property>
-           <property name="toolButtonStyle">
-            <enum>Qt::ToolButtonTextOnly</enum>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pbDelete">
-           <property name="text">
-            <string>Delete</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="pbAdd">
-           <property name="text">
-            <string>Add</string>
-           </property>
-          </widget>
-         </item>
+        <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <spacer name="horizontalSpacer_2">
            <property name="orientation">
@@ -82,36 +60,33 @@
            </property>
           </spacer>
          </item>
+         <item>
+          <widget class="QPushButton" name="pbRemove">
+           <property name="text">
+            <string>Remove Selected Plugins</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
       </layout>
      </widget>
-     <widget class="QGroupBox" name="groupBox">
-      <property name="title">
-       <string>Details</string>
-      </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
+     <widget class="QWidget" name="tabAvailable">
+      <attribute name="title">
+       <string>Available Plugins</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_2">
        <item>
-        <layout class="QFormLayout" name="formLayout">
-         <item row="0" column="0">
-          <widget class="QLabel" name="label">
-           <property name="text">
-            <string>Name</string>
+        <layout class="QHBoxLayout" name="horizontalLayout_4" stretch="0,1">
+         <item>
+          <widget class="QListWidget" name="lwAvailable">
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
            </property>
           </widget>
          </item>
-         <item row="0" column="1">
-          <widget class="QLineEdit" name="leName"/>
-         </item>
-         <item row="1" column="0">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>UUID</string>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QLineEdit" name="leUUID">
+         <item>
+          <widget class="QPlainTextEdit" name="pteAvailable">
            <property name="readOnly">
             <bool>true</bool>
            </property>
@@ -120,34 +95,7 @@
         </layout>
        </item>
        <item>
-        <widget class="QLabel" name="label_2">
-         <property name="text">
-          <string>Description</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPlainTextEdit" name="teDescription"/>
-       </item>
-       <item>
-        <widget class="QLabel" name="label_3">
-         <property name="text">
-          <string>Code</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QsciScintilla" name="teCode">
-         <property name="toolTip">
-          <string/>
-         </property>
-         <property name="whatsThis">
-          <string/>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+        <layout class="QHBoxLayout" name="horizontalLayout_2">
          <item>
           <spacer name="horizontalSpacer">
            <property name="orientation">
@@ -162,16 +110,58 @@
           </spacer>
          </item>
          <item>
-          <widget class="QPushButton" name="pbCancel">
+          <widget class="QPushButton" name="pbInstall">
            <property name="text">
-            <string>Cancel</string>
+            <string>Install Selected Plugins</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
+     <widget class="QWidget" name="tabUpdates">
+      <attribute name="title">
+       <string>Updates</string>
+      </attribute>
+      <layout class="QVBoxLayout" name="verticalLayout_4">
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="0,1">
+         <item>
+          <widget class="QListWidget" name="lwUpdate">
+           <property name="selectionBehavior">
+            <enum>QAbstractItemView::SelectRows</enum>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pbSave">
+          <widget class="QPlainTextEdit" name="pteUpdate">
+           <property name="readOnly">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>40</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbUpdate">
            <property name="text">
-            <string>Save</string>
+            <string>Updated Selected Plugins</string>
            </property>
           </widget>
          </item>
@@ -183,13 +173,6 @@
    </item>
   </layout>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>QsciScintilla</class>
-   <extends>QFrame</extends>
-   <header>Qsci/qsciscintilla.h</header>
-  </customwidget>
- </customwidgets>
  <resources/>
  <connections/>
 </ui>

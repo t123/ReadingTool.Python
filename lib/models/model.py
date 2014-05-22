@@ -353,6 +353,7 @@ class Plugin():
         self.name = ""
         self.content = ""
         self.uuid = ""
+        self.version = 0
         
     def toDict(self):
         d = {}
@@ -361,6 +362,7 @@ class Plugin():
         d["name"] = self.name
         d["content"] = self.content
         d["uuid"] = self.uuid
+        d["version"] = self.version
         
         return d
 

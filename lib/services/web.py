@@ -40,6 +40,7 @@ class WebService:
         
         return (data, signature, {
                    "Content-Type": contentType,
+                   "X-Client": "RT",
                    "X-Signature": signature,
                    "X-AccessKey": Application.user.accessKey
                    })
@@ -126,6 +127,45 @@ class WebService:
             
             self.logError(r)
                 
+        except requests.exceptions.RequestException:
+            pass
+        
+        return None
+    
+    def getAvailablePlugins(self):
+        uri = Application.remoteServer + "/api/v1/plugins"
+        
+        data = self.getStandardDictionary(uri)
+        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        try:
+            r = requests.get(uri, headers=headers)
+            
+            if r.status_code==200:
+                return json.loads(r.content.decode('utf8'))
+                
+            self.logError(r)
+            
+        except requests.exceptions.RequestException:
+            pass
+        
+        return None
+    
+    def getPlugins(self, uuids):
+        uri = Application.remoteServer + "/api/v1/plugins"
+        
+        data = self.getStandardDictionary(uri)
+        data["uuids"] = uuids
+        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        try:
+            r = requests.post(uri, headers=headers, data=content)
+            
+            if r.status_code==200:
+                return json.loads(r.content.decode('utf8'))
+                
+            self.logError(r)
+            
         except requests.exceptions.RequestException:
             pass
         

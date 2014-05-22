@@ -1,3 +1,4 @@
+import logging
 from PyQt4 import QtCore, QtGui, Qt
 
 from lib.misc import Application
@@ -50,4 +51,14 @@ class SettingsForm(QtGui.QDialog):
             value = self.ui.twSettings.item(index, 1).text()
             self.storageService.save(item.key, value, "")
             
+        #TODO
+        local = self.storageService.find(StorageService.SERVER_LOCAL, "http://localhost:8080") 
+        remote = self.storageService.find(StorageService.SERVER_REMOTE, "http://api.readingtool.net")
+        
+        logging.debug("Local server=%s" % local) 
+        logging.debug("Remote server=%s" % remote)
+        
+        Application.apiServer = local 
+        Application.remoteServer = remote 
+        
         self.bindSettings()

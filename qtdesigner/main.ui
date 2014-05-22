@@ -92,6 +92,7 @@
     </property>
     <addaction name="action_New_item"/>
     <addaction name="actionNew_Language"/>
+    <addaction name="actionManage_Plugins"/>
     <addaction name="actionSettings"/>
     <addaction name="actionQuit"/>
    </widget>
@@ -99,12 +100,6 @@
     <property name="title">
      <string>Profiles</string>
     </property>
-   </widget>
-   <widget class="QMenu" name="menuPlugins">
-    <property name="title">
-     <string>Plugins</string>
-    </property>
-    <addaction name="actionManage_Plugins"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -127,7 +122,6 @@
    <addaction name="menuProfiles"/>
    <addaction name="menuRecently_Seen_Items"/>
    <addaction name="menuRecently_Created_Items"/>
-   <addaction name="menuPlugins"/>
    <addaction name="menuHelp"/>
   </widget>
   <action name="action_New_item">

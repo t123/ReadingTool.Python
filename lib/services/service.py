@@ -633,19 +633,21 @@ class PluginService:
         
     def save(self, plugin):
         if(plugin.pluginId == 0):
-            plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid) VALUES ( :pluginId, :name, :description, :content, :uuid)",
+            plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid, version) VALUES ( :pluginId, :name, :description, :content, :uuid, :version)",
                             pluginId=None,
                             name=plugin.name,
                             description=plugin.description,
                             content=plugin.content,
-                            uuid=str(uuid.uuid1())
+                            uuid=plugin.uuid,
+                            version=plugin.version
                             )
         else:        
-            self.db.execute("UPDATE plugin SET name=:name, description=:description, content=:content WHERE pluginId=:pluginId",
+            self.db.execute("UPDATE plugin SET name=:name, description=:description, content=:content, version=:version WHERE pluginId=:pluginId",
                             pluginId=plugin.pluginId,
                             name=plugin.name,
                             content=plugin.content,
-                            description=plugin.description
+                            description=plugin.description,
+                            version=plugin.version
                             )
             
         return self.findOne(plugin.pluginId)
@@ -655,6 +657,9 @@ class PluginService:
         
     def findOneByName(self, name):
         return self.db.one(Plugin, "SELECT * FROM Plugin WHERE name=:name", name=name)
+    
+    def findOneByUuid(self, uuid):
+        return self.db.one(Plugin, "SELECT * FROM Plugin WHERE uuid=:uuid", uuid=uuid)
     
     def findAll(self):
         return self.db.many(Plugin, "SELECT * FROM Plugin ORDER BY name COLLATE NOCASE")

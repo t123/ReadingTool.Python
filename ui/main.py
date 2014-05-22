@@ -43,7 +43,8 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.actionQuit, QtCore.SIGNAL("triggered(bool)"), self.close)
         QtCore.QObject.connect(self.ui.actionCheck_for_updates, QtCore.SIGNAL("triggered(bool)"), self.checkForUpdates)
         QtCore.QObject.connect(self.ui.actionDelete_language, QtCore.SIGNAL("triggered(bool)"), self.deleteLanguage)
-        QtCore.QObject.connect(self.ui.actionSettings, QtCore.SIGNAL("triggered(bool)"), self.changeSettings)
+        QtCore.QObject.connect(self.ui.actionSettings, QtCore.SIGNAL("triggered(bool)"), self.manageSettings)
+        QtCore.QObject.connect(self.ui.actionManage_Plugins, QtCore.SIGNAL("triggered(bool)"), self.managePlugins)
         
     def setupUserLayout(self):
         self.setWindowTitle(self.tr("ReadingTool - {0}").format(Application.user.username))
@@ -106,6 +107,7 @@ class MainWindow(QtGui.QMainWindow):
                 action.setText(user.username)
                 action.setData(user)
                 action.connect(action, QtCore.SIGNAL("triggered()"), lambda user=action.data(): self.changeProfile(user))
+                action.setToolTip("Switch to profile {0}".format(user.username))
                 self.ui.menuProfiles.addAction(action)
          
     def setupContextMenus(self):
@@ -270,7 +272,12 @@ class MainWindow(QtGui.QMainWindow):
         userService.loginUser(user.userId)
         self.setupUserLayout()
 
-    def changeSettings(self):
+    def manageSettings(self):
         self.dialog = SettingsForm()
         self.dialog.bindSettings()
+        self.dialog.exec_()
+        
+    def managePlugins(self):
+        self.dialog = PluginsForm()
+        self.dialog.bindPlugins()
         self.dialog.exec_()
