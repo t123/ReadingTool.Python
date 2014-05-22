@@ -26,7 +26,7 @@ class Startup:
             
     def checkUser(self):
         userService = UserService()
-        users = userService.findAll(1)
+        users = userService.findAll()
     
         if len(users) == 0:
             user = User()
@@ -35,6 +35,7 @@ class Startup:
             Application.user = user
             userService.loginUser(user.userId)
         else:
+            print(users[0].username)
             Application.user = users[0]
             userService.loginUser(users[0].userId)
             

@@ -264,4 +264,6 @@ class MainWindow(QtGui.QMainWindow):
         
     def changeProfile(self, user):
         Application.user = user
+        userService = UserService()
+        userService.loginUser(user.userId)
         self.setupUserLayout()

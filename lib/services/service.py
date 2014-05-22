@@ -38,7 +38,7 @@ class UserService:
     
     def findAll(self, orderBy="lastLogin", maxResults=10):
         if orderBy == "lastLogin":
-            return self.db.many(User, "SELECT * FROM user ORDER BY lastLogin LIMIT :limit", limit=maxResults)
+            return self.db.many(User, "SELECT * FROM user ORDER BY lastLogin DESC LIMIT :limit", limit=maxResults)
         elif orderBy == "username":
             return self.db.many(User, "SELECT * FROM user ORDER BY username COLLATE NOCASE LIMIT :limit", limit=maxResults)
         else:
