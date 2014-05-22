@@ -172,7 +172,7 @@ class WebService:
         return None
     
     def reportException(self):
-        import traceback
+        import traceback, os
         from lib.stringutil import StringUtil
         from lib.services.service import StorageService
         
@@ -183,10 +183,12 @@ class WebService:
         
         uri = Application.remoteServer + "/api/v1/report"
 
-        data = self.getStandardDictionary(uri)
+        data =  { }
         data["Stacktrace"] = details
+        data["Version"] = StorageService.sfind(StorageService.SOFTWARE_VERSION, "Unknown")
+        data["OS"] = os.name 
         
-        content, signature, headers = self.createJsonSignatureHeaders(data)
+        content, signature, headers = self.createJsonSignatureHeaders(data, secret="")
         
         try:
             r = requests.post(uri, headers=headers, data=content)
