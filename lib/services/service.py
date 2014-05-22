@@ -679,6 +679,7 @@ class StorageService:
     SOFTWARE_VERSION = "software_version"
     SOFTWARE_CHECK_UPDATES = "software_check_updates"
     SOFTWARE_DEBUG = "software_debug"
+    SOFTWARE_REPORT_ERRORS = "software_report_errors"
     
     MEDIA_PLUGIN = "media_plugin"
     

@@ -17,7 +17,10 @@ class StringUtil:
         if x is None:
             return False
         
-        x = x.lower().strip()
+        if isinstance(x, bool) and x==True:
+            return True
+        
+        x = str(x).lower().strip()
         
         if x=="1" or x=="true" or x=="yes":
             return True
@@ -25,10 +28,13 @@ class StringUtil:
         return False
     
 class FilterParser():
-    def __init__(self):
+    def __init__(self, languageNames=[]):
+        self.languageNames = [item.lower() for item in languageNames]
+        
         self.tags = []
         self.normal = []
         self.special = []
+        self.languages = []
         
         self.current = ""
         self.isTag = False
@@ -42,7 +48,11 @@ class FilterParser():
                 self.isTag = False
                 self.inQuote = False
             else:
-                self.normal.append(self.current)
+                if self.current in self.languageNames:
+                    self.languages.append(self.current)
+                else:
+                    self.normal.append(self.current)
+                    
                 self.current = ""
                 self.isTag = False
                 self.inQuote = False

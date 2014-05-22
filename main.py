@@ -22,19 +22,29 @@ except Exception as e:
     logging.info("Debug failed: {}".format(str(e)))
     
 if __name__=="__main__":
-    start = Startup()
-    start.cleanOldFiles()
-    start.checkUser()
-    start.backupDb("start")
-    start.checkDbForUpgrade()
-             
-    Application.server = Server(embed=True)
-    app = QtGui.QApplication(sys.argv)
-    myapp = MainWindow()
-    myapp.show()
-           
-    Application.server.start()
-    ret = app.exec_()
-    Application.server.stop()
-    start.backupDb("stop")
-    sys.exit(ret)
+    try:
+        start = Startup()
+        start.cleanOldFiles()
+        start.checkUser()
+        start.backupDb("start")
+        start.checkDbForUpgrade()
+                 
+        Application.server = Server(embed=True)
+        app = QtGui.QApplication(sys.argv)
+        myapp = MainWindow()
+        myapp.show()
+               
+        Application.server.start()
+        ret = app.exec_()
+        Application.server.stop()
+        start.backupDb("stop")
+        sys.exit(ret)
+    except Exception as e:
+        try:
+            logging.error(e)
+            
+            from lib.services.web import WebService
+            webService = WebService()
+            webService.reportException()
+        except Exception as inner:
+            logging.error(inner)

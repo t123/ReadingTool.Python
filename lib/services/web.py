@@ -171,6 +171,28 @@ class WebService:
         
         return None
     
+    def reportException(self):
+        import traceback
+        from lib.stringutil import StringUtil
+        from lib.services.service import StorageService
+        
+        if not StringUtil.isTrue(StorageService.sfind(StorageService.SOFTWARE_REPORT_ERRORS, True)):
+            return
+                    
+        details = traceback.format_exc()
+        
+        uri = Application.remoteServer + "/api/v1/report"
+
+        data = self.getStandardDictionary(uri)
+        data["Stacktrace"] = details
+        
+        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        try:
+            r = requests.post(uri, headers=headers, data=content)
+        except requests.exceptions.RequestException:
+            pass
+    
     #===========================================================================
     # def sync(self, userId):
     #     from lib.models.model import Language, Term, Item
