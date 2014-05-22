@@ -18,16 +18,13 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
      <item>
       <widget class="QLineEdit" name="leFilter">
        <property name="placeholderText">
         <string>Type to filter, search executes on return</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="QComboBox" name="cbTags"/>
      </item>
     </layout>
    </item>

@@ -12,13 +12,15 @@ class TermsForm(QtGui.QDialog):
         self.ui = Ui_Terms()
         self.ui.setupUi(self)
         
+        self.languages = []
+        self.filters = []
+        self.termCount = 0
+        
         self.termService = TermService()
-        self.setupTags()
         self.setupContextMenu()
         
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.onTextChanged)
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("returnPressed()"), self.bindTerms)
-        QtCore.QObject.connect(self.ui.cbTags, QtCore.SIGNAL("currentIndexChanged(int)"), self.onTagChanged)
         QtCore.QObject.connect(self.ui.actionEdit_term, QtCore.SIGNAL("triggered()"), self.editTerm)
         QtCore.QObject.connect(self.ui.actionDelete_term, QtCore.SIGNAL("triggered()"), self.deleteTerm)
     
@@ -28,14 +30,13 @@ class TermsForm(QtGui.QDialog):
         
         self.bindTerms()
         
-    def onTagChanged(self, index):
-        item = self.ui.cbTags.itemData(index)
-         
-        if item is None:
-            return
-         
-        self.ui.leFilter.setText(self.ui.leFilter.text() + " " + item)
-        self.bindTerms()
+    def getCount(self):
+        return self.termCount
+    
+    def setFilters(self, languages=[], filters=[]):
+        self.languages = languages
+        self.filters = filters
+        self.ui.leFilter.setText("limit:1000")
         
     def setupContextMenu(self):
         self.ui.twTerms.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -52,16 +53,6 @@ class TermsForm(QtGui.QDialog):
         self.ui.twTerms.addAction(action)
         QtCore.QObject.connect(action, QtCore.SIGNAL("triggered()"), self.ui.actionDelete_term.trigger)
         
-    def setupTags(self):
-        self.ui.cbTags.addItem("Choose a tag", "")
-        self.ui.cbTags.addItem("Known", "#known")
-        self.ui.cbTags.addItem("Not known", "#unknown")
-        self.ui.cbTags.addItem("Ignored", "#ignored")
-         
-        ls = LanguageService()
-        for l in ls.findAll(orderBy="archived"):
-            self.ui.cbTags.addItem(l.name, '"' + l.name + '"')
-
     def bindTerms(self):
         self.ui.twTerms.clear()
         headers = ["State", "Language", "Phrase", "Base Phrase", "Sentence"]
@@ -70,8 +61,12 @@ class TermsForm(QtGui.QDialog):
         self.ui.twTerms.setHorizontalHeaderLabels(headers)
         self.ui.twTerms.setSortingEnabled(True)
          
+        filterText = self.ui.leFilter.text() + " " + \
+                     " ".join(['"' + i + '"' for i in self.languages]) + " " \
+                     " ".join(self.filters)
+                     
         index = 0
-        terms = self.termService.search(self.ui.leFilter.text())
+        terms = self.termService.search(filterText)
         self.ui.twTerms.setRowCount(len(terms))
          
         for term in terms:
@@ -88,7 +83,8 @@ class TermsForm(QtGui.QDialog):
          
         self.ui.twTerms.resizeColumnsToContents()
         self.ui.twTerms.horizontalHeader().setStretchLastSection(True)
-    
+        self.termCount = len(terms)
+        
     def editTerm(self):
         term = self.ui.twTerms.item(self.ui.twTerms.currentRow(), 0)
         termId = term.data(QtCore.Qt.UserRole).termId

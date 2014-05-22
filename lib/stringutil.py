@@ -30,7 +30,7 @@ class StringUtil:
 class FilterParser():
     def __init__(self, languageNames=[]):
         self.languageNames = [item.lower() for item in languageNames]
-        
+
         self.tags = []
         self.normal = []
         self.special = []
@@ -39,6 +39,8 @@ class FilterParser():
         self.current = ""
         self.isTag = False
         self.inQuote = False
+        
+        self.limit = 0
     
     def append(self):
         if not StringUtil.isEmpty(self.current):
@@ -51,7 +53,10 @@ class FilterParser():
                 if self.current in self.languageNames:
                     self.languages.append(self.current)
                 else:
-                    self.normal.append(self.current)
+                    if self.current.startswith("limit:"):
+                        self.limit = int(self.current[6:])
+                    else:
+                        self.normal.append(self.current)
                     
                 self.current = ""
                 self.isTag = False

@@ -36,7 +36,7 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.editLanguage)
         QtCore.QObject.connect(self.ui.lwCollections, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
         QtCore.QObject.connect(self.ui.lwFilters, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
-        QtCore.QObject.connect(self.ui.tabWidget, QtCore.SIGNAL("currentChanged(int)"), self.bindData)
+        QtCore.QObject.connect(self.ui.tabWidget, QtCore.SIGNAL("currentChanged(int)"), self.onTabChanged)
 
         QtCore.QObject.connect(self.ui.action_New_item, QtCore.SIGNAL("triggered(bool)"), self.addItem)
         QtCore.QObject.connect(self.ui.actionNew_Language, QtCore.SIGNAL("triggered(bool)"), self.addLanguage)
@@ -136,30 +136,51 @@ class MainWindow(QtGui.QMainWindow):
         self.bindData()
 
     def bindFilters(self):
-        item = QtGui.QListWidgetItem("Text Items")
-        item.setData(QtCore.Qt.UserRole, "#text")
-        self.ui.lwFilters.addItem(item)
+        self.ui.lwFilters.clear()
         
-        item = QtGui.QListWidgetItem("Video Items")
-        item.setData(QtCore.Qt.UserRole, "#video")
-        self.ui.lwFilters.addItem(item)
-        
-        item = QtGui.QListWidgetItem("Single Items")
-        item.setData(QtCore.Qt.UserRole, "#single")
-        self.ui.lwFilters.addItem(item)
-        
-        item = QtGui.QListWidgetItem("Parallel Items")
-        item.setData(QtCore.Qt.UserRole, "#parallel")
-        self.ui.lwFilters.addItem(item)
+        if self.ui.tabWidget.currentIndex()==0:
+            item = QtGui.QListWidgetItem("Text Items")
+            item.setData(QtCore.Qt.UserRole, "#text")
+            self.ui.lwFilters.addItem(item)
             
-        item = QtGui.QListWidgetItem("Media Items")
-        item.setData(QtCore.Qt.UserRole, "#media")
-        self.ui.lwFilters.addItem(item)
+            item = QtGui.QListWidgetItem("Video Items")
+            item.setData(QtCore.Qt.UserRole, "#video")
+            self.ui.lwFilters.addItem(item)
+            
+            item = QtGui.QListWidgetItem("Single Items")
+            item.setData(QtCore.Qt.UserRole, "#single")
+            self.ui.lwFilters.addItem(item)
+            
+            item = QtGui.QListWidgetItem("Parallel Items")
+            item.setData(QtCore.Qt.UserRole, "#parallel")
+            self.ui.lwFilters.addItem(item)
+                
+            item = QtGui.QListWidgetItem("Media Items")
+            item.setData(QtCore.Qt.UserRole, "#media")
+            self.ui.lwFilters.addItem(item)
+        elif self.ui.tabWidget.currentIndex()==1:
+            item = QtGui.QListWidgetItem("Known")
+            item.setData(QtCore.Qt.UserRole, "#known")
+            self.ui.lwFilters.addItem(item)
+            
+            item = QtGui.QListWidgetItem("Unknown")
+            item.setData(QtCore.Qt.UserRole, "#unknown")
+            self.ui.lwFilters.addItem(item)
+            
+            item = QtGui.QListWidgetItem("Ignored")
+            item.setData(QtCore.Qt.UserRole, "#ignored")
+            self.ui.lwFilters.addItem(item)
+        
+    def onTabChanged(self, tabIndex):
+        self.bindFilters()
+        self.bindData()
         
     def bindData(self):
         if self.ui.tabWidget.currentIndex()==0:
+            self.ui.lwCollections.show()
             self.bindItems()
-        elif  self.ui.tabWidget.currentIndex()==1:
+        elif self.ui.tabWidget.currentIndex()==1:
+            self.ui.lwCollections.hide()
             self.bindTerms()
         
     def bindItems(self):
@@ -179,6 +200,9 @@ class MainWindow(QtGui.QMainWindow):
         self.itemsForm.setFilters(languages, collectionNames, filters)
         self.itemsForm.bindItems()
         
+        self.ui.tabWidget.setTabText(0, "Items ({0})".format(self.itemsForm.getCount()))
+        self.ui.tabWidget.setTabText(1, "Terms")
+        
     def bindTerms(self):
         if len(self.ui.tabTerms.children())==0:
             self.termsForm = TermsForm()
@@ -189,7 +213,14 @@ class MainWindow(QtGui.QMainWindow):
             
             self.ui.tabTerms.setLayout(verticalLayout)
             
+        languages = [item.data(QtCore.Qt.UserRole).name for item in self.ui.lwLanguages.selectedItems()]
+        filters = [item.data(QtCore.Qt.UserRole) for item in self.ui.lwFilters.selectedItems()]
+        
+        self.termsForm.setFilters(languages, filters)
         self.termsForm.bindTerms()
+        
+        self.ui.tabWidget.setTabText(0, "Items")
+        self.ui.tabWidget.setTabText(1, "Terms ({0})".format(self.termsForm.getCount()))
         
     def addItem(self):
         self.dialog = ItemDialogForm()

@@ -19,6 +19,7 @@ class ItemsForm(QtGui.QDialog):
         self.languages = []
         self.collectionNames = []
         self.filters = []
+        self.itemCount = 0
         
         self.itemService = ItemService()
         self.setupContextMenu()
@@ -43,6 +44,9 @@ class ItemsForm(QtGui.QDialog):
         self.languages = languages
         self.collectionNames = collectionNames
         self.filters = filters
+        
+    def getCount(self):
+        return self.itemCount
         
     def bindItems(self):
         self.ui.twItems.clear()
@@ -86,6 +90,7 @@ class ItemsForm(QtGui.QDialog):
         
         self.ui.twItems.resizeColumnsToContents()
         self.ui.twItems.horizontalHeader().setStretchLastSection(True)
+        self.itemCount = len(items)
 
     def setupContextMenu(self):
         self.ui.twItems.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)

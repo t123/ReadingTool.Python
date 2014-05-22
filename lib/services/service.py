@@ -351,25 +351,51 @@ class TermService:
                                         
         args = {"userId": Application.user.userId}
         
-        fp = FilterParser()
+        languageService = LanguageService()
+        fp = FilterParser([language.name for language in languageService.findAll()])
         fp.filter(filter)
         
-        for tag in fp.tags:
-            if tag == "know" or tag == "known":
-                query += " AND term.state=" + str(TermState.Known)
-            elif tag == "unknown" or tag == "notknown":
-                query += " AND term.state=" + str(TermState.Unknown)
-            elif tag == "ignore" or tag == "ignored":
-                query += " AND term.state=" + str(TermState.Ignored)
+        if len(fp.tags)>0:
+            tagList = []
+            
+            for exp in fp.tags:
+                if exp == "know" or exp=="known":
+                    tagList.append("term.state=" + str(TermState.Known))
+                elif exp == "unknown" or exp == "notknown":
+                    tagList.append("term.state=" + str(TermState.Unknown))
+                elif exp == "ignore" or exp == "ignored":
+                    tagList.append("term.state=" + str(TermState.Ignored))
+                    
+            query += " AND ( " + " OR ".join(tagList) + " )"
+            
+        if len(fp.languages)>0:
+            t = []
+            counter = 0
+            
+            for exp in fp.languages:
+                t.append("language LIKE :l{0}".format(counter))
+                args["l%d" % counter] = exp
+                counter += 1
                 
-        counter = 0
-        for exp in fp.normal:
-            query += " AND (term.phrase LIKE :e{0} OR term.basePhrase LIKE :e{0} OR language LIKE :l{0}) ".format(counter)
-            args["e%d" % counter] = exp + "%"
-            args["l%d" % counter] = exp
-            counter += 1
+            query += " AND ( " + " OR ".join(t) + " )"
+            
+        if len(fp.normal)>0:
+            t = []
+            counter = 0
+            
+            for exp in fp.normal:
+                t.append("(term.phrase LIKE :e{0} OR term.basePhrase LIKE :e{0}) ".format(counter))
+                args["e%d" % counter] = exp + "%"
+                counter += 1
+                
+            query += " AND ( " + " OR ".join(t) + " )"
                 
         query += " ORDER BY b.isArchived, language, term.lowerPhrase"
+        
+        if fp.limit>0:
+            query += " LIMIT :limit"
+            args["limit"] = fp.limit
+        
         return self.db.many(Term, query, **args)
     
     def findHistory(self, termId):
@@ -594,37 +620,60 @@ ORDER BY language.name COLLATE NOCASE, X COLLATE NOCASE""" % ("?," * len(languag
                            WHERE item.userId=:userId 
                            """
         
-        fp = FilterParser()
+        languageService = LanguageService()
+        fp = FilterParser([language.name for language in languageService.findAll()])
         fp.filter(filter)
                            
         args = {
                 "userId": Application.user.userId
                 }
         
-        for exp in fp.tags:
-            if exp == "parallel":
-                query += " AND (item.L2Content IS NOT NULL AND item.L2Content<>'') "
-            elif exp == "media":
-                query += " AND (item.mediaUri IS NOT NULL AND item.mediaUri<>'') "
-            elif exp == "text":
-                query += " AND item.itemType=%d" % ItemType.Text
-            elif exp == "video":
-                query += " AND item.itemType=%d" % ItemType.Video
+        if len(fp.tags)>0:
+            tagList = []
+            
+            for exp in fp.tags:
+                if exp == "parallel":
+                    tagList.append("(item.L2Content IS NOT NULL AND item.L2Content<>'')")
+                if exp == "single":
+                    tagList.append("(item.L2Content IS NULL OR item.L2Content='')")
+                elif exp == "media":
+                    tagList.append("(item.mediaUri IS NOT NULL AND item.mediaUri<>'')")
+                elif exp == "text":
+                    tagList.append("item.itemType={0}".format(ItemType.Text))
+                elif exp == "video":
+                    tagList.append("item.itemType={0}".format(ItemType.Video))
+                    
+            query += " AND ( " + " OR ".join(tagList) + " )"
         
-        if len(fp.normal) > 0:
-            query += " AND ( "
+        if len(fp.languages)>0:
+            t = []
             counter = 0
-            for exp in fp.normal:
-                query += " (item.collectionName LIKE :e{0} OR item.l1Title LIKE :e{0} OR l1Language LIKE :l{0}) AND ".format(counter)
-                args["e%d" % counter] = exp + "%"
+            
+            for exp in fp.languages:
+                t.append("l1Language LIKE :l{0}".format(counter))
                 args["l%d" % counter] = exp
                 counter += 1
                 
-            query = query[0:-4]
-            query += " ) "
+            query += " AND ( " + " OR ".join(t) + " )"
+                
+        
+        if len(fp.normal) > 0:
+            t = []
+            counter = 0
+            
+            for exp in fp.normal:
+                t.append("item.collectionName LIKE :e{0} OR item.l1Title LIKE :e{0}".format(counter))
+                args["e%d" % counter] = exp + "%"
+                counter += 1
+                
+            query += " AND ( " + " OR ".join(t) + " )"
         
         query += " ORDER BY B.isArchived, l1Language, item.collectionName, item.collectionNo, item.l1Title"
-        
+
+        if fp.limit>0:
+            query += " LIMIT :limit"
+            args["limit"] = fp.limit
+            
         return self.db.many(Item, query, **args)
 
 class PluginService:
