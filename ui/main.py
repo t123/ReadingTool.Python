@@ -53,6 +53,7 @@ class MainWindow(QtGui.QMainWindow):
         
     def setupUserLayout(self):
         self.setWindowTitle(self.tr("ReadingTool - {0}").format(Application.user.username))
+        self.setupSplitters()
         
         self.setupMenus()
         
@@ -113,6 +114,34 @@ class MainWindow(QtGui.QMainWindow):
                 action.connect(action, QtCore.SIGNAL("triggered()"), lambda user=action.data(): self.changeProfile(user))
                 action.setToolTip("Switch to profile {0}".format(user.username))
                 self.ui.menuProfiles.addAction(action)
+         
+    def setupSplitters(self):
+        self.ui.splitter.setHandleWidth(7)
+        self.addHandleToSplitter(self.ui.splitter.handle(1), self.ui.splitter.orientation())
+        self.addHandleToSplitter(self.ui.splitter.handle(2), self.ui.splitter.orientation())
+        
+        self.ui.verticalSplitter.setHandleWidth(7)
+        self.addHandleToSplitter(self.ui.verticalSplitter.handle(1), self.ui.verticalSplitter.orientation())
+    
+    def addHandleToSplitter(self, handle, orientation):
+        if orientation==QtCore.Qt.Horizontal:
+            layout = QtGui.QHBoxLayout(handle)
+            layout.setSpacing(0)
+            layout.setMargin(0)
+            
+            line = QtGui.QFrame(handle)
+            line.setFrameShape(QtGui.QFrame.VLine)
+            line.setFrameShadow(QtGui.QFrame.Sunken)
+            layout.addWidget(line)
+        else:
+            layout = QtGui.QVBoxLayout(handle)
+            layout.setSpacing(0)
+            layout.setMargin(0)
+            
+            line = QtGui.QFrame(handle)
+            line.setFrameShape(QtGui.QFrame.HLine)
+            line.setFrameShadow(QtGui.QFrame.Sunken)
+            layout.addWidget(line)
          
     def onLanguageContextMenu(self, point):
         item = self.ui.lwLanguages.itemAt(point)
