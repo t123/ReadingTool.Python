@@ -10,6 +10,7 @@ class LanguagesForm(QtGui.QDialog):
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_Languages()
         self.ui.setupUi(self)
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
         self.languageService = LanguageService()
         self.languageCodeService = LanguageCodeService()

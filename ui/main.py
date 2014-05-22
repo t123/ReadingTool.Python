@@ -92,10 +92,11 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.menuProfiles.clear()
         action = QtGui.QAction(self.ui.menuProfiles)
         action.setText("Manage profiles")
-        
+        action.connect(action, QtCore.SIGNAL("triggered()"), self.manageProfiles)
+                       
+        self.ui.menuProfiles.addAction(action)
+                
         if len(users)>0:
-            #action.connect(action, QtCore.SIGNAL("triggered()"), lambda item=action.data(): self.readItem(item))
-            self.ui.menuProfiles.addAction(action)
             self.ui.menuProfiles.addSeparator()
             
             for user in users:
@@ -253,7 +254,14 @@ class MainWindow(QtGui.QMainWindow):
         except Exception as e:
             logging.error(str(e))        
     
-    
+    def manageProfiles(self):
+        self.dialog = ProfilesForm()
+        self.dialog.exec_()
+        self.setupMenus()
+        
+        if self.dialog.switchProfile is not None:
+            self.changeProfile(self.dialog.switchProfile)
+        
     def changeProfile(self, user):
         Application.user = user
         self.setupUserLayout()
