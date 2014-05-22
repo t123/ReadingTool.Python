@@ -92,6 +92,7 @@
     </property>
     <addaction name="action_New_item"/>
     <addaction name="actionNew_Language"/>
+    <addaction name="actionSettings"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuProfiles">
@@ -179,6 +180,19 @@
    </property>
    <property name="toolTip">
     <string>Delete this language</string>
+   </property>
+  </action>
+  <action name="actionSettings">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+  </action>
+  <action name="actionSettings_2">
+   <property name="text">
+    <string>Settings</string>
+   </property>
+   <property name="toolTip">
+    <string>Change settings</string>
    </property>
   </action>
  </widget>

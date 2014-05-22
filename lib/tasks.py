@@ -35,7 +35,6 @@ class Startup:
             Application.user = user
             userService.loginUser(user.userId)
         else:
-            print(users[0].username)
             Application.user = users[0]
             userService.loginUser(users[0].userId)
             

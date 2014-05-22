@@ -11,6 +11,7 @@ from ui.languages import LanguagesForm
 from ui.plugins import PluginsForm
 from ui.items import ItemsForm
 from ui.terms import TermsForm
+from ui.settings import SettingsForm
 from ui.itemdialog import ItemDialogForm
 from lib.stringutil import StringUtil
 
@@ -42,6 +43,7 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.actionQuit, QtCore.SIGNAL("triggered(bool)"), self.close)
         QtCore.QObject.connect(self.ui.actionCheck_for_updates, QtCore.SIGNAL("triggered(bool)"), self.checkForUpdates)
         QtCore.QObject.connect(self.ui.actionDelete_language, QtCore.SIGNAL("triggered(bool)"), self.deleteLanguage)
+        QtCore.QObject.connect(self.ui.actionSettings, QtCore.SIGNAL("triggered(bool)"), self.changeSettings)
         
     def setupUserLayout(self):
         self.setWindowTitle(self.tr("ReadingTool - {0}").format(Application.user.username))
@@ -267,3 +269,8 @@ class MainWindow(QtGui.QMainWindow):
         userService = UserService()
         userService.loginUser(user.userId)
         self.setupUserLayout()
+
+    def changeSettings(self):
+        self.dialog = SettingsForm()
+        self.dialog.bindSettings()
+        self.dialog.exec_()
