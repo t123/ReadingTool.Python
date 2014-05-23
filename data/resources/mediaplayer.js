@@ -46,6 +46,14 @@ function NullMediaPlayer() {
     self.getDuration = function () {
         return 0;
     };
+    
+    self.setWasPlaying = function() {
+        return;  
+    };
+    
+    self.getWasPlaying = function() {
+        return false;
+    };
 
     self.mute = function () {};
 
@@ -140,6 +148,8 @@ function VlcMediaPlayer() {
     };
 
     self.play = function (fromTime) {
+        fromTime = fromTime || null;
+        
         if (fromTime !== null) {
             if (fromTime < 0) {
                 fromTime = 0;
@@ -221,7 +231,7 @@ function JPlayerMediaPlayer() {
     self.hasPlayer = function () {
         return self.player !== null;
     };
-
+    
     self.isPaused = function () {
         return self.player.data().jPlayer.status.paused;
     };
@@ -269,6 +279,8 @@ function JPlayerMediaPlayer() {
     };
 
     self.play = function (fromTime) {
+        fromTime = fromTime || null;
+        
         if (fromTime !== null) {
             if (fromTime < 0) {
                 fromTime = 0;

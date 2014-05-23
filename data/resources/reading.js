@@ -108,6 +108,7 @@ function Reading(options) {
             state = state.toLowerCase();
             $('[name=State][value=' + state + ']').prop('checked', 'true');
             self.changed();
+            $.event.trigger("dialogStateElementChanged");
         } else {
             alert('state value is unknown: ' + state);
         }
@@ -124,16 +125,19 @@ function Reading(options) {
     self.setDBase = function (val) {
         $('#dBase').val(val);
         self.changed();
+        $.event.trigger("dialogBaseElementChanged");
     };
 
     self.setDSentence = function (val) {
         $('#dSentence').val(val);
         self.changed();
+        $.event.trigger("dialogSentenceElementChanged");
     };
 
     self.setDDefinition = function (val) {
         $('#dDefinition').val(val);
         self.changed();
+        $.event.trigger("dialogDefinitionElementChanged");
     };
 
     self.setDMessage = function (val) {
@@ -251,7 +255,13 @@ function Reading(options) {
     };
 
     self.displayModal = function () {
-        var c = window.lib.getCurrentElement()[0].getBoundingClientRect();
+        var c = window.lib.getCurrentElement();
+        
+        if(c===null || typeof c==='undefined') {
+            return;
+        }
+        
+        c = c[0].getBoundingClientRect();
 
         var dh = $(window).height();
         var dw = $(window).width();

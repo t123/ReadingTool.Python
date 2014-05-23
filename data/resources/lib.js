@@ -12,9 +12,26 @@ function Lib(options) {
     self.currentElement = null;
     self.sentenceMarkers = new RegExp(/[\.\?!。]/);
     self.navTerms = {};
+    self.pluginRegistry = {};
 
     self.getOptions = function () {
         return self.options;
+    };
+    
+    self.empty = function(element) {
+        if(element===undefined) {
+            return true;
+        }
+        
+        if(element===null) {
+            return true;
+        }
+        
+        if(!element.any()) {
+            return true;
+        }
+        
+        return false;
     };
 
     //MANIPULATION OF CURRENT ELEMENT
@@ -25,11 +42,12 @@ function Lib(options) {
     self.setNextPrev = function () {
         var elements = $('span.__term.__notseen,span.__term.__unknown');
         var current = self.getCurrentElement();
-        var lower = current.data('lower');
 
-        if (!current.any()) {
+        if (self.empty(current)) {
             return;
         }
+        
+        var lower = current.data('lower');
 
         if (elements.length <= 1) {
             return;
@@ -140,8 +158,9 @@ function Lib(options) {
     };
 
     self.isFragment = function (element) {
-        if (element === null || !element.any())
+        if(self.empty(element)) {
             return false;
+        }
 
         return element.hasClass('__fragment');
     };
@@ -161,7 +180,7 @@ function Lib(options) {
      * @param {element} element to add __current to
      */
     self.setCurrentSelected = function (element) {
-        if (element.any()) {
+        if (!self.empty(element)) {
             $.event.trigger("preSetCurrentSelected", [element]);
             var current = self.getCurrentSelected();
             current.removeClass('__current');
@@ -181,7 +200,7 @@ function Lib(options) {
     };
 
     self.getCurrentElementAsText = function (element) {
-        if (element === null || !element.any()) {
+        if(self.empty(element)) {
             return '';
         }
 
@@ -218,7 +237,7 @@ function Lib(options) {
     self.getSentence = function () {
         var current = self.getCurrentElement();
 
-        if (!current.any()) {
+        if(self.empty(current)) {
             return '';
         }
 
@@ -536,7 +555,7 @@ function Lib(options) {
     self.getCommonness = function () {
         var ce = self.getCurrentElement();
 
-        if (!ce.any()) {
+        if(self.empty(ce)) {
             return '';
         }
 
@@ -549,8 +568,9 @@ function Lib(options) {
 
     self.getFrequency = function () {
         var ce = self.getCurrentElement();
-        if (ce.any()) {
-            return ce.data('frequency');
+        
+        if(self.empty(ce)) {
+            return '';
         }
 
         return 0;
@@ -559,21 +579,21 @@ function Lib(options) {
     self.getOccurrences = function () {
         var ce = self.getCurrentElement();
 
-        if (ce.any()) {
-            return ce.data('occurrences');
+        if(self.empty(ce)) {
+            return 0;
         }
 
-        return 0;
+        return ce.data('occurrences');
     };
 
     self.getLowerPhrase = function () {
         var ce = self.getCurrentElement();
 
-        if (ce.any()) {
-            return ce.data('lower');
+        if(self.empty(ce)) {
+            return '';
         }
-
-        return 0;
+        
+        return ce.data('lower');
     };
 
     //FUNCTIONS
@@ -605,7 +625,7 @@ function Lib(options) {
     self.selectText = function (element) {
         $.event.trigger("preSelectText");
 
-        if (element === null || !element.any()) {
+        if (self.empty(element)) {
             return;
         }
 
@@ -847,11 +867,33 @@ function Lib(options) {
         element.remove();
     };
     
+    self.registerPlugin = function(key, value) {
+        self.pluginRegistry[key] = value;
+    };
+    
+    self.unregisterPlugin = function(key) {
+        if(!self.pluginRegistry.hasOwnProperty(key)) {
+            return;
+        }
+        
+        delete self.pluginRegistry[key];
+    };
+    
+    self.getPlugin = function(key) {
+        if(!self.pluginRegistry.hasOwnProperty(key)) {
+            return null;
+        }
+        
+        return self.pluginRegistry[key];
+    };
+    
     self.getAbbreviations = function() {
-        if (typeof window.Abbreviations === 'function') {
-            return window.Abbreviations(self.getL1Code());
-        } else {
+        var abbreviations = self.getPlugin('Abbreviations');
+
+        if(abbreviations===null) {
             return [];
         }
+
+        return abbreviations(self.getL1Code());
     };
 }

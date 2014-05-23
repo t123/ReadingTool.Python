@@ -189,6 +189,7 @@ class PluginsForm(QtGui.QDialog):
         self.bindPlugins()
         
     def save(self):
+        currentIndex = self.ui.lwLocal.currentIndex()
         item = self.ui.lwLocal.currentItem()
         
         if item is None:
@@ -207,6 +208,8 @@ class PluginsForm(QtGui.QDialog):
         
         self.bindPlugins()
         self.bindLocal()
+        
+        self.ui.lwLocal.setCurrentIndex(currentIndex)
         
     def install(self):
         webService = WebService()
