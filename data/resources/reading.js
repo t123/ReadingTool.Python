@@ -307,6 +307,10 @@ function Reading(options) {
         if (self.isModalVisible() && self.hasChanged) {
             return;
         }
+        
+        if(element===null || typeof element=='undefined') {
+            return;
+        }
 
         self._clearInputs();
         window.lib.setCurrentElement(element);

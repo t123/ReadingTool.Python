@@ -161,6 +161,9 @@ class MainWindow(QtGui.QMainWindow):
         menu.exec_(QtGui.QCursor.pos())
         
     def bindLanguages(self):
+        selectedItems = self.ui.lwLanguages.selectedItems()
+        selectedLanguages = [item.data(QtCore.Qt.UserRole).languageId for item in selectedItems]
+        
         self.ui.lwLanguages.clear()
         languages = self.languageService.findAll()
         
@@ -168,6 +171,9 @@ class MainWindow(QtGui.QMainWindow):
             item = QtGui.QListWidgetItem(language.name)
             item.setData(QtCore.Qt.UserRole, language)
             self.ui.lwLanguages.addItem(item)
+            
+            if language.languageId in selectedLanguages:
+                item.setSelected(True)
         
     def bindCollectionNames(self):
         self.ui.lwCollections.clear()
@@ -276,7 +282,6 @@ class MainWindow(QtGui.QMainWindow):
         self.dialog = ItemDialogForm()
         self.dialog.setItem(0)
         self.dialog.show()
-        #TODO refresh items
         
     def readItem(self, item):
         self.reader = ReaderWindow()
@@ -289,9 +294,6 @@ class MainWindow(QtGui.QMainWindow):
         self.dialog.bindLanguage()
         self.dialog.exec_()
         
-        if self.dialog.hasSaved:
-            self.bindLanguages()
-        
     def onEditLanguage(self, item):
         languageId = item.data(QtCore.Qt.UserRole).languageId
         self.editLanguage(languageId)
@@ -300,10 +302,8 @@ class MainWindow(QtGui.QMainWindow):
         self.dialog = LanguagesForm()
         self.dialog.setLanguage(languageId)
         self.dialog.bindLanguage()
-        self.dialog.exec_()
         
-        if self.dialog.hasSaved:
-            self.bindLanguages()            
+        self.dialog.exec_()
         
     def deleteLanguage(self, item):
         languages = self.ui.lwLanguages.selectedItems()
@@ -316,8 +316,6 @@ class MainWindow(QtGui.QMainWindow):
                 
             self.bindLanguages()
             self.bindCollectionNames()
-        else:
-            print("skipped")
             
     def checkForUpdates(self):
         try:

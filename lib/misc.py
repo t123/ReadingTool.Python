@@ -23,6 +23,8 @@ class Application:
     
     apiServer = None
     remoteServer = None
+    
+    myApp = None
         
 class Time:
     @staticmethod

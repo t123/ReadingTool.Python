@@ -20,7 +20,7 @@ except Exception as e:
     print(str(e))
     logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
     logging.info("Debug failed: {}".format(str(e)))
-    
+
 if __name__=="__main__":
     try:
         start = Startup()
@@ -31,8 +31,8 @@ if __name__=="__main__":
                  
         Application.server = Server(embed=True)
         app = QtGui.QApplication(sys.argv)
-        myapp = MainWindow()
-        myapp.show()
+        Application.myApp = MainWindow()
+        dialog = Application.myApp.show()
                
         Application.server.start()
         ret = app.exec_()

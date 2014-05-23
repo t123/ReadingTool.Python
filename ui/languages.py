@@ -16,7 +16,6 @@ class LanguagesForm(QtGui.QDialog):
         self.languageService = LanguageService()
         self.languageCodeService = LanguageCodeService()
         
-        self.hasSaved = False
         self.setLanguageCodes()
         self.setTermExpressions()
 
@@ -132,8 +131,9 @@ class LanguagesForm(QtGui.QDialog):
                  
         self.language = self.languageService.save(self.language, plugins)
         self.setLanguage(self.language.languageId)
-        self.hasSaved = True
-
+        
+        Application.myApp.bindLanguages()
+        
     def resetLanguage(self):
         self.setLanguage(self.language.languageId)
         self.bindLanguage()
