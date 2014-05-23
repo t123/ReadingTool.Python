@@ -7,6 +7,7 @@ from lib.services.service import ItemService, LanguageService
 from lib.services.web import WebService
 from ui.views.items import Ui_Items
 from ui.itemdialog import ItemDialogForm
+from ui.languages import LanguagesForm
 from ui.reader import ReaderWindow
 from PyQt4.Qt import QAction
 
@@ -22,7 +23,6 @@ class ItemsForm(QtGui.QDialog):
         self.itemCount = 0
         
         self.itemService = ItemService()
-        self.setupContextMenu()
         
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.onTextChanged)
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("returnPressed()"), self.bindItems)
@@ -33,7 +33,17 @@ class ItemsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.actionRead_item, QtCore.SIGNAL("triggered()"), lambda: self.readItem(False))
         QtCore.QObject.connect(self.ui.actionRead_in_parallel, QtCore.SIGNAL("triggered()"), lambda: self.readItem(True))
         QtCore.QObject.connect(self.ui.actionCreate_PDF, QtCore.SIGNAL("triggered()"), self.createPdf)
-
+        
+        QtCore.QObject.connect(self.ui.twItems, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.onItemsContextMenu)
+        
+        self.ui.twItems.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.ui.twItems.addAction(self.ui.actionEdit_item)
+        self.ui.twItems.addAction(self.ui.actionCopy_item)
+        self.ui.twItems.addAction(self.ui.actionRead_item)
+        self.ui.twItems.addAction(self.ui.actionRead_in_parallel)
+        self.ui.twItems.addAction(self.ui.actionCreate_PDF)
+        self.ui.twItems.addAction(self.ui.actionDelete_item)
+        
     def onTextChanged(self, text):
         if text.strip()!="":
             return
@@ -100,16 +110,47 @@ class ItemsForm(QtGui.QDialog):
         self.ui.twItems.horizontalHeader().setStretchLastSection(True)
         self.itemCount = len(items)
 
-    def setupContextMenu(self):
-        self.ui.twItems.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
+    def onItemsContextMenu(self, point):
+        item = self.ui.twItems.itemAt(point)
+        
+        if item is None:
+            return
+        
+        menu = QtGui.QMenu(self.ui.twItems)
+        menu.addAction(self.ui.actionEdit_item)
+        
+        action = QtGui.QAction(self.ui.twItems)
+        action.setText("Edit Language")
+        action.setShortcut("Ctrl+L")
+        action.connect(action, QtCore.SIGNAL("triggered()"), self.editLanguage)
+        menu.addAction(action)
+        
+        menu.addAction(self.ui.actionCopy_item)
+        menu.addAction(self.ui.actionRead_item)
+        menu.addAction(self.ui.actionRead_in_parallel)
+        menu.addAction(self.ui.actionCreate_PDF)
+        menu.addAction(self.ui.actionDelete_item)
+        
+        menu.exec_(QtGui.QCursor.pos())
+        
+    def editLanguage(self):
+        item = self.ui.twItems.item(self.ui.twItems.currentRow(), 0)
          
-        self.ui.twItems.addAction(self.ui.actionEdit_item)
-        self.ui.twItems.addAction(self.ui.actionCopy_item)
-        self.ui.twItems.addAction(self.ui.actionRead_item)
-        self.ui.twItems.addAction(self.ui.actionRead_in_parallel)
-        self.ui.twItems.addAction(self.ui.actionCreate_PDF)
-        self.ui.twItems.addAction(self.ui.actionDelete_item)
-         
+        if item is None:
+            return
+        
+        data = item.data(QtCore.Qt.UserRole)
+        
+        parent = self.parent()
+        
+        if parent is None:
+            return
+        
+        self.dialog = LanguagesForm()
+        self.dialog.setLanguage(data.l1LanguageId)
+        self.dialog.bindLanguage()
+        self.dialog.exec_()
+        
     def createPdf(self):
         item = self.ui.twItems.item(self.ui.twItems.currentRow(), 0)
          

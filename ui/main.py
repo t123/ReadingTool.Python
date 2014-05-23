@@ -34,7 +34,7 @@ class MainWindow(QtGui.QMainWindow):
         self.showMaximized()
 
         QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemSelectionChanged()"), self.bindCollectionNames)
-        QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.editLanguage)
+        QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self.onEditLanguage)
         QtCore.QObject.connect(self.ui.lwLanguages, QtCore.SIGNAL("customContextMenuRequested(QPoint)"), self.onLanguageContextMenu)
         QtCore.QObject.connect(self.ui.lwCollections, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
         QtCore.QObject.connect(self.ui.lwFilters, QtCore.SIGNAL("itemSelectionChanged()"), self.bindData)
@@ -153,7 +153,7 @@ class MainWindow(QtGui.QMainWindow):
         
         action = QtGui.QAction(menu)
         action.setText("Edit language")
-        action.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.editLanguage(item))        
+        action.connect(action, QtCore.SIGNAL("triggered()"), lambda: self.onEditLanguage(item))        
         menu.addAction(action)
           
         menu.addAction(self.ui.actionDelete_language)
@@ -292,8 +292,11 @@ class MainWindow(QtGui.QMainWindow):
         if self.dialog.hasSaved:
             self.bindLanguages()
         
-    def editLanguage(self, item):
+    def onEditLanguage(self, item):
         languageId = item.data(QtCore.Qt.UserRole).languageId
+        self.editLanguage(languageId)
+        
+    def editLanguage(self, languageId):
         self.dialog = LanguagesForm()
         self.dialog.setLanguage(languageId)
         self.dialog.bindLanguage()

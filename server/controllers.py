@@ -69,13 +69,17 @@ class InternalController(object):
         if not self.isValidId(languageId) or not self.isValidId(itemId):
             pass
 
-        termService = TermService()
-        term = termService.fineOneByPhraseAndLanguage(phrase, languageId)
-    
         basePhrase = (basePhrase or "").strip()
         phrase = (phrase or "").strip()
         sentence = (sentence or "").strip()
         definition = (definition or "").strip()
+        
+        if len(phrase)==0:
+            cherrypy.response.status = 403
+            return
+         
+        termService = TermService()
+        term = termService.fineOneByPhraseAndLanguage(phrase, languageId)
         
         if term is None:
             term = Term()
