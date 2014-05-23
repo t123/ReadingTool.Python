@@ -157,6 +157,7 @@ class LanguageCodeService:
         self.db.execute("DELETE FROM LanguageCode")
         
         codes = {}
+        codes["Not Set"] = "--"
         codes["Afrikaans"] = "af"
         codes["Albanian"] = "sq"
         codes["Arabic"] = "ar"
