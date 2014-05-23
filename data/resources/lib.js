@@ -12,7 +12,6 @@ function Lib(options) {
     self.currentElement = null;
     self.sentenceMarkers = new RegExp(/[\.\?!。]/);
     self.navTerms = {};
-    self.abbrs = [];
 
     self.getOptions = function () {
         return self.options;
@@ -285,7 +284,7 @@ function Lib(options) {
             var node = $(searchableNodes[i]);
 
             if (node.hasClass('__punctuation') && self.sentenceMarkers.test(node.text())) {
-                if (i > 0 && self.abbrs.indexOf($(searchableNodes[i - 1]).text().toLowerCase()) < 0) {
+                if (i > 0 && self.getAbbreviations().indexOf($(searchableNodes[i - 1]).text().toLowerCase()) < 0) {
                     return node;
                 }
             }
@@ -299,7 +298,7 @@ function Lib(options) {
             var node = $(searchableNodes[i]);
 
             if (node.hasClass('__punctuation') && self.sentenceMarkers.test(node.text())) {
-                if (i > 0 && self.abbrs.indexOf($(searchableNodes[i - 1]).text().toLowerCase()) < 0) {
+                if (i > 0 && self.getAbbreviations().indexOf($(searchableNodes[i - 1]).text().toLowerCase()) < 0) {
                     return node;
                 }
             }
@@ -847,9 +846,12 @@ function Lib(options) {
 
         element.remove();
     };
-
-    if (typeof Abbreviations === 'function') {
-        var a = new Abbreviations();
-        self.abbrs = a.get(self.getL1Code());
-    }
+    
+    self.getAbbreviations = function() {
+        if (typeof window.Abbreviations === 'function') {
+            return window.Abbreviations(self.getL1Code());
+        } else {
+            return [];
+        }
+    };
 }

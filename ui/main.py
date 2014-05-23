@@ -361,7 +361,7 @@ class MainWindow(QtGui.QMainWindow):
         
     def managePlugins(self):
         self.dialog = PluginsForm()
-        self.dialog.bindPlugins()
+        self.dialog.bindAll()
         self.dialog.exec_()
         
     def showAbout(self):

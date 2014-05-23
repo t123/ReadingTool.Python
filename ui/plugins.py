@@ -1,4 +1,4 @@
-import os, json
+import os, json, uuid
 from PyQt4 import QtCore, QtGui, Qt
 
 from lib.misc import Application
@@ -7,6 +7,7 @@ from lib.models.model import Plugin
 from lib.services.service import PluginService
 from ui.views.plugins import Ui_Plugins
 from lib.services.web import WebService
+from uuid import uuid1
 
 
 class PluginsForm(QtGui.QDialog):
@@ -20,10 +21,18 @@ class PluginsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbInstall, QtCore.SIGNAL("clicked()"), self.install)
         QtCore.QObject.connect(self.ui.pbRemove, QtCore.SIGNAL("clicked()"), self.remove)
         QtCore.QObject.connect(self.ui.pbUpdate, QtCore.SIGNAL("clicked()"), self.update)
+        QtCore.QObject.connect(self.ui.pbAdd, QtCore.SIGNAL("clicked()"), self.add)
+        QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.save)
         
         QtCore.QObject.connect(self.ui.lwInstalled, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateInstalledDescription)
         QtCore.QObject.connect(self.ui.lwAvailable, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateAvailableDescription)
         QtCore.QObject.connect(self.ui.lwUpdate, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateUpdateDescription)
+        QtCore.QObject.connect(self.ui.lwLocal, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateLocal)
+        
+    def bindAll(self):
+        self.bindPlugins()
+        self.bindLocal()
+        self.bindRemote()
         
     def bindPlugins(self):
         plugins = self.pluginService.findAll()
@@ -39,8 +48,6 @@ class PluginsForm(QtGui.QDialog):
             self.ui.lwInstalled.addItem(item)
             
         self.ui.lwInstalled.setCurrentRow(0)
-        
-        self.bindRemote()
         
     def bindRemote(self):
         webService = WebService()
@@ -76,6 +83,61 @@ class PluginsForm(QtGui.QDialog):
             
         self.ui.lwAvailable.setCurrentRow(0)
         
+    def bindLocal(self):
+        plugins = self.pluginService.findLocal()
+        
+        self.ui.lwLocal.clear()
+        
+        if len(plugins)==0:
+            self.ui.pbSave.setEnabled(False)
+            self.ui.leName.setEnabled(False)
+            self.ui.pteDescription.setEnabled(False)
+            self.ui.pteContent.setEnabled(False)
+        else:
+            self.ui.pbSave.setEnabled(True)
+            self.ui.leName.setEnabled(True)
+            self.ui.pteDescription.setEnabled(True)
+            self.ui.pteContent.setEnabled(True)
+            
+            for plugin in plugins:
+                item = QtGui.QListWidgetItem(plugin.name)
+                item.setData(QtCore.Qt.UserRole, plugin)
+                
+                self.ui.lwLocal.addItem(item)
+                
+            self.ui.lwLocal.setCurrentRow(0)
+        
+    def reset(self):
+        self.ui.leName.setText("")
+        self.ui.pteDescription.setPlainText("")
+        self.ui.pteContent.setPlainText("")
+        
+        self.ui.leName.setEnabled(False)
+        self.ui.pteDescription.setEnabled(False)
+        self.ui.pteContent.setEnabled(False)
+        self.ui.pbSave.setEnabled(False)
+            
+    def updateLocal(self, item, previous):
+        if item is None:
+            self.reset()
+            return
+            
+        pluginId = item.data(QtCore.Qt.UserRole).pluginId
+        plugin = self.pluginService.findOne(pluginId)
+        
+        if plugin is None:
+            self.reset()
+            return
+        
+        self.ui.pbSave.setEnabled(True)
+        self.ui.leName.setEnabled(True)
+        self.ui.pteDescription.setEnabled(True)
+        self.ui.pteContent.setEnabled(True)
+        
+        self.ui.leName.setText(plugin.name)
+        self.ui.pteDescription.setPlainText(plugin.description)
+        self.ui.pteContent.setPlainText(plugin.content)
+    
     def updateInstalledDescription(self, item, previous):
         if item is None:
             return
@@ -108,6 +170,43 @@ class PluginsForm(QtGui.QDialog):
             self.ui.pteUpdate.setPlainText("No description available for {0}".format(plugin["name"]))
         else:
             self.ui.pteUpdate.setPlainText(plugin["description"])
+        
+    def add(self):
+        name = "New Plugin"
+        counter = 1
+        
+        while self.pluginService.findOneByName(name) is not None:
+            name = "New Plugin {0}".format(counter)
+            counter += 1
+            
+        plugin = Plugin()
+        plugin.name = name
+        plugin.local = True
+        plugin.uuid = str(uuid.uuid1())
+        self.pluginService.save(plugin)
+        
+        self.bindLocal()
+        self.bindPlugins()
+        
+    def save(self):
+        item = self.ui.lwLocal.currentItem()
+        
+        if item is None:
+            return
+        
+        plugin = item.data(QtCore.Qt.UserRole)
+        
+        if plugin is None:
+            return
+        
+        plugin.name = self.ui.leName.text()
+        plugin.description = self.ui.pteDescription.toPlainText()
+        plugin.content = self.ui.pteContent.toPlainText()
+        
+        self.pluginService.save(plugin)
+        
+        self.bindPlugins()
+        self.bindLocal()
         
     def install(self):
         webService = WebService()
@@ -175,3 +274,4 @@ class PluginsForm(QtGui.QDialog):
                 self.pluginService.delete(plugin.pluginId)
                 
         self.bindPlugins()
+        self.bindLocal()

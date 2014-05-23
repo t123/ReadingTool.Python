@@ -683,13 +683,14 @@ class PluginService:
         
     def save(self, plugin):
         if(plugin.pluginId == 0):
-            plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid, version) VALUES ( :pluginId, :name, :description, :content, :uuid, :version)",
+            plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid, version, local) VALUES ( :pluginId, :name, :description, :content, :uuid, :version, :local)",
                             pluginId=None,
                             name=plugin.name,
                             description=plugin.description,
                             content=plugin.content,
                             uuid=plugin.uuid,
-                            version=plugin.version
+                            version=plugin.version,
+                            local=plugin.local
                             )
         else:        
             self.db.execute("UPDATE plugin SET name=:name, description=:description, content=:content, version=:version WHERE pluginId=:pluginId",
@@ -697,7 +698,8 @@ class PluginService:
                             name=plugin.name,
                             content=plugin.content,
                             description=plugin.description,
-                            version=plugin.version
+                            version=plugin.version,
+                            local=plugin.local
                             )
             
         return self.findOne(plugin.pluginId)
@@ -713,6 +715,9 @@ class PluginService:
     
     def findAll(self):
         return self.db.many(Plugin, "SELECT * FROM Plugin ORDER BY name COLLATE NOCASE")
+    
+    def findLocal(self):
+        return self.db.many(Plugin, "SELECT * FROM Plugin WHERE local=1 ORDER BY name COLLATE NOCASE")
     
     def delete(self, pluginId):
         self.db.execute("DELETE FROM Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
