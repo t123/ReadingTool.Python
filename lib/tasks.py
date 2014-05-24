@@ -18,11 +18,11 @@ class Startup:
         local = self.storage.find(StorageService.SERVER_LOCAL, "http://localhost:8080") 
         remote = self.storage.find(StorageService.SERVER_REMOTE, "http://api.readingtool.net")
         
-        logging.debug("Local server=%s" % local) 
-        logging.debug("Remote server=%s" % remote)
-        
         Application.apiServer = local 
-        Application.remoteServer = remote 
+        Application.remoteServer = remote
+        
+        logging.debug("Local server=%s" % Application.apiServer) 
+        logging.debug("Remote server=%s" % Application.remoteServer) 
             
     def checkUser(self):
         userService = UserService()

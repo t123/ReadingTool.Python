@@ -30,8 +30,12 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbSegment, QtCore.SIGNAL("clicked()"), self.segmentText)
         QtCore.QObject.connect(self.ui.cbL1Language, QtCore.SIGNAL("currentIndexChanged(int)"), self.checkLanguageCode)
         
+        self.hasChange = False
+        
     def closeEvent(self, event):
-        Application.myApp.bindItems()
+        if self.hasChange:
+            Application.myApp.bindItems()
+            
         event.accept()
         
     def segmentText(self):
@@ -60,6 +64,7 @@ class ItemDialogForm(QtGui.QDialog):
             return
         
         self.itemService.splitItem(self.item.itemId)
+        self.hasChange = True
         
     def copyItem(self):
         if self.item is None:
@@ -68,6 +73,7 @@ class ItemDialogForm(QtGui.QDialog):
         copy = self.itemService.copyItem(self.item.itemId)
         copy = self.itemService.save(copy)
         self.setItem(copy.itemId)
+        self.hasChange = True
         
     def saveItem(self):
         item = None
@@ -93,6 +99,7 @@ class ItemDialogForm(QtGui.QDialog):
             
         item = self.itemService.save(item)
         self.setItem(item.itemId)
+        self.hasChange = True
         
     def setItem(self, itemId):
         self.item = self.itemService.findOne(itemId)

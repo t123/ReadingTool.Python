@@ -100,6 +100,7 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.menuProfiles.clear()
         action = QtGui.QAction(self.ui.menuProfiles)
         action.setText("Manage profiles")
+        action.setShortcut("Ctrl+Shift+P")
         action.connect(action, QtCore.SIGNAL("triggered()"), self.manageProfiles)
                        
         self.ui.menuProfiles.addAction(action)
@@ -358,6 +359,7 @@ class MainWindow(QtGui.QMainWindow):
     def manageSettings(self):
         self.dialog = SettingsForm()
         self.dialog.bindSettings()
+        self.dialog.bindUserSettings()
         self.dialog.exec_()
         
     def managePlugins(self):
