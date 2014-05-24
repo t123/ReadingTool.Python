@@ -229,7 +229,27 @@ function JPlayerMediaPlayer() {
     self.lastL2 = -2;
 
     self.hasPlayer = function () {
-        return self.player !== null;
+        if(self.player===null) {
+            self.player = null;
+            return false;
+        }
+        
+        if(!self.player.any()) {
+            self.player = null;
+            return false;
+        }
+        
+//        if (self.player === undefined || self.player === null) {
+//            self.player = null;
+//            return false;
+//        }
+//
+//        if (self.player.data() === null || self.player.data().jPlayer === undefined) {
+//            self.player = null;
+//            return false;
+//        }
+        
+        return true;
     };
     
     self.isPaused = function () {
@@ -305,14 +325,6 @@ function JPlayerMediaPlayer() {
     self.getCurrentTime = function () {
         return self.player.data().jPlayer.status.currentTime;
     };
-
-    if (self.player === undefined || self.player === null) {
-        self.player = null;
-    }
-
-    if (self.player.data() === null || self.player.data().jPlayer === undefined) {
-        self.player = null;
-    }
 
     if (self.hasPlayer() && window.lib.getItemType() == 'video') {
         self.player.bind($.jPlayer.event.timeupdate, function (event) {
