@@ -69,3 +69,9 @@ class Time:
         
         return "seconds" + append
     
+class Validations:
+    Ok = "#96D899"
+    Failed = "#FBE3E4"
+    
+    Empty = r"^$|\s+"
+    NotEmpty = r"^[^$|\s]+"

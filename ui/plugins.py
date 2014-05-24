@@ -29,6 +29,8 @@ class PluginsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.lwUpdate, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateUpdateDescription)
         QtCore.QObject.connect(self.ui.lwLocal, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateLocal)
         
+        self.bindAll()
+        
     def bindAll(self):
         self.bindPlugins()
         self.bindLocal()

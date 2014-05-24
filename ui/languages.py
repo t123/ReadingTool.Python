@@ -1,13 +1,13 @@
 import re
 from PyQt4 import QtCore, QtGui, Qt
 
-from lib.misc import Application
+from lib.misc import Application, Validations
 from lib.models.model import Language, LanguageDirection
 from lib.services.service import LanguageService, LanguageCodeService
 from ui.views.languages import Ui_Languages
 
 class LanguagesForm(QtGui.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, languageId=None):
         QtGui.QDialog.__init__(self, parent)
         self.ui = Ui_Languages()
         self.ui.setupUi(self)
@@ -24,6 +24,9 @@ class LanguagesForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.cbTermRegex, QtCore.SIGNAL("currentIndexChanged(int)"), self.onTermRegexChanged)
         
         QtCore.QObject.connect(self.ui.cbTermRegex, QtCore.SIGNAL("editTextChanged(QString)"), self.testRegex)
+        
+        self.setLanguage(languageId)
+        self.bindLanguage()
         
     def setLanguage(self, id=None):
         if id==0 or id is None:
@@ -60,11 +63,11 @@ class LanguagesForm(QtGui.QDialog):
 
         try:
             re.compile(regex)
-            p.setColor(QtGui.QPalette.Base, QtGui.QColor("#96D899"))
+            p.setColor(QtGui.QPalette.Base, QtGui.QColor(Validations.Ok))
             self.ui.actionSave.setEnabled(True)
             self.ui.pbSave.setEnabled(True)
         except:
-            p.setColor(QtGui.QPalette.Base, QtGui.QColor("#FBE3E4"))
+            p.setColor(QtGui.QPalette.Base, QtGui.QColor(Validations.Failed))
             self.ui.actionSave.setEnabled(False)
             self.ui.pbSave.setEnabled(False)
         

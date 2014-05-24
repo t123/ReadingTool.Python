@@ -181,7 +181,7 @@ class CustomWebView(Qt.QWebView):
                     file.write(content)
     
 class ReaderWindow(QtGui.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, itemId=None, asParallel=None):
         self.itemService = ItemService()
         self.languageService = LanguageService()
         self.termService = TermService()
@@ -219,6 +219,8 @@ class ReaderWindow(QtGui.QDialog):
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalStorageDatabaseEnabled, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalContentCanAccessFileUrls, True)
         Qt.QWebSettings.globalSettings().setAttribute(Qt.QWebSettings.LocalContentCanAccessRemoteUrls, True)
+        
+        self.readItem(itemId, asParallel)
         
     def markKnown(self):
         frame = self.webView.page().mainFrame()

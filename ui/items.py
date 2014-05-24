@@ -146,9 +146,7 @@ class ItemsForm(QtGui.QDialog):
         if parent is None:
             return
         
-        self.dialog = LanguagesForm()
-        self.dialog.setLanguage(data.l1LanguageId)
-        self.dialog.bindLanguage()
+        self.dialog = LanguagesForm(self, data.l1LanguageId)
         self.dialog.exec_()
         
     def createPdf(self):
@@ -181,10 +179,8 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
          
-        self.dialog = ItemDialogForm(self)
-        self.dialog.setItem(item.data(QtCore.Qt.UserRole).itemId)
+        self.dialog = ItemDialogForm(self, item.data(QtCore.Qt.UserRole).itemId)
         self.dialog.show()
-        #TODO refresh items
          
     def copyItem(self):
         item = self.ui.twItems.item(self.ui.twItems.currentRow(), 0)
@@ -211,8 +207,7 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
          
-        self.dialog = ReaderWindow()
-        self.dialog.readItem(item.data(QtCore.Qt.UserRole).itemId, asParallel)
+        self.dialog = ReaderWindow(self, item.data(QtCore.Qt.UserRole).itemId, asParallel)
         self.dialog.show()
          
     def keyPressEvent(self, event):

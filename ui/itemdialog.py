@@ -3,14 +3,14 @@ from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla
 
 from lib.stringutil import StringUtil
-from lib.misc import Application
+from lib.misc import Application, Validations
 from lib.models.model import Item, ItemType
 from lib.services.service import ItemService, LanguageService, StorageService
 from ui.views.itemdialog import Ui_ItemDialog
 from lib.services.web import WebService
 
 class ItemDialogForm(QtGui.QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, itemId=0):
         self.itemService = ItemService()
         self.languageService = LanguageService()
         
@@ -30,8 +30,25 @@ class ItemDialogForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbSegment, QtCore.SIGNAL("clicked()"), self.segmentText)
         QtCore.QObject.connect(self.ui.cbL1Language, QtCore.SIGNAL("currentIndexChanged(int)"), self.checkLanguageCode)
         
-        self.hasChange = False
+        QtCore.QObject.connect(self.ui.leL1Title, QtCore.SIGNAL("textChanged(QString)"), self.onTitleChanged)
         
+        self.setItem(itemId)
+        self.hasChange = False
+        self.isValid = False
+        self.onTitleChanged(self.item.l1Title if self.item else "")
+        
+    def onTitleChanged(self, title):
+        p = Qt.QPalette()
+        
+        if len(title.strip())>0:
+            p.setColor(QtGui.QPalette.Base, QtGui.QColor(Validations.Ok))
+            self.isValid = True
+        else:
+            p.setColor(QtGui.QPalette.Base, QtGui.QColor(Validations.Failed))
+            self.isValid = False
+            
+        self.ui.leL1Title.setPalette(p)
+            
     def closeEvent(self, event):
         if self.hasChange:
             Application.myApp.bindItems()
@@ -60,14 +77,14 @@ class ItemDialogForm(QtGui.QDialog):
             self.ui.leMediaURI.setText(filename)
         
     def splitItem(self):
-        if self.item is None:
+        if self.item is None or not self.isValid:
             return
         
         self.itemService.splitItem(self.item.itemId)
         self.hasChange = True
         
     def copyItem(self):
-        if self.item is None:
+        if self.item is None or not self.isValid:
             return
         
         copy = self.itemService.copyItem(self.item.itemId)
@@ -76,7 +93,8 @@ class ItemDialogForm(QtGui.QDialog):
         self.hasChange = True
         
     def saveItem(self):
-        item = None
+        if not self.isValid:
+            return
         
         if self.item is None:
             item = Item()

@@ -280,19 +280,15 @@ class MainWindow(QtGui.QMainWindow):
         self.ui.tabWidget.setTabToolTip(1, "Found {0} terms in the search".format(self.itemsForm.getCount()))
         
     def addItem(self):
-        self.dialog = ItemDialogForm()
-        self.dialog.setItem(0)
+        self.dialog = ItemDialogForm(self)
         self.dialog.show()
         
     def readItem(self, item):
-        self.reader = ReaderWindow()
-        self.reader.readItem(item.itemId)
+        self.reader = ReaderWindow(self, item.itemId, None)
         self.reader.show()
         
     def addLanguage(self):
-        self.dialog = LanguagesForm()
-        self.dialog.setLanguage()
-        self.dialog.bindLanguage()
+        self.dialog = LanguagesForm(self)
         self.dialog.exec_()
         
     def onEditLanguage(self, item):
@@ -300,10 +296,7 @@ class MainWindow(QtGui.QMainWindow):
         self.editLanguage(languageId)
         
     def editLanguage(self, languageId):
-        self.dialog = LanguagesForm()
-        self.dialog.setLanguage(languageId)
-        self.dialog.bindLanguage()
-        
+        self.dialog = LanguagesForm(self, languageId)
         self.dialog.exec_()
         
     def deleteLanguage(self, item):
@@ -343,7 +336,7 @@ class MainWindow(QtGui.QMainWindow):
             logging.error(str(e))        
     
     def manageProfiles(self):
-        self.dialog = ProfilesForm()
+        self.dialog = ProfilesForm(self)
         self.dialog.exec_()
         self.setupMenus()
         
@@ -357,16 +350,13 @@ class MainWindow(QtGui.QMainWindow):
         self.setupUserLayout()
 
     def manageSettings(self):
-        self.dialog = SettingsForm()
-        self.dialog.bindSettings()
-        self.dialog.bindUserSettings()
+        self.dialog = SettingsForm(self)
         self.dialog.exec_()
         
     def managePlugins(self):
-        self.dialog = PluginsForm()
-        self.dialog.bindAll()
+        self.dialog = PluginsForm(self)
         self.dialog.exec_()
         
     def showAbout(self):
-        self.dialog = AboutForm()
+        self.dialog = AboutForm(self)
         self.dialog.exec_()

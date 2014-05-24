@@ -158,6 +158,9 @@
    <property name="text">
     <string>Manage Profiles</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+P</string>
+   </property>
   </action>
   <action name="actionManage_Plugins">
    <property name="text">
@@ -189,13 +192,8 @@
    <property name="text">
     <string>Settings</string>
    </property>
-  </action>
-  <action name="actionSettings_2">
-   <property name="text">
-    <string>Settings</string>
-   </property>
-   <property name="toolTip">
-    <string>Change settings</string>
+   <property name="shortcut">
+    <string>Ctrl+Shift+S</string>
    </property>
   </action>
  </widget>

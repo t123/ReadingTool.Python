@@ -16,6 +16,9 @@ class SettingsForm(QtGui.QDialog):
         self.storageService = StorageService()
         QtCore.QObject.connect(self.ui.actionCancel, QtCore.SIGNAL("triggered()"), self.reset)
         QtCore.QObject.connect(self.ui.actionSave, QtCore.SIGNAL("triggered()"), self.save)
+        
+        self.bindSettings()
+        self.bindUserSettings()
     
     def bindSettings(self):
         self.ui.twSettings.clear()
