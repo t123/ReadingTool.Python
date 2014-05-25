@@ -236,7 +236,7 @@ class ReaderWindow(QtGui.QDialog):
         self.ui.spReading.setValue(self.item.readTimes)
         self.ui.lblMessage.setText("")
         
-        if ((asParallel is None and self.item.isParallel()) or asParallel==True) and self.item.l2LanguageId is not None:
+        if (asParallel is None or asParallel) and self.item.isParallel() and self.item.l2LanguageId is not None: 
             asParallel = True
         else:
             asParallel = False
