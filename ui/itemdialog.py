@@ -1,4 +1,4 @@
-import os
+import os, logging
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla
 
@@ -34,18 +34,24 @@ class ItemDialogForm(QtGui.QDialog):
         
         self.setItem(itemId)
         self.hasChange = False
-        self.isValid = False
         self.onTitleChanged(self.item.l1Title if self.item else "")
+        
+        logging.debug("Item Id: {0}".format(itemId))
+        logging.debug("Language Id: {0}".format(self.item.l1LanguageId if self.item is not None else "New"))
         
     def onTitleChanged(self, title):
         p = Qt.QPalette()
         
         if len(title.strip())>0:
             p.setColor(QtGui.QPalette.Base, QtGui.QColor(Validations.Ok))
-            self.isValid = True
+            self.ui.pbCopy.setEnabled(True)
+            self.ui.pbSplit.setEnabled(True)
+            self.ui.pbSave.setEnabled(True)
         else:
             p.setColor(QtGui.QPalette.Base, QtGui.QColor(Validations.Failed))
-            self.isValid = False
+            self.ui.pbCopy.setEnabled(False)
+            self.ui.pbSplit.setEnabled(False)
+            self.ui.pbSave.setEnabled(False)
             
         self.ui.leL1Title.setPalette(p)
             
@@ -93,9 +99,6 @@ class ItemDialogForm(QtGui.QDialog):
         self.hasChange = True
         
     def saveItem(self):
-        if not self.isValid:
-            return
-        
         if self.item is None:
             item = Item()
         else:

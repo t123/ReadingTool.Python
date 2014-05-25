@@ -6,6 +6,7 @@ from lib.services.web import WebService
 from lib.models.model import User
 from ui.views.profileedit import Ui_ChangeProfile
 from lib.stringutil import StringUtil
+from ui.validator import RequiredValidator
 
 class ChangeProfileForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -13,6 +14,7 @@ class ChangeProfileForm(QtGui.QDialog):
         self.ui = Ui_ChangeProfile()
         self.ui.setupUi(self)
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.ui.leUsername.setValidator(RequiredValidator(self.ui.leUsername))
         
         self.userService = UserService()
         
@@ -28,6 +30,8 @@ class ChangeProfileForm(QtGui.QDialog):
         else:
             self.profile = self.userService.findOne(id)
             self.setWindowTitle("Edit profile - {0}".format(self.profile.username))
+            
+        self.ui.leUsername.validator().validate("", 0)
             
     def bindProfile(self):
         self.ui.leUsername.setText(self.profile.username)

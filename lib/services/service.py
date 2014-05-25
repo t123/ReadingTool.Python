@@ -738,6 +738,9 @@ class StorageService:
     
     MEDIA_PLUGIN = "media_plugin"
     
+    PLUGIN_LAST_CHECK = "plugin_last_check"
+    PLUGIN_CACHE = "plugin_cache"
+    
     def __init__(self):
         self.db = Db(Application.connectionString)
         
@@ -777,6 +780,17 @@ class StorageService:
             return default
         
         return result
+    
+    @staticmethod
+    def ssave(key, value, uuid=""):
+        """Inserts a new value or replaces an existing if the key already exists"""
+        db = Db(Application.connectionString)
+        s = db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+            
+        if s==None:
+            db.execute("INSERT INTO storage (uuid, k, v) VALUES (:uuid, :key, :value)", uuid=uuid, key=key, value=value)
+        else:
+            db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
     
 class DatabaseService:
     def __init__(self):

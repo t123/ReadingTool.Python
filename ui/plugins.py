@@ -1,10 +1,10 @@
-import os, json, uuid
+import os, json, uuid, time
 from PyQt4 import QtCore, QtGui, Qt
 
-from lib.misc import Application
+from lib.misc import Application, Time
 from lib.stringutil import StringUtil
 from lib.models.model import Plugin
-from lib.services.service import PluginService
+from lib.services.service import PluginService, StorageService
 from ui.views.plugins import Ui_Plugins
 from lib.services.web import WebService
 from uuid import uuid1
@@ -23,6 +23,7 @@ class PluginsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.pbUpdate, QtCore.SIGNAL("clicked()"), self.update)
         QtCore.QObject.connect(self.ui.pbAdd, QtCore.SIGNAL("clicked()"), self.add)
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.save)
+        QtCore.QObject.connect(self.ui.pbCheckNow, QtCore.SIGNAL("clicked()"), self.updateRemotePlugins)
         
         QtCore.QObject.connect(self.ui.lwInstalled, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateInstalledDescription)
         QtCore.QObject.connect(self.ui.lwAvailable, QtCore.SIGNAL("currentItemChanged(QListWidgetItem*,QListWidgetItem*)"), self.updateAvailableDescription)
@@ -51,11 +52,36 @@ class PluginsForm(QtGui.QDialog):
             
         self.ui.lwInstalled.setCurrentRow(0)
         
-    def bindRemote(self):
+    def getRemotePlugins(self):
         webService = WebService()
-        
-        plugins = self.pluginService.findAll()
         available = webService.getAvailablePlugins()
+        StorageService.ssave(StorageService.PLUGIN_LAST_CHECK, time.time(), "")
+        StorageService.ssave(StorageService.PLUGIN_CACHE, json.dumps(available, sort_keys=True), "")
+        
+        return available
+    
+    def updateRemotePlugins(self):
+        self.getRemotePlugins()
+        self.bindRemote()
+        
+    def bindRemote(self):
+        lastCheck = StorageService.sfind(StorageService.PLUGIN_LAST_CHECK, time.time())
+        cached = StorageService.sfind(StorageService.PLUGIN_CACHE, "")
+        
+        try:
+            if time.time()-float(lastCheck)>60*60*24 or StringUtil.isEmpty(cached):
+                available = self.getRemotePlugins()            
+            else:
+                try:
+                    available = json.loads(cached)
+                except:
+                    raise
+        except:
+            available = self.getRemotePlugins()
+        
+        lastCheck = StorageService.sfind(StorageService.PLUGIN_LAST_CHECK, -1)
+        self.ui.lblLastChecked.setText("Last checked: " + Time.toHuman(float(lastCheck)))
+        plugins = self.pluginService.findAll()
         
         self.ui.lwAvailable.clear()
         self.ui.lwUpdate.clear()
@@ -239,6 +265,8 @@ class PluginsForm(QtGui.QDialog):
             self.pluginService.save(p)
              
         self.bindPlugins()
+        self.getRemotePlugins()
+        self.bindRemote()
                 
     def update(self):
         webService = WebService()

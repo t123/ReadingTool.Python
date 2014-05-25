@@ -36,7 +36,7 @@ class Time:
     
     @staticmethod
     def toHuman(ts, nullValue="NA", append=" ago"):
-        if ts is None:
+        if ts is None or ts<0:
             return nullValue
         
         diff = datetime.now()-datetime.fromtimestamp(ts)
