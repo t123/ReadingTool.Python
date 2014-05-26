@@ -84,6 +84,19 @@ class Startup:
                     logging.debug("Removing %s" % removePath)
                     os.remove(removePath)
               
+    def compact(self):
+        lastVacuum = StorageService.sfind(StorageService.DB_LAST_VACUUM, None)
+        
+        if lastVacuum is None:
+            StorageService.ssave(StorageService.DB_LAST_VACUUM, time.time())
+            return
+        
+        if time.time()-float(lastVacuum)>60*60*24*7:
+            logging.debug("compacting database")
+            databaseService = DatabaseService()
+            databaseService.compact()
+            StorageService.ssave(StorageService.DB_LAST_VACUUM, time.time())            
+        
     def cleanOldFiles(self):
         path = Application.pathOutput
         files = [file for file in os.listdir(path) if os.path.isfile(os.path.join(path,file))]

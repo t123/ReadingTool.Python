@@ -876,6 +876,7 @@ class StorageService:
     DB_BACKUP_DIRECTORY = "db_backup_directory"
     DB_BACKUP_MAXFILES = "db_backup_maxfiles"
     DB_VERSION = "db_version"
+    DB_LAST_VACUUM = "db_last_vacuum"
     
     SOFTWARE_VERSION = "software_version"
     SOFTWARE_CHECK_UPDATES = "software_check_updates"
@@ -962,6 +963,9 @@ class DatabaseService:
     def indexExist(self, name):
         return self.db.scalar("SELECT COUNT(name) FROM sqlite_master WHERE type='index' AND name=:name", name=name)
     
+    def compact(self):
+        self.db.execute("VACUUM;")
+        
     def upgradeRequired(self):
         if not self.tableExists("storage"):
             logging.debug("missing required table")

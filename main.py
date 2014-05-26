@@ -28,7 +28,8 @@ if __name__=="__main__":
         start.checkUser()
         start.backupDb("start")
         start.checkDbForUpgrade()
-                 
+        start.compact()
+
         Application.server = Server(embed=True)
         app = QtGui.QApplication(sys.argv)
         Application.myApp = MainWindow()
