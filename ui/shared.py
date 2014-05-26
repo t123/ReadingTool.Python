@@ -7,6 +7,7 @@ from lib.services.service import StorageService, TermService, LanguageService, S
 from lib.services.web import WebService
 from ui.views.shared import Ui_Shared
 from ui.definition import DefinitionForm
+from ui.syncmodal import SyncModalForm
 
 class SharedForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -126,64 +127,8 @@ class SharedForm(QtGui.QDialog):
         if not self.isSyncEnabled():
             return
         
-        self.ui.lblMessage.setText("Sync starting")
-        logging.debug("Syncing...")
-        
-        lastSync = float(StorageService.sfind(StorageService.SHARE_TERMS_LAST_SYNC, 0, Application.user.userId))
-        syncTime = time.time()
-        
-        changedTerms = self.termService.findAlteredPastModifed(lastSync)
-        deletedTerms = self.termService.findDeletedPastModifed(lastSync)
-        
-        merged = { }
-        
-        for term in changedTerms:
-            merged[term.termId] =  {
-                                    "id": term.termId,
-                                    "code": term.language,
-                                    "source": term.sourceCode,
-                                    "phrase": term.phrase,
-                                    "basePhrase": term.basePhrase,
-                                    "sentence": term.sentence,
-                                    "definition": term.definition,
-                                    "modified": term.modified
-                                   }             
-            
-        for term in deletedTerms:
-            if term.termId in merged and "modified" in merged[term.termId]:
-                if term.entryDate>merged[term.termId]["modified"]:
-                    merged[term.termId] = {
-                                           "id": term.termId,
-                                           "code": "del"
-                                           }
-            else:
-                merged[term.termId] = {
-                                           "id": term.termId,
-                                           "code": "del"
-                                           }
-        
-        logging.debug("Merged {0} terms".format(len(merged)))
-        logging.debug("Syncing terms with server....")
-
-        languageService = LanguageService()
-        codes = [l.languageCode for l in languageService.findAll() if l.languageCode!="--"]
-        acceptable = [l.sourceCode for l in languageService.findAll() if l.languageCode!="--"]
-        
-        webService = WebService()
-        newTerms = webService.syncTerms(merged, lastSync, codes, acceptable)
-        
-        if newTerms is None:
-            logging.debug("Error receiving terms")
-            QtGui.QMessageBox.warning(self, "Unable to sync", "There was an error while attempting to sync your words.")
-            return
-        
-        logging.debug("Received {0} terms".format(len(newTerms)))
-        self.sharedTermService.update(newTerms)
-        
-        StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, syncTime, Application.user.userId)
-        logging.debug("Sync complete")
-        
-        self.ui.lblMessage.setText("Sync complete")
+        dialog = SyncModalForm()
+        dialog.exec_()
         
         self.bindTerms()
         
