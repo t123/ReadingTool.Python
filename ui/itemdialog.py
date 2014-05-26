@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla
 
 from lib.stringutil import StringUtil
-from lib.misc import Application, Validations
+from lib.misc import Application, Validations, Time
 from lib.models.model import Item, ItemType
 from lib.services.service import ItemService, LanguageService, StorageService
 from ui.views.itemdialog import Ui_ItemDialog
@@ -126,6 +126,7 @@ class ItemDialogForm(QtGui.QDialog):
         self.item = self.itemService.findOne(itemId)
         
         if self.item is None:
+            self.ui.lblDate.setText("Unsaved item")
             self.ui.pbCopy.setEnabled(False)
             self.ui.pbSplit.setEnabled(False)
             self.ui.rbText.setChecked(True)
@@ -134,6 +135,7 @@ class ItemDialogForm(QtGui.QDialog):
             self.checkLanguageCode(-1)
             return
         
+        self.ui.lblDate.setText("{1} (Created on {0})".format(Time.toLocal(self.item.created), Time.toLocal(self.item.modified)))
         self.ui.pbCopy.setEnabled(True)
         self.ui.pbSplit.setEnabled(True)
         
