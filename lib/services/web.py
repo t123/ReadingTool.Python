@@ -27,22 +27,22 @@ class WebService:
             logging.debug(str(e))
             logging.debug(response.content)
              
-    def createJsonSignatureHeaders(self, dictionary, contentType="application/json", secret=None):
+    def createJsonSignatureHeaders(self, dictionary, contentType="application/json", accessKey=None, accessSecret=None):
         data = json.dumps(dictionary, sort_keys=True)
         message = data.encode('utf-8')
         
-        if secret is None:
-            secret = Application.user.accessSecret.encode('utf-8')
+        if accessSecret is None:
+            accessSecret = Application.user.accessSecret.encode('utf-8')
         else:
-            secret = secret.encode('utf-8')
+            accessSecret = accessSecret.encode('utf-8')
              
-        signature = base64.b64encode(hmac.new(secret, message, digestmod=hashlib.sha256).digest())
+        signature = base64.b64encode(hmac.new(accessSecret, message, digestmod=hashlib.sha256).digest())
         
         return (data, signature, {
                    "Content-Type": contentType,
                    "X-Client": "RT",
                    "X-Signature": signature,
-                   "X-AccessKey": Application.user.accessKey
+                   "X-AccessKey": Application.user.accessKey if accessKey is None else accessKey
                    })
         
     def segmentText(self, languageCode, content):
@@ -70,7 +70,7 @@ class WebService:
         uri = Application.remoteServer + "/api/v1/validatecredentials"
         data = self.getStandardDictionary(uri, accessKey=accessKey)
         
-        content, signature, headers = self.createJsonSignatureHeaders(data, secret=accessSecret)
+        content, signature, headers = self.createJsonSignatureHeaders(data, accessKey=accessKey, accessSecret=accessSecret)
         
         try:
             r = requests.post(uri, headers=headers, data=content)
@@ -204,46 +204,7 @@ class WebService:
         data["Codes"] = codes
         content, signature, headers = self.createJsonSignatureHeaders(data)
         
-        try:
-            r = requests.post(uri, headers=headers, data=content)
-            
-            if r.status_code==200:
-                return json.loads(r.content.decode('utf8'))
-                
-            self.logError(r)
-            
-        except requests.exceptions.RequestException:
-            pass
-        
-        return None
-    
-    def pushTerms(self, terms):
-        uri = Application.remoteServer + "/api/v1/pushterms"
-        
-        data = self.getStandardDictionary(uri)
-        data["Terms"] = terms
-        content, signature, headers = self.createJsonSignatureHeaders(data)
-        
-        try:
-            r = requests.post(uri, headers=headers, data=content)
-            
-            if r.status_code==200:
-                return json.loads(r.content.decode('utf8'))
-                
-            self.logError(r)
-            
-        except requests.exceptions.RequestException:
-            pass
-        
-        return None
-    
-    def pullTerms(self, lastSync, codes):
-        uri = Application.remoteServer + "/api/v1/pullterms"
-        
-        data = self.getStandardDictionary(uri)
-        data["LastSync"] = lastSync
-        data["Codes"] = codes
-        content, signature, headers = self.createJsonSignatureHeaders(data)
+        logging.debug(data)
         
         try:
             r = requests.post(uri, headers=headers, data=content)

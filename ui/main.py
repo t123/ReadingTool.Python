@@ -51,10 +51,10 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.actionAbout_ReadingTool, QtCore.SIGNAL("triggered(bool)"), self.showAbout)
         
         self.ui.lwLanguages.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setupSplitters()
         
     def setupUserLayout(self):
         self.setWindowTitle(self.tr("ReadingTool - {0}").format(Application.user.username))
-        self.setupSplitters()
         
         self.setupMenus()
         
@@ -64,6 +64,8 @@ class MainWindow(QtGui.QMainWindow):
         self.bindLanguages()
         self.bindCollectionNames()
         self.bindFilters()
+        
+        self.ui.tabWidget.setCurrentIndex(0)
         
     def setupMenus(self):
         readItems = self.itemService.findRecentlyRead()

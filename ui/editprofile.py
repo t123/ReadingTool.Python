@@ -27,11 +27,10 @@ class ChangeProfileForm(QtGui.QDialog):
         if id==0 or id is None:
             self.profile = User()
             self.setWindowTitle("Add new profile")
+            self.ui.leUsername.validator().validate("", 0)
         else:
             self.profile = self.userService.findOne(id)
             self.setWindowTitle("Edit profile - {0}".format(self.profile.username))
-            
-        self.ui.leUsername.validator().validate("", 0)
             
     def bindProfile(self):
         self.ui.leUsername.setText(self.profile.username)

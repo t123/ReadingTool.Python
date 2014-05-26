@@ -3,9 +3,10 @@ from PyQt4 import QtCore, QtGui, Qt
 
 from lib.misc import Application
 from lib.stringutil import StringUtil
-from lib.services.service import StorageService, TermService, LanguageService
+from lib.services.service import StorageService, TermService, LanguageService, SharedTermService
 from lib.services.web import WebService
 from ui.views.shared import Ui_Shared
+from ui.definition import DefinitionForm
 
 class SharedForm(QtGui.QDialog):
     def __init__(self, parent=None):
@@ -17,12 +18,15 @@ class SharedForm(QtGui.QDialog):
         self.languages = []
         self.termCount = 0
         self.termService = TermService()
+        self.sharedTermService = SharedTermService()
         
         QtCore.QObject.connect(self.ui.pbEnable, QtCore.SIGNAL("clicked()"), self.enableSharing)
         QtCore.QObject.connect(self.ui.pbDisable, QtCore.SIGNAL("clicked()"), self.disableSharing)
         QtCore.QObject.connect(self.ui.pbSync, QtCore.SIGNAL("clicked()"), self.sync)
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("textChanged(QString)"), self.onTextChanged)
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("returnPressed()"), self.bindTerms)
+        
+        QtCore.QObject.connect(self.ui.twTerms, QtCore.SIGNAL("itemClicked(QTableWidgetItem*)"), self.showDefinition)
         
         self.setButtons()
         
@@ -44,10 +48,12 @@ class SharedForm(QtGui.QDialog):
     
     def setButtons(self):
         if not self.isSyncEnabled():
+            self.ui.lblMessage.setText("")
             self.ui.pbEnable.show()
             self.ui.pbDisable.hide()
             self.ui.pbSync.hide()
         else:
+            self.ui.lblMessage.setText("")
             self.ui.pbEnable.hide()
             self.ui.pbDisable.show()
             self.ui.pbSync.show()
@@ -56,21 +62,23 @@ class SharedForm(QtGui.QDialog):
         StorageService.ssave(StorageService.SHARE_TERMS, "true", Application.user.userId)
         StorageService.sdelete(StorageService.SHARE_TERMS_LAST_SYNC, Application.user.userId)
         self.bindTerms()
-        self.setButtons()
         
     def disableSharing(self):
-        result = QtGui.QMessageBox.question(self, "Disable Sharing", "If you disable sharing all your shared terms will be deleted.", QtGui.QMessageBox.Yes | QtGui.QMessageBox.No, QtGui.QMessageBox.No)
-        
-        if result==QtGui.QMessageBox.No:
-            return
-        
         StorageService.ssave(StorageService.SHARE_TERMS, "false", Application.user.userId)
         StorageService.sdelete(StorageService.SHARE_TERMS_LAST_SYNC, Application.user.userId)
-        self.termService.deleteSharedTerms()
         self.bindTerms()
-        self.setButtons()
+        
+    def showDefinition(self, item):
+        i = self.ui.twTerms.item(self.ui.twTerms.currentRow(), 0)
+        data = i.data(QtCore.Qt.UserRole)
+        
+        self.definition = DefinitionForm(data.definition, self.ui.twTerms)
+        point = QtGui.QCursor.pos()
+        self.definition.move(point.x()+20, point.y());
+        self.definition.show()
         
     def bindTerms(self):
+        self.setButtons()
         self.ui.twTerms.clear()
         headers = ["Language", "Phrase", "Base Phrase", "Sentence"]
         
@@ -86,18 +94,27 @@ class SharedForm(QtGui.QDialog):
         if not self.isSyncEnabled():
             terms = []
         else:
-            terms = self.termService.searchSharedTerms(filterText)
+            terms = self.sharedTermService.search(filterText)
             
         self.ui.twTerms.setRowCount(len(terms))
          
         for term in terms:
             i = QtGui.QTableWidgetItem(term.language)
             i.setData(QtCore.Qt.UserRole, term)
-            
+            i.setToolTip(term.definition)
             self.ui.twTerms.setItem(index, 0, i)
-            self.ui.twTerms.setItem(index, 1, QtGui.QTableWidgetItem(term.phrase))
-            self.ui.twTerms.setItem(index, 2, QtGui.QTableWidgetItem(term.basePhrase))
-            self.ui.twTerms.setItem(index, 3, QtGui.QTableWidgetItem(term.sentence))
+            
+            i = QtGui.QTableWidgetItem(term.phrase)
+            i.setToolTip(term.definition)
+            self.ui.twTerms.setItem(index, 1, i)
+            
+            i = QtGui.QTableWidgetItem(term.basePhrase)
+            i.setToolTip(term.definition)
+            self.ui.twTerms.setItem(index, 2, i)
+            
+            i = QtGui.QTableWidgetItem(term.sentence)
+            i.setToolTip(term.definition)
+            self.ui.twTerms.setItem(index, 3, i)
              
             index +=1
          
@@ -113,11 +130,11 @@ class SharedForm(QtGui.QDialog):
         logging.debug("Syncing...")
         
         lastSync = float(StorageService.sfind(StorageService.SHARE_TERMS_LAST_SYNC, 0, Application.user.userId))
+        syncTime = time.time()
         
         changedTerms = self.termService.findAlteredPastModifed(lastSync)
         deletedTerms = self.termService.findDeletedPastModifed(lastSync)
         
-        lastSync = time.time()
         merged = { }
         
         for term in changedTerms:
@@ -144,6 +161,7 @@ class SharedForm(QtGui.QDialog):
                                            "code": "del"
                                            }
         
+        logging.debug("Merged {0} terms".format(len(merged)))
         logging.debug("Syncing terms with server....")
 
         languageService = LanguageService()
@@ -151,11 +169,23 @@ class SharedForm(QtGui.QDialog):
         
         webService = WebService()
         newTerms = webService.syncTerms(merged, lastSync, codes)
-        self.termService.updateSharedTerms(newTerms)
         
-        StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, lastSync, Application.user.userId)
+        if newTerms is None:
+            logging.debug("Error receiving terms")
+            QtGui.QMessageBox.warning(self, "Unable to sync", "There was an error while attempting to sync your words.")
+            return
+        
+        logging.debug("Received {0} terms".format(len(newTerms)))
+        self.sharedTermService.update(newTerms)
+        
+        StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, syncTime, Application.user.userId)
         logging.debug("Sync complete")
         
         self.ui.lblMessage.setText("Sync complete")
         
         self.bindTerms()
+        
+    def keyPressEvent(self, event):
+        if event.key()==QtCore.Qt.Key_Escape:
+            self.ui.leFilter.setText("")
+            event.ignore()
