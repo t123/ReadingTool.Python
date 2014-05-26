@@ -43,8 +43,14 @@ if __name__=="__main__":
         try:
             logging.error(e)
             
+            if Application.debug:
+                raise e
+            
             from lib.services.web import WebService
             webService = WebService()
             webService.reportException()
         except Exception as inner:
+            if Application.debug:
+                raise inner
+            
             logging.error(inner)

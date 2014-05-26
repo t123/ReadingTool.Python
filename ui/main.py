@@ -11,6 +11,7 @@ from ui.languages import LanguagesForm
 from ui.plugins import PluginsForm
 from ui.items import ItemsForm
 from ui.terms import TermsForm
+from ui.shared import SharedForm
 from ui.settings import SettingsForm
 from ui.about import AboutForm
 from ui.itemdialog import ItemDialogForm
@@ -228,6 +229,31 @@ class MainWindow(QtGui.QMainWindow):
         self.bindFilters()
         self.bindData()
         
+    def setTabTooltips(self, itemCount=None, termCount=None, sharedCount=None):
+        if itemCount is None:
+            self.ui.tabWidget.setTabText(0, "Items")
+            self.ui.tabWidget.setTabToolTip(0, "")
+            
+        if termCount is None:
+            self.ui.tabWidget.setTabText(1, "Terms")
+            self.ui.tabWidget.setTabToolTip(1, "")
+            
+        if sharedCount is None:
+            self.ui.tabWidget.setTabText(2, "Shared Terms")
+            self.ui.tabWidget.setTabToolTip(2, "")
+        
+        if itemCount is not None:
+            self.ui.tabWidget.setTabText(0, "Items ({0})".format(itemCount))
+            self.ui.tabWidget.setTabToolTip(0, "Found {0} items in the search".format(itemCount))
+        
+        if termCount is not None:
+            self.ui.tabWidget.setTabText(1, "Terms ({0})".format(termCount))
+            self.ui.tabWidget.setTabToolTip(1, "Found {0} terms in the search".format(termCount))
+            
+        if sharedCount is not None:
+            self.ui.tabWidget.setTabText(2, "Shared Terms ({0})".format(sharedCount))
+            self.ui.tabWidget.setTabToolTip(2, "Found {0} shared terms in the search".format(sharedCount))
+            
     def bindData(self):
         if self.ui.tabWidget.currentIndex()==0:
             self.ui.lwCollections.show()
@@ -235,6 +261,9 @@ class MainWindow(QtGui.QMainWindow):
         elif self.ui.tabWidget.currentIndex()==1:
             self.ui.lwCollections.hide()
             self.bindTerms()
+        elif self.ui.tabWidget.currentIndex()==2:
+            self.ui.lwCollections.hide()
+            self.bindSharedTerms()
         
     def bindItems(self):
         if len(self.ui.tabItems.children())==0:
@@ -253,10 +282,7 @@ class MainWindow(QtGui.QMainWindow):
         self.itemsForm.setFilters(languages, collectionNames, filters)
         self.itemsForm.bindItems()
         
-        self.ui.tabWidget.setTabText(0, "Items ({0})".format(self.itemsForm.getCount()))
-        self.ui.tabWidget.setTabToolTip(0, "Found {0} items in the search".format(self.itemsForm.getCount()))
-        self.ui.tabWidget.setTabText(1, "Terms")
-        self.ui.tabWidget.setTabToolTip(1, "")
+        self.setTabTooltips(itemCount=self.itemsForm.getCount())
         
     def bindTerms(self):
         if len(self.ui.tabTerms.children())==0:
@@ -274,11 +300,23 @@ class MainWindow(QtGui.QMainWindow):
         self.termsForm.setFilters(languages, filters)
         self.termsForm.bindTerms()
         
-        self.ui.tabWidget.setTabText(0, "Items")
-        self.ui.tabWidget.setTabToolTip(0, "")
-        self.ui.tabWidget.setTabText(1, "Terms ({0})".format(self.termsForm.getCount()))
-        self.ui.tabWidget.setTabToolTip(1, "Found {0} terms in the search".format(self.itemsForm.getCount()))
+        self.setTabTooltips(termCount=self.termsForm.getCount())
         
+    def bindSharedTerms(self):
+        if len(self.ui.tabShared.children())==0:
+            self.sharedForm = SharedForm()
+            self.sharedForm.setParent(self)
+            
+            verticalLayout = QtGui.QVBoxLayout()
+            verticalLayout.addWidget(self.sharedForm)
+            
+            self.ui.tabShared.setLayout(verticalLayout)
+            
+        languages = [item.data(QtCore.Qt.UserRole).name for item in self.ui.lwLanguages.selectedItems()]
+        self.sharedForm.setFilters(languages)
+        self.sharedForm.bindTerms()
+        self.setTabTooltips(sharedCount=self.sharedForm.getCount())
+            
     def addItem(self):
         self.dialog = ItemDialogForm(self)
         self.dialog.show()

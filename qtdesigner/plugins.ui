@@ -116,6 +116,20 @@
           </spacer>
          </item>
          <item>
+          <widget class="QLabel" name="lblLastChecked">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbCheckNow">
+           <property name="text">
+            <string>Check Now</string>
+           </property>
+          </widget>
+         </item>
+         <item>
           <widget class="QPushButton" name="pbInstall">
            <property name="text">
             <string>Install Selected Plugins</string>

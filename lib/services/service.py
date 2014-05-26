@@ -1,5 +1,5 @@
 import time, uuid, re, logging
-from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, ItemType, TermType, Plugin, LanguagePlugin, TermState, Storage
+from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, ItemType, TermType, Plugin, LanguagePlugin, TermState, Storage, SharedTerm
 from lib.db import Db
 from lib.misc import Application
 from lib.stringutil import StringUtil, FilterParser
@@ -344,11 +344,11 @@ class TermService:
         
     def search(self, filter):
         query = """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
-                                        FROM term term
-                                        LEFT JOIN language b on term.languageId=b.LanguageId
-                                        LEFT JOIN item c on term.itemSourceId=c.itemId
-                                        WHERE term.userId=:userId
-                                        """
+                    FROM term term
+                    LEFT JOIN language b on term.languageId=b.LanguageId
+                    LEFT JOIN item c on term.itemSourceId=c.itemId
+                    WHERE term.userId=:userId
+                """
                                         
         args = {"userId": Application.user.userId}
         
@@ -399,9 +399,114 @@ class TermService:
         
         return self.db.many(Term, query, **args)
     
+    def searchSharedTerms(self, filter):
+        query = """SELECT term.*, b.name as language
+                    FROM shared_term term
+                    LEFT JOIN language b on term.code=b.languageCode
+                """
+                                        
+        args = { }
+        languageService = LanguageService()
+        fp = FilterParser([language.name for language in languageService.findAll()])
+        fp.filter(filter)
+        hasWhere = False
+        
+        if len(fp.languages)>0:
+            t = []
+            counter = 0
+            
+            for exp in fp.languages:
+                t.append("language LIKE :l{0}".format(counter))
+                args["l%d" % counter] = exp
+                counter += 1
+                
+            if hasWhere:
+                query += " AND ( " + " OR ".join(t) + " )"
+            else:
+                hasWhere = True
+                query += " WHERE ( " + " OR ".join(t) + " )"
+            
+        if len(fp.normal)>0:
+            t = []
+            counter = 0
+            
+            for exp in fp.normal:
+                t.append("(term.phrase LIKE :e{0} OR term.basePhrase LIKE :e{0}) ".format(counter))
+                args["e%d" % counter] = exp + "%"
+                counter += 1
+                
+            if hasWhere:
+                query += " AND ( " + " OR ".join(t) + " )"
+            else:
+                hasWhere = True
+                query += " WHERE ( " + " OR ".join(t) + " )"
+                
+        query += " ORDER BY b.isArchived, language, term.lowerPhrase"
+        
+        if fp.limit>0:
+            query += " LIMIT :limit"
+            args["limit"] = fp.limit
+        
+        return self.db.many(Term, query, **args)
+    
+    def findAllSharedTerms(self):
+        return self.db.many(SharedTerm, """SELECT term.*, b.name as language
+                                        FROM shared_term term
+                                        LEFT JOIN language b on term.code=b.languageCode
+                                        ORDER BY term.lowerPhrase
+                                        """,
+                                        userId=Application.user.userId
+                            )
+        
+    def updateSharedTerms(self, terms):
+        for term in terms:
+            t = self.db.one(SharedTerm, "SELECT * FROM shared_term WHERE id=:id", term["id"])
+            
+            if t is None:
+                self.db.execute("INSERT INTO shared_term ( id, phrase, lowerPhrase, basePhrase, definition, sentence, code) VALUES ( :id, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :code)",
+                            id=term["id"],
+                            phrase=term["phrase"].strip(),
+                            lowerPhrase=term["phrase"].lower().strip(),
+                            basePhrase=term["basePhrase"].strip(),
+                            definition=term["definition"].strip(),
+                            sentence=term["sentence"].strip(),
+                            code=term["code"].strip()
+                            )
+            else:        
+                self.db.execute("UPDATE shared_term SET phrase=:phrase, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, sentence=:sentence, code=:code WHERE id=:id",
+                                id=term["id"],
+                                phrase=term["phrase"].strip(),
+                                lowerPhrase=term["phrase"].lower().strip(),
+                                basePhrase=term["basePhrase"].strip(),
+                                definition=term["definition"].strip(),
+                                sentence=term["sentence"].strip(),
+                                code=term["code"].strip()
+                                )
+
+    def deleteSharedTerms(self):
+        self.db.execute("DELETE FROM shared_term")
+        
     def findHistory(self, termId):
         return self.db.many(TermLog, "SELECT entryDate, termId, state, type, languageId, userId FROM termlog WHERE termId=:termId ORDER BY entryDate DESC", termId=termId)
        
+    def findAlteredPastModifed(self, timestamp):
+        return self.db.many(Term, """SELECT term.*, b.languageCode as language
+                                        FROM term term
+                                        LEFT JOIN language b on term.languageId=b.LanguageId
+                                        WHERE 
+                                            term.userId=:userId AND 
+                                            term.modified>:timestamp AND 
+                                            length(term.definition)>0 AND 
+                                            language<>'--'
+                                        ORDER BY term.lowerPhrase
+                                        """,
+                                        userId=Application.user.userId,
+                                        timestamp=timestamp
+                            )
+
+    def findDeletedPastModifed(self, timestamp):
+        return self.db.many(TermLog, "SELECT * FROM TermLog WHERE type=:type AND entryDate>:timestamp", type=TermType.Delete, timestamp=timestamp)
+            
 class ItemService:
     def __init__(self):
         self.db = Db(Application.connectionString)
@@ -741,8 +846,15 @@ class StorageService:
     PLUGIN_LAST_CHECK = "plugin_last_check"
     PLUGIN_CACHE = "plugin_cache"
     
+    SHARE_TERMS = "share_terms"
+    SHARE_TERMS_LAST_SYNC = "share_terms_last_sync"
+    
     def __init__(self):
         self.db = Db(Application.connectionString)
+        
+    def delete(self, key, uuid=""):
+        """Deletes key"""
+        self.db.execute("DELETE FROM storage WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key)
         
     def save(self, key, value, uuid=""):
         """Inserts a new value or replaces an existing if the key already exists"""
@@ -770,6 +882,12 @@ class StorageService:
         
         return result
     
+    @staticmethod
+    def sdelete(key, uuid=""):
+        """Deletes key"""
+        db = Db(Application.connectionString)
+        db.execute("DELETE FROM storage WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key)
+        
     @staticmethod
     def sfind(key, default=None, uuid=""):
         """Returns the storage value for a given key and UUID"""

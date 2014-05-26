@@ -194,6 +194,69 @@ class WebService:
             r = requests.post(uri, headers=headers, data=content)
         except requests.exceptions.RequestException:
             pass
+
+    def syncTerms(self, terms, lastSync, codes):
+        uri = Application.remoteServer + "/api/v1/syncterms"
+        
+        data = self.getStandardDictionary(uri)
+        data["Terms"] = terms
+        data["LastSync"] = lastSync
+        data["Codes"] = codes
+        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        try:
+            r = requests.post(uri, headers=headers, data=content)
+            
+            if r.status_code==200:
+                return json.loads(r.content.decode('utf8'))
+                
+            self.logError(r)
+            
+        except requests.exceptions.RequestException:
+            pass
+        
+        return None
+    
+    def pushTerms(self, terms):
+        uri = Application.remoteServer + "/api/v1/pushterms"
+        
+        data = self.getStandardDictionary(uri)
+        data["Terms"] = terms
+        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        try:
+            r = requests.post(uri, headers=headers, data=content)
+            
+            if r.status_code==200:
+                return json.loads(r.content.decode('utf8'))
+                
+            self.logError(r)
+            
+        except requests.exceptions.RequestException:
+            pass
+        
+        return None
+    
+    def pullTerms(self, lastSync, codes):
+        uri = Application.remoteServer + "/api/v1/pullterms"
+        
+        data = self.getStandardDictionary(uri)
+        data["LastSync"] = lastSync
+        data["Codes"] = codes
+        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        try:
+            r = requests.post(uri, headers=headers, data=content)
+            
+            if r.status_code==200:
+                return json.loads(r.content.decode('utf8'))
+                
+            self.logError(r)
+            
+        except requests.exceptions.RequestException:
+            pass
+        
+        return None
     
     #===========================================================================
     # def sync(self, userId):

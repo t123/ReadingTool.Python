@@ -36,7 +36,7 @@ class TermsForm(QtGui.QDialog):
     def setFilters(self, languages=[], filters=[]):
         self.languages = languages
         self.filters = filters
-        self.ui.leFilter.setText("limit:1000")
+        self.ui.leFilter.setText("limit:1000 ")
         
     def setupContextMenu(self):
         self.ui.twTerms.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)

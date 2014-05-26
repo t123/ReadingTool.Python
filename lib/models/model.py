@@ -132,6 +132,27 @@ class LanguagePlugin():
         self.content = ""
         self.uuid = None
             
+class SharedTerm():
+    def __init__(self):
+        self._phrase = ""
+        
+        self.id = 0
+        self.code = ""
+        self.lowerPhrase = ""
+        self.basePhrase = ""
+        self.sentence = ""
+        self.definition = ""
+        self.language = ""
+        
+    @property
+    def phrase(self):
+        return self._phrase
+    
+    @phrase.setter
+    def phrase(self, value):
+        self._phrase = value
+        self.lowerPhrase = (value or "").lower()
+        
 class Term():
     def __init__(self):
         self.termId = 0
