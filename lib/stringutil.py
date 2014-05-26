@@ -1,4 +1,4 @@
-import re, time
+import re, time, datetime
 
 class StringUtil:
     @staticmethod
@@ -64,6 +64,13 @@ class FilterParser():
             date = string[0:]
             sign = "="
         try:
+            if date=="today":
+                now = datetime.datetime.now()
+                date = now.strftime("%Y-%m-%d")
+            elif date=="yesterday":
+                yesterday = datetime.datetime.now() - datetime.timedelta(days=1)
+                date = yesterday.strftime("%Y-%m-%d")
+             
             date = time.strptime(date, "%Y-%m-%d")
             created = date
             
