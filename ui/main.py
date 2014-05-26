@@ -28,8 +28,6 @@ class MainWindow(QtGui.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         
-        self.setupUserLayout()
-        
         self.ui.verticalSplitter.setStretchFactor(0,0)
         self.ui.verticalSplitter.setStretchFactor(1,1)
         self.showMaximized()
@@ -51,6 +49,7 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.actionAbout_ReadingTool, QtCore.SIGNAL("triggered(bool)"), self.showAbout)
         
         self.ui.lwLanguages.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.setupUserLayout()
         self.setupSplitters()
         
     def setupUserLayout(self):
@@ -225,6 +224,14 @@ class MainWindow(QtGui.QMainWindow):
             
             item = QtGui.QListWidgetItem("Ignored")
             item.setData(QtCore.Qt.UserRole, "#ignored")
+            self.ui.lwFilters.addItem(item)
+            
+            item = QtGui.QListWidgetItem("Words only")
+            item.setData(QtCore.Qt.UserRole, "#word")
+            self.ui.lwFilters.addItem(item)
+            
+            item = QtGui.QListWidgetItem("Phrases only")
+            item.setData(QtCore.Qt.UserRole, "#phrase")
             self.ui.lwFilters.addItem(item)
         
     def onTabChanged(self, tabIndex):

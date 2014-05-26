@@ -1,4 +1,4 @@
-import time, uuid, re, logging
+import time, uuid, re, logging, datetime
 from lib.models.model import User, Language, LanguageCode, Term, TermLog, Item, ItemType, TermType, Plugin, LanguagePlugin, TermState, Storage, SharedTerm
 from lib.db import Db
 from lib.misc import Application
@@ -368,6 +368,10 @@ class TermService:
                     tagList.append("term.state=" + str(TermState.Unknown))
                 elif exp == "ignore" or exp == "ignored":
                     tagList.append("term.state=" + str(TermState.Ignored))
+                elif exp == "word":
+                    tagList.append("term.isFragment=0")
+                elif exp == "phrase":
+                    tagList.append("term.isFragment=1")
                     
             query += " AND ( " + " OR ".join(tagList) + " )"
             
@@ -393,6 +397,24 @@ class TermService:
                 
             query += " AND ( " + " OR ".join(t) + " )"
                 
+        if fp.created is not None:
+            if fp.createdSign=="=":
+                query += " AND term.created>=:created1 and term.created<=:created2"
+                args["created1"] = fp.created
+                args["created2"] = fp.created + (60*60*24)
+            else:
+                query += " AND term.created" + fp.createdSign + ":created"
+                args["created"] = fp.created
+            
+        if fp.modified is not None:
+            if fp.modifiedSign=="=":
+                query += " AND term.modified>=:modified1 and term.modified<=:modified2"
+                args["modified1"] = fp.modified
+                args["modified2"] = fp.modified + (60*60*24)
+            else:
+                query += " AND term.modified" + fp.modifiedSign + ":modified"
+                args["modified"] = fp.modified
+            
         query += " ORDER BY b.isArchived, language, term.lowerPhrase"
         
         if fp.limit>0:
@@ -775,6 +797,24 @@ ORDER BY language.name COLLATE NOCASE, X COLLATE NOCASE""" % ("?," * len(languag
                 
             query += " AND ( " + " OR ".join(t) + " )"
         
+        if fp.created is not None:
+            if fp.createdSign=="=":
+                query += " AND item.created>=:created1 and item.created<=:created2"
+                args["created1"] = fp.created
+                args["created2"] = fp.created + (60*60*24)
+            else:
+                query += " AND item.created" + fp.createdSign + ":created"
+                args["created"] = fp.created
+            
+        if fp.modified is not None:
+            if fp.modifiedSign=="=":
+                query += " AND item.modified>=:modified1 and item.modified<=:modified2"
+                args["modified1"] = fp.modified
+                args["modified2"] = fp.modified + (60*60*24)
+            else:
+                query += " AND item.modified" + fp.modifiedSign + ":modified"
+                args["modified"] = fp.modified
+                
         query += " ORDER BY B.isArchived, l1Language, item.collectionName, item.collectionNo, item.l1Title"
 
         if fp.limit>0:

@@ -29,10 +29,10 @@ class SharedForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.twTerms, QtCore.SIGNAL("itemClicked(QTableWidgetItem*)"), self.showDefinition)
         
         self.setButtons()
+        self.ui.leFilter.setText("limit:1000 ")
         
     def setFilters(self, languages=[]):
         self.languages = languages
-        self.ui.leFilter.setText("limit:1000 ")
 
     def onTextChanged(self, text):
         if text.strip()!="":

@@ -1,4 +1,5 @@
-import re
+import re, time
+
 class StringUtil:
     @staticmethod
     def isEmpty(x):
@@ -41,7 +42,40 @@ class FilterParser():
         self.inQuote = False
         
         self.limit = 0
+        self.createdSign = ""
+        self.modifiedSign = ""
+        self.created = None
+        self.modified = None
     
+    def parseTime(self, string):
+        string = string.replace("created:", "")
+        string = string.replace("modified:", "")
+        
+        sign1 = string[0:1]
+        sign2 = string[0:2]
+        
+        if sign2==">=" or sign2=="<=":
+            date = string[2:]
+            sign = sign2
+        elif sign1==">" or sign1=="<" or sign1=="=":            
+            date = string[1:]
+            sign = sign1
+        else:
+            date = string[0:]
+            sign = "="
+        try:
+            date = time.strptime(date, "%Y-%m-%d")
+            created = date
+            
+            if sign.startswith("<"):
+                created = date + 60*60*24
+                
+            return (sign, time.mktime(created))
+        except:
+            pass
+        
+        return None
+        
     def append(self):
         if not StringUtil.isEmpty(self.current):
             if self.isTag:
@@ -55,6 +89,19 @@ class FilterParser():
                 else:
                     if self.current.startswith("limit:"):
                         self.limit = int(self.current[6:])
+                    elif self.current.startswith("created:"):
+                        result = self.parseTime(self.current)
+                        
+                        if result is not None:
+                            self.createdSign = result[0]
+                            self.created = result[1]
+                            
+                    elif self.current.startswith("modified:"):
+                        result = self.parseTime(self.current)
+                        
+                        if result is not None:
+                            self.modifiedSign = result[0]
+                            self.modified = result[1]
                     else:
                         self.normal.append(self.current)
                     

@@ -23,6 +23,8 @@ class TermsForm(QtGui.QDialog):
         QtCore.QObject.connect(self.ui.leFilter, QtCore.SIGNAL("returnPressed()"), self.bindTerms)
         QtCore.QObject.connect(self.ui.actionEdit_term, QtCore.SIGNAL("triggered()"), self.editTerm)
         QtCore.QObject.connect(self.ui.actionDelete_term, QtCore.SIGNAL("triggered()"), self.deleteTerm)
+        
+        self.ui.leFilter.setText("limit:1000 ")
     
     def onTextChanged(self, text):
         if text.strip()!="":
@@ -36,7 +38,6 @@ class TermsForm(QtGui.QDialog):
     def setFilters(self, languages=[], filters=[]):
         self.languages = languages
         self.filters = filters
-        self.ui.leFilter.setText("limit:1000 ")
         
     def setupContextMenu(self):
         self.ui.twTerms.setContextMenuPolicy(QtCore.Qt.ActionsContextMenu)
@@ -94,7 +95,16 @@ class TermsForm(QtGui.QDialog):
         
     def editTerm(self):
         term = self.ui.twTerms.item(self.ui.twTerms.currentRow(), 0)
-        termId = term.data(QtCore.Qt.UserRole).termId
+        
+        if term is None:
+            return
+        
+        data = term.data(QtCore.Qt.UserRole) 
+        
+        if data is None:
+            return
+        
+        termId = data.termId
          
         self.dialog = TermInfoForm()
         self.dialog.setTerm(termId)
