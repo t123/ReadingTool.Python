@@ -195,13 +195,14 @@ class WebService:
         except requests.exceptions.RequestException:
             pass
 
-    def syncTerms(self, terms, lastSync, codes):
+    def syncTerms(self, terms, lastSync, codes, acceptable):
         uri = Application.remoteServer + "/api/v1/syncterms"
         
         data = self.getStandardDictionary(uri)
         data["Terms"] = terms
         data["LastSync"] = lastSync
         data["Codes"] = codes
+        data["Acceptable"] = acceptable
         content, signature, headers = self.createJsonSignatureHeaders(data)
         
         logging.debug(data)

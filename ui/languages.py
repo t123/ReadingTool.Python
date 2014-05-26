@@ -43,6 +43,9 @@ class LanguagesForm(QtGui.QDialog):
         for code in codes:
             self.ui.cbLanguageCodes.addItem(code.name, code.code)
             
+        for code in codes:
+            self.ui.cbSourceLanguage.addItem(code.name, code.code)
+            
     def setTermExpressions(self):
         self.ui.cbTermRegex.addItem("Latin Script - apostrophes and hyphens are one word", r"([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\’\'-]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
         self.ui.cbTermRegex.addItem("Latin Script - apostrophes and hyphens are separate words", r"([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)")
@@ -90,6 +93,13 @@ class LanguagesForm(QtGui.QDialog):
             index = self.ui.cbLanguageCodes.findData("--")
              
         self.ui.cbLanguageCodes.setCurrentIndex(index)
+        
+        index = self.ui.cbSourceLanguage.findData(self.language.sourceCode)
+         
+        if index<0:
+            index = self.ui.cbSourceLanguage.findData("--")
+             
+        self.ui.cbSourceLanguage.setCurrentIndex(index)
          
         if self.language.direction==LanguageDirection.LeftToRight:
             self.ui.rbLTR.setChecked(True)
@@ -121,6 +131,7 @@ class LanguagesForm(QtGui.QDialog):
         self.language.isArchived = self.ui.cbIsArchived.isChecked()
         self.language.direction = LanguageDirection.LeftToRight if self.ui.rbLTR.isChecked() else LanguageDirection.RightToLeft
         self.language.languageCode = self.ui.cbLanguageCodes.itemData(self.ui.cbLanguageCodes.currentIndex())
+        self.language.sourceCode = self.ui.cbSourceLanguage.itemData(self.ui.cbSourceLanguage.currentIndex())
         self.language.theme = self.ui.leTheme.text()
          
         plugins = []

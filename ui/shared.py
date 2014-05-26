@@ -141,6 +141,7 @@ class SharedForm(QtGui.QDialog):
             merged[term.termId] =  {
                                     "id": term.termId,
                                     "code": term.language,
+                                    "source": term.sourceCode,
                                     "phrase": term.phrase,
                                     "basePhrase": term.basePhrase,
                                     "sentence": term.sentence,
@@ -166,9 +167,10 @@ class SharedForm(QtGui.QDialog):
 
         languageService = LanguageService()
         codes = [l.languageCode for l in languageService.findAll() if l.languageCode!="--"]
+        acceptable = [l.sourceCode for l in languageService.findAll() if l.languageCode!="--"]
         
         webService = WebService()
-        newTerms = webService.syncTerms(merged, lastSync, codes)
+        newTerms = webService.syncTerms(merged, lastSync, codes, acceptable)
         
         if newTerms is None:
             logging.debug("Error receiving terms")

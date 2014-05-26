@@ -62,7 +62,7 @@ class LanguageService:
         
     def save(self, language, plugins=None):
         if(language.languageId == 0):
-            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction, theme) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction, :theme)",
+            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction, theme, sourceCode) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction, :theme, :sourceCode)",
                             languageId=None,
                             name=language.name,
                             created=time.time(),
@@ -72,10 +72,11 @@ class LanguageService:
                             userId=Application.user.userId,
                             termRegex=language.termRegex,
                             direction=language.direction,
-                            theme=language.theme
+                            theme=language.theme,
+                            sourceCode=language.sourceCode
                             )
         else:        
-            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, termRegex=:termRegex, direction=:direction, theme=:theme WHERE languageId=:languageId",
+            self.db.execute("UPDATE language SET name=:name, modified=:modified, isArchived=:isArchived, languageCode=:languageCode, termRegex=:termRegex, direction=:direction, theme=:theme, sourceCode=:sourceCode WHERE languageId=:languageId",
                             languageId=language.languageId,
                             name=language.name,
                             modified=time.time(),
@@ -83,7 +84,8 @@ class LanguageService:
                             languageCode=language.languageCode,
                             termRegex=language.termRegex,
                             direction=language.direction,
-                            theme=language.theme
+                            theme=language.theme,
+                            sourceCode=language.sourceCode
                             )
             
         if plugins is not None:
@@ -403,7 +405,7 @@ class TermService:
         return self.db.many(TermLog, "SELECT entryDate, termId, state, type, languageId, userId FROM termlog WHERE termId=:termId ORDER BY entryDate DESC", termId=termId)
        
     def findAlteredPastModifed(self, timestamp):
-        return self.db.many(Term, """SELECT term.*, b.languageCode as language
+        return self.db.many(Term, """SELECT term.*, b.languageCode as language, b.sourceCode as sourceCode
                                         FROM term term
                                         LEFT JOIN language b on term.languageId=b.LanguageId
                                         WHERE 
@@ -481,24 +483,26 @@ class SharedTermService():
             t = self.db.one(SharedTerm, "SELECT * FROM shared_term WHERE id=:id", term["id"])
             
             if t is None:
-                self.db.execute("INSERT INTO shared_term ( id, phrase, lowerPhrase, basePhrase, definition, sentence, code) VALUES ( :id, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :code)",
+                self.db.execute("INSERT INTO shared_term ( id, phrase, lowerPhrase, basePhrase, definition, sentence, code, source) VALUES ( :id, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :code, :source)",
                             id=term["id"],
                             phrase=term["phrase"].strip(),
                             lowerPhrase=term["phrase"].lower().strip(),
                             basePhrase=term["basePhrase"].strip(),
                             definition=term["definition"].strip(),
                             sentence=term["sentence"].strip(),
-                            code=term["code"].strip()
+                            code=term["code"].strip(),
+                            source=term["source"].strip()
                             )
             else:        
-                self.db.execute("UPDATE shared_term SET phrase=:phrase, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, sentence=:sentence, code=:code WHERE id=:id",
+                self.db.execute("UPDATE shared_term SET phrase=:phrase, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, sentence=:sentence, code=:code, source=:source WHERE id=:id",
                                 id=term["id"],
                                 phrase=term["phrase"].strip(),
                                 lowerPhrase=term["phrase"].lower().strip(),
                                 basePhrase=term["basePhrase"].strip(),
                                 definition=term["definition"].strip(),
                                 sentence=term["sentence"].strip(),
-                                code=term["code"].strip()
+                                code=term["code"].strip(),
+                                source=term["source"].strip()
                                 )
                 
     def deleteAll(self):

@@ -101,6 +101,7 @@ class Language():
         self.termRegex = Language.TERM_REGEX
         self.direction = LanguageDirection.LeftToRight
         self.theme = None
+        self.sourceCode = "--"
         
     def toDict(self):
         d = {}
@@ -115,6 +116,7 @@ class Language():
         d["termRegex"] = self.termRegex
         d["direction"] = self.direction
         d["theme"] = self.theme
+        d["sourceCode"] = self.sourceCode
         
         return d
     
@@ -143,6 +145,7 @@ class SharedTerm():
         self.sentence = ""
         self.definition = ""
         self.language = ""
+        self.source = ""
         
     @property
     def phrase(self):
@@ -172,6 +175,7 @@ class Term():
         self.itemSourceId = None
         self.language = ""
         self.itemSource = ""
+        self.sourceCode = ""
         
     def fullDefinition(self, joinString="<br/>"):
         fullDef = ""
