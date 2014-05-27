@@ -62,13 +62,13 @@ class SyncThread(QtCore.QThread):
         logging.debug("Syncing __init__")
         
     def run(self):
+        self.termService = TermService()
+        self.sharedTermService = SharedTermService()
+        self.languageService = LanguageService()
+        self.webService = WebService()
+        
         try:
             logging.debug("Syncing __run__")
-            
-            self.termService = TermService()
-            self.sharedTermService = SharedTermService()
-            self.languageService = LanguageService()
-            self.webService = WebService()
             
             self.trigger.emit(0, "Sync is starting")
     
@@ -141,10 +141,15 @@ class SyncThread(QtCore.QThread):
             StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, syncTime, Application.user.userId)
             logging.debug("Sync complete")
         except Exception as e:
-            import traceback, os
+            import traceback
             details = traceback.format_exc()
             
             logging.debug(e)
             logging.debug(details)
             
-            self.trigger.emit(100, "Error: " + str(e))          
+            self.trigger.emit(100, "Error: " + str(e))
+        finally:
+            self.termService = None
+            self.sharedTermService = None
+            self.languageService = None
+            self.webService = None          

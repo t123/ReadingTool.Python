@@ -3,7 +3,7 @@ from PyQt4 import QtCore, QtGui, Qt
 
 from lib.misc import Application, Validations
 from lib.models.model import Language, LanguageDirection
-from lib.services.service import LanguageService, LanguageCodeService
+from lib.services.service import LanguageService, LanguageCodeService, StorageService
 from ui.views.languages import Ui_Languages
 
 class LanguagesForm(QtGui.QDialog):
@@ -145,6 +145,7 @@ class LanguagesForm(QtGui.QDialog):
                  
         self.language = self.languageService.save(self.language, plugins)
         self.setLanguage(self.language.languageId)
+        StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, 0, Application.user.userId)
         
         Application.myApp.bindLanguages()
         

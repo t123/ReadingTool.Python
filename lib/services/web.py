@@ -1,4 +1,4 @@
-import requests, uuid, base64, json, hashlib, hmac, time, logging
+import requests, uuid, base64, json, hashlib, hmac, time, logging, gzip
 from urllib.parse import urlparse
 
 from lib.db import Db
@@ -27,7 +27,7 @@ class WebService:
             logging.debug(str(e))
             logging.debug(response.content)
              
-    def createJsonSignatureHeaders(self, dictionary, contentType="application/json", accessKey=None, accessSecret=None):
+    def createJsonSignatureHeaders(self, dictionary, contentType="application/json", accessKey=None, accessSecret=None, headers=None):
         data = json.dumps(dictionary, sort_keys=True)
         message = data.encode('utf-8')
         
@@ -38,12 +38,17 @@ class WebService:
              
         signature = base64.b64encode(hmac.new(accessSecret, message, digestmod=hashlib.sha256).digest())
         
-        return (data, signature, {
-                   "Content-Type": contentType,
-                   "X-Client": "RT",
-                   "X-Signature": signature,
-                   "X-AccessKey": Application.user.accessKey if accessKey is None else accessKey
-                   })
+        h = {
+               "Content-Type": contentType,
+               "X-Client": "RT",
+               "X-Signature": signature,
+               "X-AccessKey": Application.user.accessKey if accessKey is None else accessKey
+               }
+        
+        if headers is not None:
+            h.update(headers)
+            
+        return (data, signature, h)
         
     def segmentText(self, languageCode, content):
         uri = Application.remoteServer + "/api/v1/segment"
@@ -117,10 +122,12 @@ class WebService:
         data = self.getStandardDictionary(uri)
         data["Latex"] = self.po.html
         data["Title"] = item.name()
-        content, signature, headers = self.createJsonSignatureHeaders(data)
+        
+        content, signature, headers = self.createJsonSignatureHeaders(data, headers={ "Content-Encoding": "gzip"})
+        data = gzip.compress(content.encode())
         
         try:
-            r = requests.post(uri, headers=headers, data=content)
+            r = requests.post(uri, headers=headers, data=data)
             
             if r.status_code==200:
                 return r.content 
@@ -182,16 +189,17 @@ class WebService:
         details = traceback.format_exc()
         
         uri = Application.remoteServer + "/api/v1/report"
-
+        
         data =  { }
         data["Stacktrace"] = details
         data["Version"] = StorageService.sfind(StorageService.SOFTWARE_VERSION, "Unknown")
-        data["OS"] = os.name 
+        data["OS"] = os.name
+        data["AccessKey"] = Application.user.accessKey
         
-        content, signature, headers = self.createJsonSignatureHeaders(data, secret="")
+        content = json.dumps(data, sort_keys=True)
         
         try:
-            r = requests.post(uri, headers=headers, data=content)
+            r = requests.post(uri, headers={"X-Client": "RT"}, data=content)
         except requests.exceptions.RequestException:
             pass
 
@@ -203,12 +211,14 @@ class WebService:
         data["LastSync"] = lastSync
         data["Codes"] = codes
         data["Acceptable"] = acceptable
-        content, signature, headers = self.createJsonSignatureHeaders(data)
         
-        logging.debug(data)
-        
+        content, signature, headers = self.createJsonSignatureHeaders(data, headers={ "Content-Encoding": "gzip"})
+        data = gzip.compress(content.encode())
+    
+        logging.debug("Content size={0}; Compressed={1}".format(len(content), len(data)))
+    
         try:
-            r = requests.post(uri, headers=headers, data=content)
+            r = requests.post(uri, headers=headers, data=data)
             
             if r.status_code==200:
                 return json.loads(r.content.decode('utf8'))

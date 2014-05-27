@@ -207,7 +207,7 @@ class ItemsForm(QtGui.QDialog):
         if item is None:
             return
          
-        self.dialog = ReaderWindow(self, item.data(QtCore.Qt.UserRole).itemId, asParallel)
+        self.dialog = ReaderWindow(None, item.data(QtCore.Qt.UserRole).itemId, asParallel)
         self.dialog.show()
          
     def keyPressEvent(self, event):
