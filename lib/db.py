@@ -5,10 +5,9 @@ sqlite3.register_converter('GUID', lambda b: uuid.UUID(bytes_le=b))
 sqlite3.register_adapter(uuid.UUID, lambda u: memoryview(u.bytes_le))
     
 class Db:
-    def __init__(self, connectionString = ':memory:'):
-        self.conn = sqlite3.connect(connectionString, isolation_level=None, detect_types=sqlite3.PARSE_DECLTYPES)
+    def __init__(self, connectionString = ':memory:', isolationLevel=None):
+        self.conn = sqlite3.connect(connectionString, isolation_level=isolationLevel, detect_types=sqlite3.PARSE_DECLTYPES)
         self.conn.row_factory = sqlite3.Row
-        pass
     
     def commit(self):
         self.conn.commit()

@@ -21,7 +21,7 @@ class UserService:
         
         self.db = Db(Application.connectionString)
         
-    def save(self, user):
+    def save(self, user, refresh=True):
         if emptyId(user.userId):
             user.userId = newId() 
             
@@ -42,7 +42,10 @@ class UserService:
                             syncData=user.syncData
                             )
 
-        return self.findOne(user.userId)   
+        if refresh:
+            return self.findOne(user.userId)
+        else:
+            return user
 
     def findOne(self, userId):
         userId = toUuid(userId)
@@ -80,7 +83,7 @@ class LanguageService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
-    def save(self, language, plugins=None):
+    def save(self, language, plugins=None, refresh=True):
         if emptyId(language.languageId):
             language.languageId = newId() 
             
@@ -116,7 +119,10 @@ class LanguageService:
             for pluginId in plugins:
                 self.db.execute("INSERT INTO language_plugin ( languageId, pluginId ) VALUES ( :languageId, :pluginId )", language.languageId, pluginId)
                 
-        return self.findOne(language.languageId)
+        if refresh:
+            return self.findOne(language.languageId)
+        else:
+            return language
         
     def findAllPlugins(self, languageId, active=None):
         languageId = toUuid(languageId)
@@ -262,12 +268,56 @@ class LanguageCodeService:
 class TermService:
     def __init__(self):
         self.db = Db(Application.connectionString)
+        self.insertStatement = "INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId, isFragment) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId, :isFragment)"
+        self.updateStatement = "UPDATE term SET modified=:modified, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, state=:state, itemSourceId=:itemSourceId, sentence=:sentence WHERE termId=:termId"
         
-    def save(self, term):
+    def bulkSave(self, terms):
+        db = Db(Application.connectionString, isolationLevel="IMMEDIATE")
+        
+        try:
+            for term in terms:
+                if emptyId(term.termId):
+                    term.termId = newId()
+                    
+                    db.execute(self.insertStatement,
+                                    termId=term.termId,
+                                    created=time.time(),
+                                    modified=time.time(),
+                                    phrase=term.phrase.strip(),
+                                    lowerPhrase=term.lowerPhrase.strip(),
+                                    basePhrase=term.basePhrase.strip(),
+                                    definition=term.definition.strip(),
+                                    sentence=term.sentence.strip(),
+                                    languageId=toUuid(term.languageId),
+                                    state=term.state,
+                                    userId=Application.user.userId,
+                                    itemSourceId=toUuid(term.itemSourceId),
+                                    isFragment=term.isFragment
+                                    )
+                    
+                else:        
+                    db.execute(self.updateStatement,
+                                    termId=term.termId,
+                                    modified=time.time(),
+                                    lowerPhrase=term.lowerPhrase.strip(),
+                                    basePhrase=term.basePhrase.strip(),
+                                    definition=term.definition.strip(),
+                                    sentence=term.sentence.strip(),
+                                    state=term.state,
+                                    itemSourceId=toUuid(term.itemSourceId)
+                                    )
+            db.commit()
+        except:
+            db.rollback()
+            return False
+        
+        return True
+        
+    def save(self, term, refresh=True):
         if emptyId(term.termId):
             term.termId = newId()
             
-            self.db.execute("INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId, isFragment) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId, :isFragment)",
+            self.db.execute(self.insertStatement,
                             termId=term.termId,
                             created=time.time(),
                             modified=time.time(),
@@ -283,7 +333,7 @@ class TermService:
                             isFragment=term.isFragment
                             )
         else:        
-            self.db.execute("UPDATE term SET modified=:modified, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, state=:state, itemSourceId=:itemSourceId, sentence=:sentence WHERE termId=:termId",
+            self.db.execute(self.updateStatement,
                             termId=term.termId,
                             modified=time.time(),
                             lowerPhrase=term.lowerPhrase.strip(),
@@ -294,7 +344,10 @@ class TermService:
                             itemSourceId=toUuid(term.itemSourceId)
                             )
             
-        return self.findOne(term.termId)
+        if refresh:
+            return self.findOne(term.termId)
+        else:
+            return term
         
     def findAll(self):
         return self.db.many(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
@@ -522,22 +575,14 @@ class SharedTermService():
                             )
         
     def update(self, terms):
+        db = Db(Application.connectionString, isolationLevel="IMMEDIATE")
+        
         for term in terms:
-            t = self.db.one(SharedTerm, "SELECT * FROM shared_term WHERE id=:id", term["id"])
+            t = db.one(SharedTerm, "SELECT * FROM shared_term WHERE id=:id", term["id"])
             
-            if t is None:
-                self.db.execute("INSERT INTO shared_term ( id, phrase, lowerPhrase, basePhrase, definition, sentence, code, source) VALUES ( :id, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :code, :source)",
-                            id=term["id"],
-                            phrase=term["phrase"].strip(),
-                            lowerPhrase=term["phrase"].lower().strip(),
-                            basePhrase=term["basePhrase"].strip(),
-                            definition=term["definition"].strip(),
-                            sentence=term["sentence"].strip(),
-                            code=term["code"].strip(),
-                            source=term["source"].strip()
-                            )
-            else:        
-                self.db.execute("UPDATE shared_term SET phrase=:phrase, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, sentence=:sentence, code=:code, source=:source WHERE id=:id",
+            try:
+                if t is None:
+                    db.execute("INSERT INTO shared_term ( id, phrase, lowerPhrase, basePhrase, definition, sentence, code, source) VALUES ( :id, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :code, :source)",
                                 id=term["id"],
                                 phrase=term["phrase"].strip(),
                                 lowerPhrase=term["phrase"].lower().strip(),
@@ -547,6 +592,22 @@ class SharedTermService():
                                 code=term["code"].strip(),
                                 source=term["source"].strip()
                                 )
+                else:        
+                    db.execute("UPDATE shared_term SET phrase=:phrase, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, sentence=:sentence, code=:code, source=:source WHERE id=:id",
+                                    id=term["id"],
+                                    phrase=term["phrase"].strip(),
+                                    lowerPhrase=term["phrase"].lower().strip(),
+                                    basePhrase=term["basePhrase"].strip(),
+                                    definition=term["definition"].strip(),
+                                    sentence=term["sentence"].strip(),
+                                    code=term["code"].strip(),
+                                    source=term["source"].strip()
+                                    )
+            
+            except: #just skip invalid terms
+                pass
+        
+        db.commit()
                 
     def deleteAll(self):
         self.db.execute("DELETE FROM shared_term")
@@ -554,12 +615,67 @@ class SharedTermService():
 class ItemService:
     def __init__(self):
         self.db = Db(Application.connectionString)
+        self.insertStatement = "INSERT INTO item ( itemId, created, modified, itemType, userId, collectionName, collectionNo, mediaUri, lastRead, l1Title, l2Title, l1LanguageId, l2LanguageId, l1Content, l2Content, readTimes, listenedTimes) VALUES ( :itemId, :created, :modified, :itemType, :userId, :collectionName, :collectionNo, :mediaUri, :lastRead, :l1Title, :l2Title, :l1LanguageId, :l2LanguageId, :l1Content, :l2Content, :readTimes, :listenedTimes )"
+        self.updateStatement = "UPDATE item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo=:collectionNo, mediaUri=:mediaUri, lastRead=:lastRead, l1Title=:l1Title, l2Title=:l2Title, l1LanguageId=:l1LanguageId, l2LanguageId=:l2LanguageId, l1Content=:l1Content, l2Content=:l2Content, readTimes=:readTimes, listenedTimes=:listenedTimes WHERE itemId=:itemId"
+          
+    def bulkSave(self, items):
+        db = Db(Application.connectionString, isolationLevel="IMMEDIATE")
         
-    def save(self, item):
+        try:
+            for item in items:
+                if emptyId(item.itemId):
+                    item.itemId = newId()
+                    
+                    self.db.execute(self.insertStatement,
+                                    itemId=item.itemId,
+                                    created=time.time(),
+                                    modified=time.time(),
+                                    itemType=item.itemType,
+                                    userId=Application.user.userId,
+                                    collectionName=item.collectionName,
+                                    collectionNo=item.collectionNo,
+                                    mediaUri=item.mediaUri,
+                                    lastRead=item.lastRead,
+                                    l1Title=item.l1Title,
+                                    l2Title=item.l2Title,
+                                    l1LanguageId=item.l1LanguageId,
+                                    l2LanguageId=item.l2LanguageId,
+                                    l1Content=item.l1Content,
+                                    l2Content=item.l2Content,
+                                    readTimes=item.readTimes,
+                                    listenedTimes=item.listenedTimes
+                                    )
+                else:        
+                    self.db.execute(self.updateStamement,
+                                    itemId=item.itemId,
+                                    modified=time.time(),
+                                    itemType=item.itemType,
+                                    collectionName=item.collectionName,
+                                    collectionNo=item.collectionNo,
+                                    mediaUri=item.mediaUri,
+                                    lastRead=item.lastRead,
+                                    l1Title=item.l1Title,
+                                    l2Title=item.l2Title,
+                                    l1LanguageId=item.l1LanguageId,
+                                    l2LanguageId=item.l2LanguageId,
+                                    l1Content=item.l1Content,
+                                    l2Content=item.l2Content,
+                                    readTimes=item.readTimes,
+                                    listenedTimes=item.listenedTimes
+                                    )
+            
+            db.commit()
+        except:
+            db.rollback()
+            return False
+        
+        return True
+        
+    def save(self, item, refresh=True):
         if emptyId(item.itemId):
             item.itemId = newId()
             
-            self.db.execute("INSERT INTO item ( itemId, created, modified, itemType, userId, collectionName, collectionNo, mediaUri, lastRead, l1Title, l2Title, l1LanguageId, l2LanguageId, l1Content, l2Content, readTimes, listenedTimes) VALUES ( :itemId, :created, :modified, :itemType, :userId, :collectionName, :collectionNo, :mediaUri, :lastRead, :l1Title, :l2Title, :l1LanguageId, :l2LanguageId, :l1Content, :l2Content, :readTimes, :listenedTimes )",
+            self.db.execute(self.insertStatement,
                             itemId=item.itemId,
                             created=time.time(),
                             modified=time.time(),
@@ -579,7 +695,7 @@ class ItemService:
                             listenedTimes=item.listenedTimes
                             )
         else:        
-            self.db.execute("UPDATE item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo=:collectionNo, mediaUri=:mediaUri, lastRead=:lastRead, l1Title=:l1Title, l2Title=:l2Title, l1LanguageId=:l1LanguageId, l2LanguageId=:l2LanguageId, l1Content=:l1Content, l2Content=:l2Content, readTimes=:readTimes, listenedTimes=:listenedTimes WHERE itemId=:itemId",
+            self.db.execute(self.updateStamement,
                             itemId=item.itemId,
                             modified=time.time(),
                             itemType=item.itemType,
@@ -597,7 +713,10 @@ class ItemService:
                             listenedTimes=item.listenedTimes
                             )
         
-        return self.findOne(item.itemId)
+        if refresh:
+            return self.findOne(item.itemId)
+        else:
+            return item
         
     def findOne(self, itemId):
         itemId = toUuid(itemId)
@@ -856,7 +975,7 @@ class PluginService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
-    def save(self, plugin):
+    def save(self, plugin, refresh=True):
         if emptyId(plugin.pluginId):
             plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid, version, local) VALUES ( :pluginId, :name, :description, :content, :uuid, :version, :local)",
                             pluginId=newId(),
@@ -877,7 +996,10 @@ class PluginService:
                             local=plugin.local
                             )
             
-        return self.findOne(plugin.pluginId)
+        if refresh:
+            return self.findOne(plugin.pluginId)
+        else:
+            return plugin
         
     def findOne(self, pluginId):
         pluginId = toUuid(pluginId)
@@ -927,6 +1049,8 @@ class StorageService:
         
     def delete(self, key, uuid=None):
         """Deletes key"""
+        uuid = toUuid(uuid)
+        
         if uuid is None:
             self.db.execute("DELETE FROM storage WHERE k=:key AND uuid is null", key=key)
         else:
@@ -934,6 +1058,8 @@ class StorageService:
         
     def save(self, key, value, uuid=None):
         """Inserts a new value or replaces an existing if the key already exists"""
+        uuid = toUuid(uuid)
+        
         s = self.findOne(key, uuid)
             
         if s==None:
@@ -943,6 +1069,8 @@ class StorageService:
     
     def findOne(self, key, uuid=None):
         """Returns the storage object for a given key and UUID"""
+        uuid = toUuid(uuid)
+        
         if uuid is None:
             return self.db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid is null", key=key)
         else:
@@ -950,6 +1078,7 @@ class StorageService:
     
     def findAll(self, uuid=None):
         """Returns all the storage objects for a given UUID"""
+        uuid = toUuid(uuid)
         
         if uuid is None:
             return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid is null")
@@ -958,6 +1087,7 @@ class StorageService:
     
     def find(self, key, default=None, uuid=None):
         """Returns the storage value for a given key and UUID"""
+        uuid = toUuid(uuid)
         
         if uuid is None:
             result = self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid is null", key=key)
@@ -973,6 +1103,7 @@ class StorageService:
     def sdelete(key, uuid=None):
         """Deletes key"""
         db = Db(Application.connectionString)
+        uuid = toUuid(uuid)
         
         if uuid is None:
             db.execute("DELETE FROM storage WHERE k=:key AND uuid is null", key=key)
@@ -983,6 +1114,7 @@ class StorageService:
     def sfind(key, default=None, uuid=None):
         """Returns the storage value for a given key and UUID"""
         db = Db(Application.connectionString)
+        uuid = toUuid(uuid)
         
         result = None
         
@@ -1000,7 +1132,7 @@ class StorageService:
     def ssave(key, value, uuid=None):
         """Inserts a new value or replaces an existing if the key already exists"""
         db = Db(Application.connectionString)
-        
+        uuid = toUuid(uuid)
         s = None
         
         if uuid is None:

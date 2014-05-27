@@ -90,7 +90,7 @@ class InternalController(object):
             term.itemSourceId = itemId
             term.state = TermState.ToEnum(state)
             
-            termService.save(term)
+            termService.save(term, refresh=False)
             cherrypy.response.status = 201
         else:
             term.basePhrase = basePhrase
@@ -104,7 +104,7 @@ class InternalController(object):
                 term.sentence = sentence
                 term.itemSourceId = itemId
             
-            termService.save(term)
+            termService.save(term, refresh=False)
             cherrypy.response.status = 200
         
         cherrypy.response.headers["Content-Type"] = "application/json"
@@ -117,21 +117,20 @@ class InternalController(object):
         languageId = data["languageId"]
         itemSourceId = data["itemId"]
         
+        terms = []
+        
         for item in data["phrases"]:
-            try:
-                term = Term()
-                term.state = TermState.Known
-                term.phrase = item
-                term.languageId = languageId
-                term.itemSourceId = itemSourceId
-                
-                termService.save(term)
-                
-                counter += 1
-                
-            except:
-                continue
+            term = Term()
+            term.state = TermState.Known
+            term.phrase = item
+            term.languageId = languageId
+            term.itemSourceId = itemSourceId
             
+            counter += 1
+            terms.append(term)
+            
+        termService.bulkSave(terms)
+        
         return counter
     
     def markAllAsKnown(self):
@@ -301,10 +300,9 @@ class ApiV1Controller(object):
         if not id:
             return False
         
-        if not id.isdigit():
-            return False
-        
-        if int(id)<=0:
+        try:
+            uuid.UUID(id)
+        except:
             return False
         
         return True
@@ -441,7 +439,6 @@ class ApiV1Controller(object):
             cherrypy.response.status = 200
             return
         
-        cherrypy.response.status = "200"
         cherrypy.response.headers["Content-Type"] = "text/plain"
         
         length = cherrypy.request.headers['Content-Length']
@@ -455,41 +452,52 @@ class ApiV1Controller(object):
         failures = 0
         invalid = []
         
-        for t in data:
-            try:
-                termId = t.get("termId", 0)
+        terms = []
+        
+        try:
+            for t in data:
+                termId = t.get("termId", None)
                 
-                if termId>0:
+                if termId is not None:
                     term = termService.findOne(termId)
                 else:
                     term = termService.fineOneByPhraseAndLanguage(t["phrase"], t["languageId"])
-
+    
                 if term is None:
                     term = Term()
                     term.phrase = t["phrase"]
-                    term.languageId = int(t["languageId"])
-
+                    term.languageId = t["languageId"]
+    
                 term.basePhrase = t.get("basePhrase", "")
                 term.definition = t.get("definition", "")
                 term.sentence = t.get("sentence", "")
                 term.state = TermState.ToEnum(t["state"])
                 
-                termService.save(term)
+                terms.append(term)
                 
-                if term.termId==0:
+                if term.termId is None:
                     insert += 1
                 else:
                     update += 1
-            except Exception as e:
-                t["exception"] = str(e)
-                failures += 1
-                invalid.append(t)
+                
+            result = termService.bulkSave(terms)
+            
+            if result==False:
+                cherrypy.response.status = "400"                
+        except:
+            result = False
+            cherrypy.response.status = "500"
+            
+        if result:
+            cherrypy.response.status = "200"
+        else:
+            insert = 0
+            update = 0
             
         return json.dumps({
+                            "result": result,
                             "insert": insert, 
-                            "update": update,
-                            "failures": failures,
-                            "invalid": invalid
+                            "update": update
                             }
                           ).encode()
 
@@ -528,12 +536,17 @@ class ApiV1Controller(object):
         
         return json.dumps(storage.value).encode()
     
-    def allStorage(self, uuid):
-        if StringUtil.isEmpty(uuid):
+    def allStorage(self, guid):
+        if StringUtil.isEmpty(guid):
             raise cherrypy.HTTPError(403, "Invalid uuid")
         
+        if guid=="new":
+            cherrypy.response.status = 200
+            cherrypy.response.headers["Content-Type"] = "text/plain"
+            return str(uuid.uuid1())
+        
         storageService = StorageService()
-        storage = storageService.findAll(uuid)
+        storage = storageService.findAll(guid)
         
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
