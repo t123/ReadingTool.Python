@@ -62,75 +62,89 @@ class SyncThread(QtCore.QThread):
         logging.debug("Syncing __init__")
         
     def run(self):
-        logging.debug("Syncing __run__")
-        
-        self.termService = TermService()
-        self.sharedTermService = SharedTermService()
-        self.languageService = LanguageService()
-        self.webService = WebService()
-        
-        self.trigger.emit(0, "Sync is starting")
-
-        lastSync = float(StorageService.sfind(StorageService.SHARE_TERMS_LAST_SYNC, 0, Application.user.userId))
-        syncTime = time.time()
-        
-        changedTerms = self.termService.findAlteredPastModifed(lastSync)
-        deletedTerms = self.termService.findDeletedPastModifed(lastSync)
+        try:
+            logging.debug("Syncing __run__")
             
-        merged = { }
-        
-        self.trigger.emit(10, "Collecting local terms")
-        
-        for term in changedTerms:
-            merged[term.termId] =  {
-                                    "id": term.termId,
-                                    "code": term.language,
-                                    "source": term.sourceCode,
-                                    "phrase": term.phrase,
-                                    "basePhrase": term.basePhrase,
-                                    "sentence": term.sentence,
-                                    "definition": term.definition,
-                                    "modified": term.modified
-                                   }             
+            self.termService = TermService()
+            self.sharedTermService = SharedTermService()
+            self.languageService = LanguageService()
+            self.webService = WebService()
             
-        for term in deletedTerms:
-            if term.termId in merged and "modified" in merged[term.termId]:
-                if term.entryDate>merged[term.termId]["modified"]:
-                    merged[term.termId] = {
-                                           "id": term.termId,
-                                           "code": "del"
-                                           }
-            else:
-                merged[term.termId] = {
-                                           "id": term.termId,
-                                           "code": "del"
-                                           }
-        
-        logging.debug("Merged {0} terms".format(len(merged)))
-        
-        self.trigger.emit(20, "Getting language codes")
-        
-        codes = [l.languageCode for l in self.languageService.findAll() if l.languageCode!="--"]
-        acceptable = [l.sourceCode for l in self.languageService.findAll() if l.languageCode!="--"]
-        
-        self.trigger.emit(30, "Sending {0} terms to server".format(len(merged)))
-        self.trigger.emit(30, "Asking for languages: " + ",".join(codes))
-        self.trigger.emit(30, "with definitions in: " + ",".join(acceptable))
-        
-        newTerms = self.webService.syncTerms(merged, lastSync, codes, acceptable)
-        
-        if newTerms is None:
-            logging.debug("Error receiving terms")
-            QtGui.QMessageBox.warning(self, "Unable to sync", "There was an error while attempting to sync your words.")
-            self.finished.emit()
-            return
-        
-        self.trigger.emit(50, "Received {0} terms from server".format(len(newTerms)))
-        logging.debug("Received {0} terms".format(len(newTerms)))
-        self.sharedTermService.update(newTerms)
-        
-        self.trigger.emit(99, "Finishing...")
-        StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, syncTime, Application.user.userId)
-        logging.debug("Sync complete")
-        
-        
+            self.trigger.emit(0, "Sync is starting")
+    
+            lastSync = float(StorageService.sfind(StorageService.SHARE_TERMS_LAST_SYNC, 0, Application.user.userId))
+            syncTime = time.time()
+            
+            changedTerms = self.termService.findAlteredPastModifed(lastSync)
+            deletedTerms = self.termService.findDeletedPastModifed(lastSync)
+                
+            merged = { }
+            
+            self.trigger.emit(10, "Collecting local terms")
+            self.trigger.emit(15, "Modified terms")
+            
+            for term in changedTerms:
+                strTermId = str(term.termId) 
+                
+                merged[strTermId] =  {
+                                        "id": strTermId,
+                                        "code": term.language,
+                                        "source": term.sourceCode,
+                                        "phrase": term.phrase,
+                                        "basePhrase": term.basePhrase,
+                                        "sentence": term.sentence,
+                                        "definition": term.definition,
+                                        "modified": term.modified
+                                       }             
+                
+            self.trigger.emit(15, "Deleted terms")
+            
+            for term in deletedTerms:
+                strTermId = str(term.termId)
+                 
+                if strTermId in merged and "modified" in merged[strTermId]:
+                    if term.entryDate>merged[strTermId]["modified"]:
+                        merged[strTermId] = {
+                                               "id": strTermId,
+                                               "code": "del"
+                                               }
+                else:
+                    merged[strTermId] = {
+                                               "id": strTermId,
+                                               "code": "del"
+                                               }
+            
+            logging.debug("Merged {0} terms".format(len(merged)))
+            
+            self.trigger.emit(20, "Found {0} terms".format(len(merged)))
+            self.trigger.emit(25, "Getting language codes")
+            
+            codes = [l.languageCode for l in self.languageService.findAll() if l.languageCode!="--"]
+            acceptable = [l.sourceCode for l in self.languageService.findAll() if l.sourceCode!="--"]
+            
+            self.trigger.emit(30, "Sending {0} terms to server".format(len(merged)))
+            self.trigger.emit(30, "Asking for languages: " + ",".join(codes))
+            self.trigger.emit(30, "with definitions in: " + ",".join(acceptable))
+            
+            newTerms = self.webService.syncTerms(merged, lastSync, codes, acceptable)
+            
+            if newTerms is None:
+                logging.debug("Error receiving terms")
+                self.trigger.emit(100, "Unable to sync. There was an error while attempting to sync your words.")
+                return
+            
+            self.trigger.emit(50, "Received {0} terms from server".format(len(newTerms)))
+            logging.debug("Received {0} terms".format(len(newTerms)))
+            self.sharedTermService.update(newTerms)
+            
+            self.trigger.emit(99, "Finishing...")
+            StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, syncTime, Application.user.userId)
+            logging.debug("Sync complete")
+        except Exception as e:
+            import traceback, os
+            details = traceback.format_exc()
+            
+            logging.debug(e)
+            logging.debug(details)
+            
+            self.trigger.emit(100, "Error: " + str(e))          

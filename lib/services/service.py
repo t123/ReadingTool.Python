@@ -311,6 +311,7 @@ class TermService:
             db.rollback()
             return False
         
+        db.close()
         return True
         
     def save(self, term, refresh=True):
@@ -646,7 +647,7 @@ class ItemService:
                                     listenedTimes=item.listenedTimes
                                     )
                 else:        
-                    self.db.execute(self.updateStamement,
+                    self.db.execute(self.updateStatement,
                                     itemId=item.itemId,
                                     modified=time.time(),
                                     itemType=item.itemType,
@@ -669,6 +670,7 @@ class ItemService:
             db.rollback()
             return False
         
+        db.close()
         return True
         
     def save(self, item, refresh=True):
@@ -695,7 +697,7 @@ class ItemService:
                             listenedTimes=item.listenedTimes
                             )
         else:        
-            self.db.execute(self.updateStamement,
+            self.db.execute(self.updateStatement,
                             itemId=item.itemId,
                             modified=time.time(),
                             itemType=item.itemType,
@@ -1109,6 +1111,8 @@ class StorageService:
             db.execute("DELETE FROM storage WHERE k=:key AND uuid is null", key=key)
         else:
             db.execute("DELETE FROM storage WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key)
+            
+        db.close()
         
     @staticmethod
     def sfind(key, default=None, uuid=None):
@@ -1126,6 +1130,7 @@ class StorageService:
         if result is None:
             return default
         
+        db.close()
         return result
     
     @staticmethod
@@ -1144,6 +1149,8 @@ class StorageService:
             db.execute("INSERT INTO storage (uuid, k, v) VALUES (:uuid, :key, :value)", uuid=uuid, key=key, value=value)
         else:
             db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
+            
+        db.close()
     
 class DatabaseService:
     def __init__(self):

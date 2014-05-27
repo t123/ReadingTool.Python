@@ -9,6 +9,9 @@ class Db:
         self.conn = sqlite3.connect(connectionString, isolation_level=isolationLevel, detect_types=sqlite3.PARSE_DECLTYPES)
         self.conn.row_factory = sqlite3.Row
     
+    def close(self):
+        self.conn.close()
+        
     def commit(self):
         self.conn.commit()
         
