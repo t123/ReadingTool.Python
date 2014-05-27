@@ -264,7 +264,6 @@ class TermService:
         self.db = Db(Application.connectionString)
         
     def save(self, term):
-        isNew = True
         if emptyId(term.termId):
             term.termId = newId()
             
@@ -284,7 +283,6 @@ class TermService:
                             isFragment=term.isFragment
                             )
         else:        
-            isNew = False
             self.db.execute("UPDATE term SET modified=:modified, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, state=:state, itemSourceId=:itemSourceId, sentence=:sentence WHERE termId=:termId",
                             termId=term.termId,
                             modified=time.time(),
@@ -296,18 +294,7 @@ class TermService:
                             itemSourceId=toUuid(term.itemSourceId)
                             )
             
-        self.db.execute("INSERT INTO termlog ( entryDate, languageId, termId, state, userId, type ) VALUES (:entryDate, :languageId, :termId, :state, :userId, :type)",
-                        entryDate=time.time(),
-                        languageId=toUuid(term.languageId),
-                        termId=term.termId,
-                        state=term.state,
-                        userId=Application.user.userId,
-                        type=TermType.Create if isNew else TermType.Modify
-                        )
-            
-        term = self.findOne(term.termId)
-            
-        return term
+        return self.findOne(term.termId)
         
     def findAll(self):
         return self.db.many(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
@@ -370,22 +357,12 @@ class TermService:
         return terms, fragments
         
     def delete(self, termId):
-        termId = toUuid(termId)
-        
         term = self.findOne(termId)
+        
         if term is None:
             return
         
-        self.db.execute("INSERT INTO termlog ( entryDate, languageId, termId, state, userId, type ) VALUES (:entryDate, :languageId, :termId, :state, :userId, :type)",
-                        entryDate=time.time(),
-                        languageId=term.languageId,
-                        termId=term.termId,
-                        state=term.state,
-                        userId=Application.user.userId,
-                        type=TermType.Delete
-                        )
-        
-        self.db.execute("DELETE FROM term WHERE termId=:termId and userId=:userId", termId=termId, userId=Application.user.userId)
+        self.db.execute("DELETE FROM term WHERE termId=:termId and userId=:userId", termId=term.termId, userId=Application.user.userId)
         
     def search(self, filter):
         query = """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
