@@ -18,9 +18,12 @@ def toUuid(input):
         
 class UserService:
     def __init__(self):
-        
         self.db = Db(Application.connectionString)
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def save(self, user, refresh=True):
         if emptyId(user.userId):
             user.userId = newId() 
@@ -78,11 +81,15 @@ class UserService:
             languageService.delete(language.languageId)
             
         self.db.execute("DELETE FROM user WHERE userId=:userId", userId)
-
+            
 class LanguageService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def save(self, language, plugins=None, refresh=True):
         if emptyId(language.languageId):
             language.languageId = newId() 
@@ -176,6 +183,10 @@ class LanguageCodeService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def save(self, lc):
         temp = self.findOne(lc.code)
         
@@ -271,6 +282,10 @@ class TermService:
         self.insertStatement = "INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId, isFragment) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId, :isFragment)"
         self.updateStatement = "UPDATE term SET modified=:modified, lowerPhrase=:lowerPhrase, basePhrase=:basePhrase, definition=:definition, state=:state, itemSourceId=:itemSourceId, sentence=:sentence WHERE termId=:termId"
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def bulkSave(self, terms):
         db = Db(Application.connectionString, isolationLevel="IMMEDIATE")
         
@@ -523,6 +538,10 @@ class SharedTermService():
     def __init__(self):
         self.db = Db(Application.connectionString)
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def search(self, filter):
         query = """SELECT term.*, b.name as language
                     FROM shared_term term
@@ -618,7 +637,11 @@ class ItemService:
         self.db = Db(Application.connectionString)
         self.insertStatement = "INSERT INTO item ( itemId, created, modified, itemType, userId, collectionName, collectionNo, mediaUri, lastRead, l1Title, l2Title, l1LanguageId, l2LanguageId, l1Content, l2Content, readTimes, listenedTimes) VALUES ( :itemId, :created, :modified, :itemType, :userId, :collectionName, :collectionNo, :mediaUri, :lastRead, :l1Title, :l2Title, :l1LanguageId, :l2LanguageId, :l1Content, :l2Content, :readTimes, :listenedTimes )"
         self.updateStatement = "UPDATE item SET modified=:modified, itemType=:itemType, collectionName=:collectionName, collectionNo=:collectionNo, mediaUri=:mediaUri, lastRead=:lastRead, l1Title=:l1Title, l2Title=:l2Title, l1LanguageId=:l1LanguageId, l2LanguageId=:l2LanguageId, l1Content=:l1Content, l2Content=:l2Content, readTimes=:readTimes, listenedTimes=:listenedTimes WHERE itemId=:itemId"
-          
+    
+    def __del__(self):
+        if self.db:
+            self.db.close()
+                  
     def bulkSave(self, items):
         db = Db(Application.connectionString, isolationLevel="IMMEDIATE")
         
@@ -977,6 +1000,10 @@ class PluginService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def save(self, plugin, refresh=True):
         if emptyId(plugin.pluginId):
             plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid, version, local) VALUES ( :pluginId, :name, :description, :content, :uuid, :version, :local)",
@@ -1049,6 +1076,10 @@ class StorageService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def delete(self, key, uuid=None):
         """Deletes key"""
         uuid = toUuid(uuid)
@@ -1157,6 +1188,10 @@ class DatabaseService:
         self.db = Db(Application.connectionString)
         self.storageService = StorageService()
         
+    def __del__(self):
+        if self.db:
+            self.db.close()
+            
     def tableExists(self, name):
         return self.db.scalar("SELECT COUNT(name) FROM sqlite_master WHERE type='table' AND name=:name", name=name)
     
