@@ -4,15 +4,20 @@ from lib.db import Db
 from lib.misc import Application
 from lib.stringutil import StringUtil, FilterParser
 
+def newId():
+    return uuid.uuid1().bytes
+
 class UserService:
     def __init__(self):
         
         self.db = Db(Application.connectionString)
         
     def save(self, user):
-        if(user.userId == 0):
-            user.userId = self.db.execute("INSERT INTO user ( userId, username, lastLogin, accessKey, accessSecret, syncData ) VALUES ( :userId, :username, :lastLogin, :accessKey, :accessSecret, :syncData )",
-                            userId=None,
+        if(user.userId == None):
+            user.userId = newId() 
+            
+            self.db.execute("INSERT INTO user ( userId, username, lastLogin, accessKey, accessSecret, syncData ) VALUES ( :userId, :username, :lastLogin, :accessKey, :accessSecret, :syncData )",
+                            userId=user.userId,
                             username=user.username,
                             lastLogin=None,
                             accessKey=user.accessKey,
@@ -61,9 +66,11 @@ class LanguageService:
         self.db = Db(Application.connectionString)
         
     def save(self, language, plugins=None):
-        if(language.languageId == 0):
-            language.languageId = self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction, theme, sourceCode) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction, :theme, :sourceCode)",
-                            languageId=None,
+        if language.languageId is None:
+            language.languageId = newId() 
+            
+            self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction, theme, sourceCode) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction, :theme, :sourceCode)",
+                            languageId=language.languageId,
                             name=language.name,
                             created=time.time(),
                             modified=time.time(),
@@ -234,9 +241,11 @@ class TermService:
         
     def save(self, term):
         isNew = True
-        if(term.termId == 0):
-            term.termId = self.db.execute("INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId, isFragment) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId, :isFragment)",
-                            termId=None,
+        if term.termId is None:
+            term.termId = newId()
+            
+            self.db.execute("INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId, isFragment) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId, :isFragment)",
+                            termId=term.termId,
                             created=time.time(),
                             modified=time.time(),
                             phrase=term.phrase.strip(),
@@ -535,9 +544,11 @@ class ItemService:
         self.db = Db(Application.connectionString)
         
     def save(self, item):
-        if(item.itemId == 0):
-            item.itemId = self.db.execute("INSERT INTO item ( itemId, created, modified, itemType, userId, collectionName, collectionNo, mediaUri, lastRead, l1Title, l2Title, l1LanguageId, l2LanguageId, l1Content, l2Content, readTimes, listenedTimes) VALUES ( :itemId, :created, :modified, :itemType, :userId, :collectionName, :collectionNo, :mediaUri, :lastRead, :l1Title, :l2Title, :l1LanguageId, :l2LanguageId, :l1Content, :l2Content, :readTimes, :listenedTimes )",
-                            itemId=None,
+        if item.itemId is None:
+            item.itemId = newId()
+            
+            self.db.execute("INSERT INTO item ( itemId, created, modified, itemType, userId, collectionName, collectionNo, mediaUri, lastRead, l1Title, l2Title, l1LanguageId, l2LanguageId, l1Content, l2Content, readTimes, listenedTimes) VALUES ( :itemId, :created, :modified, :itemType, :userId, :collectionName, :collectionNo, :mediaUri, :lastRead, :l1Title, :l2Title, :l1LanguageId, :l2LanguageId, :l1Content, :l2Content, :readTimes, :listenedTimes )",
+                            itemId=item.itemId,
                             created=time.time(),
                             modified=time.time(),
                             itemType=item.itemType,
@@ -828,9 +839,9 @@ class PluginService:
         self.db = Db(Application.connectionString)
         
     def save(self, plugin):
-        if(plugin.pluginId == 0):
+        if plugin.pluginId is None:
             plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid, version, local) VALUES ( :pluginId, :name, :description, :content, :uuid, :version, :local)",
-                            pluginId=None,
+                            pluginId=newId(),
                             name=plugin.name,
                             description=plugin.description,
                             content=plugin.content,
@@ -894,11 +905,14 @@ class StorageService:
     def __init__(self):
         self.db = Db(Application.connectionString)
         
-    def delete(self, key, uuid=""):
+    def delete(self, key, uuid=None):
         """Deletes key"""
-        self.db.execute("DELETE FROM storage WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key)
+        if uuid is None:
+            self.db.execute("DELETE FROM storage WHERE k=:key AND uuid is null", key=key)
+        else:
+            self.db.execute("DELETE FROM storage WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key)
         
-    def save(self, key, value, uuid=""):
+    def save(self, key, value, uuid=None):
         """Inserts a new value or replaces an existing if the key already exists"""
         s = self.findOne(key, uuid)
             
@@ -907,17 +921,28 @@ class StorageService:
         else:
             self.db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
     
-    def findOne(self, key, uuid=""):
+    def findOne(self, key, uuid=None):
         """Returns the storage object for a given key and UUID"""
-        return self.db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+        if uuid is None:
+            return self.db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid is null", key=key)
+        else:
+            return self.db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
     
-    def findAll(self, uuid):
+    def findAll(self, uuid=None):
         """Returns all the storage objects for a given UUID"""
-        return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid=:uuid", uuid=uuid)
+        
+        if uuid is None:
+            return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid is null")
+        else:
+            return self.db.many(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE uuid=:uuid", uuid=uuid)
     
-    def find(self, key, default=None, uuid=""):
+    def find(self, key, default=None, uuid=None):
         """Returns the storage value for a given key and UUID"""
-        result = self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+        
+        if uuid is None:
+            result = self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid is null", key=key)
+        else:
+            result = self.db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
         
         if result is None:
             return default
@@ -925,27 +950,43 @@ class StorageService:
         return result
     
     @staticmethod
-    def sdelete(key, uuid=""):
+    def sdelete(key, uuid=None):
         """Deletes key"""
         db = Db(Application.connectionString)
-        db.execute("DELETE FROM storage WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key)
+        
+        if uuid is None:
+            db.execute("DELETE FROM storage WHERE k=:key AND uuid is null", key=key)
+        else:
+            db.execute("DELETE FROM storage WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key)
         
     @staticmethod
-    def sfind(key, default=None, uuid=""):
+    def sfind(key, default=None, uuid=None):
         """Returns the storage value for a given key and UUID"""
         db = Db(Application.connectionString)
-        result = db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
         
+        result = None
+        
+        if uuid is None:
+            result = db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid is null", key=key)
+        else:
+            result = db.scalar("SELECT v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+
         if result is None:
             return default
         
         return result
     
     @staticmethod
-    def ssave(key, value, uuid=""):
+    def ssave(key, value, uuid=None):
         """Inserts a new value or replaces an existing if the key already exists"""
         db = Db(Application.connectionString)
-        s = db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
+        
+        s = None
+        
+        if uuid is None:
+            s = db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid is null", key=key)
+        else:
+            s = db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
             
         if s==None:
             db.execute("INSERT INTO storage (uuid, k, v) VALUES (:uuid, :key, :value)", uuid=uuid, key=key, value=value)
@@ -985,55 +1026,6 @@ class DatabaseService:
         
         logging.debug("creating db")
         sql = """
-        CREATE TABLE "item" ("itemId" INTEGER PRIMARY KEY  NOT NULL ,"itemType" INTEGER NOT NULL ,"collectionName" VARCHAR NOT NULL ,"collectionNo" INTEGER,"l1Title" VARCHAR NOT NULL ,"l1Content" BINARY DEFAULT (null) ,"l1LanguageId" INTEGER NOT NULL ,"l2Title" VARCHAR NOT NULL ,"l2Content" BINARY DEFAULT (null) ,"l2LanguageId" INTEGER,"created" FLOAT NOT NULL ,"modified" FLOAT NOT NULL ,"lastRead" FLOAT,"mediaUri" VARCHAR,"userId" INTEGER NOT NULL ,"readTimes" INTEGER NOT NULL  DEFAULT (0) ,"listenedTimes" INTEGER NOT NULL  DEFAULT (0) );
-CREATE TABLE "language" (
-"languageId" INTEGER PRIMARY KEY ,
-"name" VARCHAR NOT NULL,
-"created" FLOAT NOT NULL,
-"modified" FLOAT,
-"isArchived" INTEGER,
-"languageCode" VARCHAR NOT NULL,
-"userId" INTEGER NOT NULL, 
-"direction" INTEGER NOT NULL, 
-"termRegex" VARCHAR NOT NULL
-);
-CREATE TABLE "language_plugin" ("languageId" INTEGER NOT NULL , "pluginId" INTEGER NOT NULL , PRIMARY KEY ("languageId", "pluginId"));
-CREATE TABLE "languagecode" ("name" VARCHAR NOT NULL, "code" VARCHAR UNIQUE NOT NULL);
-CREATE TABLE "plugin" (
-"pluginId" INTEGER PRIMARY KEY  NOT NULL , 
-"name" VARCHAR NOT NULL, 
-"description" VARCHAR, 
-"content" TEXT, 
-"uuid" VARCHAR NOT NULL
-);
-CREATE TABLE "storage" ("uuid" VARCHAR, "k" VARCHAR NOT NULL,  "v" TEXT NOT NULL);
-CREATE TABLE "term" (
-    "termId" INTEGER PRIMARY KEY,
-    "created" FLOAT NOT NULL,
-    "modified" FLOAT,
-    "phrase" VARCHAR  NOT NULL,
-    "basePhrase" VARCHAR,
-    "lowerPhrase" VARCHAR  NOT NULL,
-    "definition" VARCHAR,
-    "sentence" VARCHAR,
-    "state" INTEGER  NOT NULL,
-    "languageId" INTEGER NOT NULL,
-    "itemSourceId" INTEGER,
-    "userId" INTEGER NOT NULL
-, "isFragment" BOOL NOT NULL  DEFAULT 0);
-CREATE TABLE "termlog" ("entryDate" FLOAT NOT NULL ,"termId" INTEGER NOT NULL ,"state" INTEGER NOT NULL ,"type" INTEGER NOT NULL  DEFAULT (0) ,"languageId" INTEGER NOT NULL ,"userId" INTEGER NOT NULL );
-CREATE TABLE "user" (
-"userId" INTEGER PRIMARY KEY  AUTOINCREMENT  NOT NULL , 
-"username" VARCHAR UNIQUE NOT NULL , 
-"lastLogin" FLOAT, 
-"accessKey" VARCHAR, 
-"accessSecret" VARCHAR, 
-"syncData" BOOL);
-CREATE INDEX "IDX_item_l1Id" ON "item" ("l1LanguageId" ASC);
-CREATE INDEX "IDX_item_l2Id" ON "item" ("l2LanguageId" ASC);
-CREATE INDEX "IDX_term_languageId" ON "term" ("languageId" ASC);
-CREATE UNIQUE INDEX "IDX_unique_storage_key" ON "storage" ("uuid" ASC, "k" ASC);
-CREATE UNIQUE INDEX "IDX_unique_terms" ON "term" ("lowerPhrase" ASC, "languageId" ASC, "userId" ASC);
         """
         
         self.db.script(sql)

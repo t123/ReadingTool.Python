@@ -71,7 +71,7 @@ class LanguageDirection:
     
 class User():
     def __init__(self):
-        self.userId = 0
+        self.userId = None
         self.username = ""
         self.lastLogin = None
         self.accessKey = ""
@@ -91,7 +91,7 @@ class Language():
     TERM_REGEX = "([a-zA-ZÀ-ÖØ-öø-ÿĀ-ſƀ-ɏ\’\'-]+)|(\s+)|(\d+)|(__\d+__)|(<\/?[a-z][A-Z0-9]*[^>]*>)|(.)"
     
     def __init__(self):
-        self.languageId = 0
+        self.languageId = None
         self.name = ""
         self.created = None
         self.modified = None
@@ -127,7 +127,7 @@ class LanguageCode():
 
 class LanguagePlugin():
     def __init__(self):
-        self.pluginId = 0
+        self.pluginId = None
         self.name = ""
         self.description = ""
         self.enabled = False
@@ -138,7 +138,7 @@ class SharedTerm():
     def __init__(self):
         self._phrase = ""
         
-        self.id = 0
+        self.id = None
         self.code = ""
         self.lowerPhrase = ""
         self.basePhrase = ""
@@ -158,7 +158,7 @@ class SharedTerm():
         
 class Term():
     def __init__(self):
-        self.termId = 0
+        self.termId = None
         self.created = None
         self.modified = None
         
@@ -269,7 +269,7 @@ class TermLog():
     
 class Item():
     def __init__(self):
-        self.itemId = 0
+        self.itemId = None
         self.created = None
         self.modified = None
         self.itemType = ItemType.Text
@@ -372,7 +372,7 @@ class Item():
     
 class Plugin():
     def __init__(self):
-        self.pluginId = 0
+        self.pluginId = None
         self.description = ""
         self.name = ""
         self.content = ""

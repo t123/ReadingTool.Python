@@ -29,7 +29,7 @@ class SettingsForm(QtGui.QDialog):
         self.ui.twSettings.setSortingEnabled(True)
          
         index = 0
-        settings = self.storageService.findAll(uuid="")
+        settings = self.storageService.findAll(uuid=None)
         
         self.ui.twSettings.setRowCount(len(settings))
          
@@ -82,7 +82,7 @@ class SettingsForm(QtGui.QDialog):
         for index in range(0, self.ui.twSettings.rowCount()):
             item = self.ui.twSettings.item(index, 0).data(QtCore.Qt.UserRole)
             value = self.ui.twSettings.item(index, 1).text()
-            self.storageService.save(item.key, value, "")
+            self.storageService.save(item.key, value, None)
             
         for index in range(0, self.ui.twUserSettings.rowCount()):
             item = self.ui.twUserSettings.item(index, 0).data(QtCore.Qt.UserRole)

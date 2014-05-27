@@ -19,18 +19,13 @@ class Db:
         
     def execute(self, sql, *a, **ka):
         cursor = self.conn.cursor()
-        ret = None
         
         if ka:
             cursor.execute(sql, ka)
         else:
             cursor.execute(sql, a)
             
-        if sql.startswith("INSERT"):
-            ret = self.scalar("SELECT last_insert_rowid()")
-            
         cursor.close()
-        return ret
     
     def list(self, sql, *a, **ka):
         result = None
@@ -72,7 +67,7 @@ class Db:
             
         cursor.close()
         
-        return [self._mapRowToObject2(cls(), row) for row in result]
+        return [self._mapRowToObject(cls(), row) for row in result]
 
     def one(self, cls, sql, *a, **ka):
         result = None
@@ -84,9 +79,9 @@ class Db:
             result = cursor.execute(sql, a).fetchone()
             
         cursor.close()
-        return self._mapRowToObject2(cls(), result)
+        return self._mapRowToObject(cls(), result)
         
-    def _mapRowToObject2(self, obj, result):
+    def _mapRowToObject(self, obj, result):
         if not result:
             return None
         
