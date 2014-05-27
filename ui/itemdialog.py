@@ -1,4 +1,4 @@
-import os, logging
+import os, logging, uuid
 from PyQt4 import QtCore, QtGui, Qt
 from PyQt4.Qsci import QsciScintilla
 
@@ -10,7 +10,7 @@ from ui.views.itemdialog import Ui_ItemDialog
 from lib.services.web import WebService
 
 class ItemDialogForm(QtGui.QDialog):
-    def __init__(self, parent=None, itemId=0):
+    def __init__(self, parent=None, itemId=None):
         self.itemService = ItemService()
         self.languageService = LanguageService()
         
@@ -36,6 +36,11 @@ class ItemDialogForm(QtGui.QDialog):
         self.hasChange = False
         self.onTitleChanged(self.item.l1Title if self.item else "")
         
+        if not self.languageService.any():
+            self.ui.pbCopy.setEnabled(False)
+            self.ui.pbSplit.setEnabled(False)
+            self.ui.pbSave.setEnabled(False)
+            
         logging.debug("Item Id: {0}".format(itemId))
         logging.debug("Language Id: {0}".format(self.item.l1LanguageId if self.item is not None else "New"))
         
@@ -123,9 +128,7 @@ class ItemDialogForm(QtGui.QDialog):
         self.hasChange = True
         
     def setItem(self, itemId):
-        self.item = self.itemService.findOne(itemId)
-        
-        if self.item is None:
+        if itemId is None:
             self.ui.lblDate.setText("Unsaved item")
             self.ui.pbCopy.setEnabled(False)
             self.ui.pbSplit.setEnabled(False)
@@ -133,8 +136,10 @@ class ItemDialogForm(QtGui.QDialog):
             self.ui.rbVideo.setChecked(False)
             self.setWindowTitle("New item")
             self.checkLanguageCode(-1)
+            self.item = None
             return
         
+        self.item = self.itemService.findOne(itemId)
         self.ui.lblDate.setText("{1} (Created on {0})".format(Time.toLocal(self.item.created), Time.toLocal(self.item.modified)))
         self.ui.pbCopy.setEnabled(True)
         self.ui.pbSplit.setEnabled(True)
@@ -158,14 +163,31 @@ class ItemDialogForm(QtGui.QDialog):
         self.ui.teL1Content.setText(self.item.getL1Content())
         self.ui.teL2Content.setText(self.item.getL2Content())
         
-        index1 = self.ui.cbL1Language.findData(self.item.l1LanguageId)
-        index2 = self.ui.cbL1Language.findData(self.item.l2LanguageId)
+        #index1 = self.ui.cbL1Language.findData(self.item.l1LanguageId)
+        #index2 = self.ui.cbL2Language.findData(self.item.l2LanguageId)
+        index1 = self.findIndex(self.ui.cbL1Language, self.item.l1LanguageId)
+        index2 = self.findIndex(self.ui.cbL2Language, self.item.l2LanguageId)
         
         self.ui.cbL1Language.setCurrentIndex(index1)
         self.ui.cbL2Language.setCurrentIndex(index2)
         
         self.checkLanguageCode(index1)
         
+    def findIndex(self, cb, data):
+        if cb is None or not isinstance(cb, QtGui.QComboBox):
+            return -1
+        
+        if data is None:
+            return -1
+        
+        for index in range(0, cb.count()):
+            cbData = cb.itemData(index)
+            
+            if cbData==data:
+                return index
+            
+        return -1
+    
     def checkLanguageCode(self, index):
         if not Application.user.hasCredentials():
             self.ui.pbSegment.hide()
@@ -173,6 +195,9 @@ class ItemDialogForm(QtGui.QDialog):
             
         l1LanguageId = self.ui.cbL1Language.itemData(self.ui.cbL1Language.currentIndex())
         self.language = self.languageService.findOne(l1LanguageId)
+        
+        if self.language is None:
+            return
         
         if self.language.languageCode=="ja":
             self.ui.pbSegment.setToolTip("Segment with Mecab")

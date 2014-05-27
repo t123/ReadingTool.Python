@@ -144,6 +144,9 @@ class LanguageService:
         self.db.execute("DELETE FROM item WHERE l1LanguageId=:languageId", languageId=languageId)
         self.db.execute("DELETE FROM termLog WHERE languageId=:languageId", languageId=languageId)
         self.db.execute("DELETE FROM language WHERE languageId=:languageId", languageId=languageId)
+        
+    def any(self):
+        return self.db.scalar("SELECT COUNT(languageId) FROM language WHERE userId=:userId", userId=Application.user.userId)>0
     
 class LanguageCodeService:
     def __init__(self):
