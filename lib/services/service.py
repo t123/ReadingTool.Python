@@ -7,13 +7,16 @@ from lib.stringutil import StringUtil, FilterParser
 def newId():
     return uuid.uuid1().bytes
 
+def emptyId(id):
+    return id is None
+
 class UserService:
     def __init__(self):
         
         self.db = Db(Application.connectionString)
         
     def save(self, user):
-        if(user.userId == None):
+        if emptyId(user.userId):
             user.userId = newId() 
             
             self.db.execute("INSERT INTO user ( userId, username, lastLogin, accessKey, accessSecret, syncData ) VALUES ( :userId, :username, :lastLogin, :accessKey, :accessSecret, :syncData )",
@@ -66,7 +69,7 @@ class LanguageService:
         self.db = Db(Application.connectionString)
         
     def save(self, language, plugins=None):
-        if language.languageId is None:
+        if emptyId(language.languageId):
             language.languageId = newId() 
             
             self.db.execute("INSERT INTO language ( languageId, name, created, modified, isArchived, languageCode, userId, termRegex, direction, theme, sourceCode) VALUES ( :languageId, :name, :created, :modified, :isArchived, :languageCode, :userId, :termRegex, :direction, :theme, :sourceCode)",
@@ -241,7 +244,7 @@ class TermService:
         
     def save(self, term):
         isNew = True
-        if term.termId is None:
+        if emptyId(term.termId):
             term.termId = newId()
             
             self.db.execute("INSERT INTO term ( termId, created, modified, phrase, lowerPhrase, basePhrase, definition, sentence, languageId, state, userId, itemSourceId, isFragment) VALUES ( :termId, :created, :modified, :phrase, :lowerPhrase, :basePhrase, :definition, :sentence, :languageId, :state, :userId, :itemSourceId, :isFragment)",
@@ -544,7 +547,7 @@ class ItemService:
         self.db = Db(Application.connectionString)
         
     def save(self, item):
-        if item.itemId is None:
+        if emptyId(item.itemId):
             item.itemId = newId()
             
             self.db.execute("INSERT INTO item ( itemId, created, modified, itemType, userId, collectionName, collectionNo, mediaUri, lastRead, l1Title, l2Title, l1LanguageId, l2LanguageId, l1Content, l2Content, readTimes, listenedTimes) VALUES ( :itemId, :created, :modified, :itemType, :userId, :collectionName, :collectionNo, :mediaUri, :lastRead, :l1Title, :l2Title, :l1LanguageId, :l2LanguageId, :l1Content, :l2Content, :readTimes, :listenedTimes )",
@@ -839,7 +842,7 @@ class PluginService:
         self.db = Db(Application.connectionString)
         
     def save(self, plugin):
-        if plugin.pluginId is None:
+        if emptyId(plugin.pluginId):
             plugin.pluginId = self.db.execute("INSERT INTO plugin ( pluginId, name, description, content, uuid, version, local) VALUES ( :pluginId, :name, :description, :content, :uuid, :version, :local)",
                             pluginId=newId(),
                             name=plugin.name,
@@ -1024,10 +1027,14 @@ class DatabaseService:
         if self.tableExists("storage"):
             return
         
-        logging.debug("creating db")
-        sql = """
-        """
+        import os
         
+        logging.debug("creating db")
+        sql = ""
+        
+        with open (os.path.join(Application.pathDatabase, "rtwin.sql"), "r") as file:
+            sql = file.read()
+                  
         self.db.script(sql)
         
         storageService = StorageService()
