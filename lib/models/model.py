@@ -106,13 +106,13 @@ class Language():
     def toDict(self):
         d = {}
         
-        d["languageId"] = self.languageId
+        d["languageId"] = str(self.languageId)
         d["name"] = self.name
         d["created"] = self.created
         d["modified"] = self.modified
         d["isArchived"] = self.isArchived
         d["languageCode"] = self.languageCode
-        d["userId"] = self.userId
+        d["userId"] = str(self.userId)
         d["termRegex"] = self.termRegex
         d["direction"] = self.direction
         d["theme"] = self.theme
@@ -229,7 +229,7 @@ class Term():
     
     def toDict(self):
         d = {}
-        d["termId"] = self.termId
+        d["termId"] = str(self.termId)
         d["created"] = self.created
         d["modified"] = self.modified
         d["phrase"] = self.phrase
@@ -237,10 +237,10 @@ class Term():
         d["basePhrase"] = self.basePhrase
         d["definition"] = self.definition
         d["sentence"] = self.sentence
-        d["languageId"] = self.languageId
+        d["languageId"] = str(self.languageId)
         d["state"] = TermState.ToString(self.state).lower() #historical
-        d["userId"] = self.userId
-        d["itemSourceId"] = self.itemSourceId
+        d["userId"] = str(self.userId)
+        d["itemSourceId"] = str(self.itemSourceId)
         d["language"] = self.language
         d["itemSource"] = self.itemSource
         d["isFragment"] = self.isFragment
@@ -259,11 +259,11 @@ class TermLog():
     def toDict(self):
         d = {}
         d["entryDate"] = self.entryDate
-        d["termId"] = self.termId
+        d["termId"] = str(self.termId)
         d["state"] = TermState.ToString(self.state)
         d["type"] = TermType.ToString(self.type)
-        d["languageId"] = self.languageId
-        d["userId"] = self.userId
+        d["languageId"] = str(self.languageId)
+        d["userId"] = str(self.userId)
         
         return d
     
@@ -335,19 +335,19 @@ class Item():
     
     def toDict(self):
         d = {}
-        d["itemId"] = self.itemId
+        d["itemId"] = str(self.itemId)
         d["created"] = self.created
         d["modified"] = self.modified
         d["itemType"] = self.itemType
-        d["userId"] = self.userId
+        d["userId"] = str(self.userId)
         d["collectionName"] = self.collectionName
         d["collectionNo"] = self.collectionNo
         d["mediaUri"] = self.mediaUri
         d["lastRead"] = self.lastRead
         d["l1Title"] = self.l1Title
         d["l2Title"] = self.l2Title
-        d["l1LanguageId"] = self.l1LanguageId
-        d["l2LanguageId"] = self.l2LanguageId
+        d["l1LanguageId"] = str(self.l1LanguageId)
+        d["l2LanguageId"] = str(self.l2LanguageId)
         d["readTimes"] = self.readTimes
         d["listenedTimes"] = self.listenedTimes
         d["l1Language"] = self.l1Language
@@ -382,7 +382,7 @@ class Plugin():
         
     def toDict(self):
         d = {}
-        d["pluginId"] = self.pluginId
+        d["pluginId"] = str(self.pluginId)
         d["description"] = self.description
         d["name"] = self.name
         d["content"] = self.content
@@ -400,8 +400,8 @@ class Storage():
         
     def toDict(self):
         d = {}
-        d["uuid"] = self.uuid
+        d["uuid"] = str(self.uuid)
         d["key"] = self.key
         d["value"] = self.value
         
-        return d  
+        return d

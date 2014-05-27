@@ -163,8 +163,6 @@ class ItemDialogForm(QtGui.QDialog):
         self.ui.teL1Content.setText(self.item.getL1Content())
         self.ui.teL2Content.setText(self.item.getL2Content())
         
-        #index1 = self.ui.cbL1Language.findData(self.item.l1LanguageId)
-        #index2 = self.ui.cbL2Language.findData(self.item.l2LanguageId)
         index1 = self.findIndex(self.ui.cbL1Language, self.item.l1LanguageId)
         index2 = self.findIndex(self.ui.cbL2Language, self.item.l2LanguageId)
         

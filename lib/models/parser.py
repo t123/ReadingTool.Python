@@ -1,4 +1,4 @@
-import os
+import os, uuid
 from lib.misc import Application
 
 class ParserInput:
@@ -44,8 +44,9 @@ class ParserOutput:
         if self.item is None:
             return
         
-        xmlPath = os.path.join(Application.pathOutput, str(self.item.itemId) + ".xml")
-        htmlPath = os.path.join(Application.pathOutput, str(self.item.itemId) + ".html")
+        itemId = str(self.item.itemId)
+        xmlPath = os.path.join(Application.pathOutput, itemId + ".xml")
+        htmlPath = os.path.join(Application.pathOutput, itemId + ".html")
         
         with open(xmlPath, 'wb') as f:
             f.write(self.xml)

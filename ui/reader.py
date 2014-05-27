@@ -1,4 +1,4 @@
-import threading, datetime, time, os
+import threading, datetime, time, os, uuid
 
 from PyQt4 import QtCore, QtGui, Qt
 
@@ -229,6 +229,9 @@ class ReaderWindow(QtGui.QDialog):
     def readItem(self, itemId, asParallel=None):
         self.item = self.itemService.findOne(itemId)
 
+        if self.item is None:
+            return
+        
         if self.item.itemType==ItemType.Video:
             self.ui.label_2.setText("Watched")
             

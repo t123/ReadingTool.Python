@@ -1,4 +1,4 @@
-import cherrypy, json, urllib, os, time, threading, mimetypes
+import cherrypy, json, urllib, os, time, threading, mimetypes, uuid
 from lib.models.model import TermState, Term, Item, TermType
 from lib.services.service import TermService, ItemService, PluginService, LanguageService, StorageService
 from lib.misc import Application, Time
@@ -9,10 +9,9 @@ class InternalController(object):
         if not id:
             return False
         
-        if not id.isdigit():
-            return False
-        
-        if int(id)<=0:
+        try:
+            uuid.UUID(id)
+        except:
             return False
         
         return True
@@ -160,10 +159,9 @@ class ResourceController(object):
         if not id:
             return False
         
-        if not id.isdigit():
-            return False
-        
-        if int(id)<=0:
+        try:
+            uuid.UUID(id)
+        except:
             return False
         
         return True
@@ -281,7 +279,7 @@ class ResourceController(object):
             raise cherrypy.HTTPError(404)
         
         htmlContent = ""
-        with open (os.path.join(Application.pathOutput, str(item.itemId) + ".html"), "r", encoding="utf8") as htmlFile:
+        with open (os.path.join(Application.pathOutput, id + ".html"), "r", encoding="utf8") as htmlFile:
             htmlContent = htmlFile.read()
         
         cherrypy.response.status = 200

@@ -5,11 +5,17 @@ from lib.misc import Application
 from lib.stringutil import StringUtil, FilterParser
 
 def newId():
-    return uuid.uuid1().bytes
+    return uuid.uuid1()
 
 def emptyId(id):
     return id is None
 
+def toUuid(input):
+    if isinstance(input, str):
+        return uuid.UUID(input)
+    
+    return input
+        
 class UserService:
     def __init__(self):
         
@@ -39,6 +45,8 @@ class UserService:
         return self.findOne(user.userId)   
 
     def findOne(self, userId):
+        userId = toUuid(userId)
+        
         return self.db.one(User, "SELECT * FROM user WHERE userId=:userId", userId=userId)
     
     def findOneByUsername(self, username):
@@ -53,9 +61,13 @@ class UserService:
             return self.db.many(User, "SELECT * FROM user ORDER BY username COLLATE NOCASE LIMIT :limit", limit=maxResults)
     
     def loginUser(self, userId):
+        userId = toUuid(userId)
+        
         self.db.execute("UPDATE user SET lastLogin=:lastLogin WHERE userId=:userId", lastLogin=time.time(), userId=userId)
             
     def delete(self, userId):
+        userId = toUuid(userId)
+        
         languages = self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY Name COLLATE NOCASE", userId=userId)
         languageService = LanguageService()
         
@@ -107,6 +119,8 @@ class LanguageService:
         return self.findOne(language.languageId)
         
     def findAllPlugins(self, languageId, active=None):
+        languageId = toUuid(languageId)
+        
         if active:
             return self.db.many(LanguagePlugin, """SELECT a.PluginId, a.Name, a.Description, b.PluginId as enabled, a.content, a.uuid 
                                                 FROM Plugin a 
@@ -126,6 +140,8 @@ class LanguageService:
                                                 )
         
     def findOne(self, languageId):
+        languageId = toUuid(languageId)
+        
         return self.db.one(Language, "SELECT * FROM language WHERE languageId=:languageId AND userId=:userId",
                            languageId=languageId, userId=Application.user.userId)
         
@@ -140,6 +156,8 @@ class LanguageService:
         return self.db.many(Language, "SELECT * FROM language WHERE userId=:userId ORDER BY Name COLLATE NOCASE", userId=Application.user.userId)
     
     def delete(self, languageId):
+        languageId = toUuid(languageId)
+        
         self.db.execute("DELETE FROM term WHERE languageId=:languageId", languageId=languageId)
         self.db.execute("DELETE FROM item WHERE l1LanguageId=:languageId", languageId=languageId)
         self.db.execute("DELETE FROM termLog WHERE languageId=:languageId", languageId=languageId)
@@ -259,10 +277,10 @@ class TermService:
                             basePhrase=term.basePhrase.strip(),
                             definition=term.definition.strip(),
                             sentence=term.sentence.strip(),
-                            languageId=term.languageId,
+                            languageId=toUuid(term.languageId),
                             state=term.state,
                             userId=Application.user.userId,
-                            itemSourceId=term.itemSourceId,
+                            itemSourceId=toUuid(term.itemSourceId),
                             isFragment=term.isFragment
                             )
         else:        
@@ -275,12 +293,12 @@ class TermService:
                             definition=term.definition.strip(),
                             sentence=term.sentence.strip(),
                             state=term.state,
-                            itemSourceId=term.itemSourceId
+                            itemSourceId=toUuid(term.itemSourceId)
                             )
             
         self.db.execute("INSERT INTO termlog ( entryDate, languageId, termId, state, userId, type ) VALUES (:entryDate, :languageId, :termId, :state, :userId, :type)",
                         entryDate=time.time(),
-                        languageId=term.languageId,
+                        languageId=toUuid(term.languageId),
                         termId=term.termId,
                         state=term.state,
                         userId=Application.user.userId,
@@ -303,6 +321,8 @@ class TermService:
                             )
         
     def findOne(self, termId):
+        termId = toUuid(termId)
+        
         return self.db.one(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
                                         FROM term term
                                         LEFT JOIN language b on term.languageId=b.LanguageId
@@ -315,6 +335,8 @@ class TermService:
                             )
     
     def fineOneByPhraseAndLanguage(self, phrase, languageId):
+        languageId = toUuid(languageId)
+        
         lowerPhrase = (phrase or "").lower()
         return self.db.one(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
                                         FROM term term
@@ -327,6 +349,8 @@ class TermService:
                             )
     
     def findAllByLanguage(self, languageId):
+        languageId = toUuid(languageId)
+        
         return self.db.many(Term, """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
                                         FROM term term
                                         LEFT JOIN language b on term.languageId=b.LanguageId
@@ -338,12 +362,16 @@ class TermService:
                             )
         
     def findAllForParsing(self, languageId):
+        languageId = toUuid(languageId)
+        
         terms = self.db.many(Term, "SELECT term.* FROM term term WHERE term.languageId=:languageId AND term.isFragment=0 AND term.userId=:userId", languageId=languageId, userId=Application.user.userId)
         fragments = self.db.many(Term, "SELECT term.* FROM term term WHERE term.languageId=:languageId AND term.isFragment=1 AND term.State=2 AND term.userId=:userId", languageId=languageId, userId=Application.user.userId)
         
         return terms, fragments
         
     def delete(self, termId):
+        termId = toUuid(termId)
+        
         term = self.findOne(termId)
         if term is None:
             return
@@ -439,6 +467,7 @@ class TermService:
         return self.db.many(Term, query, **args)
 
     def findHistory(self, termId):
+        termId = toUuid(termId)
         return self.db.many(TermLog, "SELECT entryDate, termId, state, type, languageId, userId FROM termlog WHERE termId=:termId ORDER BY entryDate DESC", termId=termId)
        
     def findAlteredPastModifed(self, timestamp):
@@ -594,6 +623,8 @@ class ItemService:
         return self.findOne(item.itemId)
         
     def findOne(self, itemId):
+        itemId = toUuid(itemId)
+        
         return self.db.one(Item,
                            """
                            SELECT item.*, B.Name as l1Language, C.Name as l2Language FROM item item
@@ -604,6 +635,8 @@ class ItemService:
                            itemId=itemId, userId=Application.user.userId)
     
     def delete(self, itemId):
+        itemId = toUuid(itemId)
+        
         self.db.execute("DELETE FROM item WHERE itemId=:itemId and userId=:userId", itemId=itemId, userId=Application.user.userId)
         
     def findAll(self):
@@ -648,7 +681,7 @@ class ItemService:
                            """,
                            userId=Application.user.userId, maxItems=maxItems)
         
-    def findPrevious(self, item, itemId=0, limit=1):
+    def findPrevious(self, item, itemId=None, limit=1):
         if item is None:
             item = self.findOne(itemId)
         
@@ -669,7 +702,7 @@ class ItemService:
                            userId=Application.user.userId, l1LanguageId=item.l1LanguageId, collectionName=item.collectionName, collectionNo=item.collectionNo, limit=limit
                            )
         
-    def findNext(self, item, itemId=0, limit=1):
+    def findNext(self, item, itemId=None, limit=1):
         if item is None:
             item = self.findOne(itemId)
             
@@ -732,6 +765,8 @@ class ItemService:
             self.save(copy)
             
     def collectionsByLanguage(self, languageId):
+        languageId = toUuid(languageId)
+        
         return self.db.list("SELECT DISTINCT(CollectionName) as X FROM item WHERE X<>'' AND userId=:userId AND l1LanguageId=:languageId ORDER BY x COLLATE NOCASE", userId=Application.user.userId, languageId=languageId)
     
     def collectionsByLanguages(self, languageIds=[]):
@@ -868,6 +903,8 @@ class PluginService:
         return self.findOne(plugin.pluginId)
         
     def findOne(self, pluginId):
+        pluginId = toUuid(pluginId)
+        
         return self.db.one(Plugin, "SELECT * FROM Plugin WHERE pluginId=:pluginId", pluginId=pluginId)
         
     def findOneByName(self, name):
