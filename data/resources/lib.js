@@ -473,83 +473,83 @@ function Lib(options) {
 
     //COMMON DATA
     self._getItemData = function (name) {
-        return $('#reading').data(name);
+        return "" + $('#reading').data(name);
     };
 
     self.getItemType = function () {
-        return self._getItemData('itemtype');
+        return "" + self._getItemData('itemtype');
     };
 
     self.getLanguageId = function () {
-        return self._getItemData('languageid');
+        return "" + self._getItemData('languageid');
     };
 
     self.getItemId = function () {
-        return self._getItemData('itemid');
+        return "" + self._getItemData('itemid');
     };
 
     self.getWebAPI = function () {
-        return self._getItemData('webapi');
+        return "" + self._getItemData('webapi');
     };
 
     self.getMediaUri = function () {
-        return self._getItemData('mediauri');
+        return "" + self._getItemData('mediauri');
     };
 
     self.getMediaPlugin = function () {
-        return self._getItemData('mediaplugin');
+        return "" + self._getItemData('mediaplugin');
     };
 
     self.getL1Code = function () {
-        return self._getItemData('l1code');
+        return "" + self._getItemData('l1code');
     };
 
     self.getL2Code = function () {
-        return self._getItemData('l2code');
+        return "" + self._getItemData('l2code');
     };
 
     self.getCollectionName = function () {
-        return self._getItemData('collectionname');
+        return "" + self._getItemData('collectionname');
     };
 
     self.getCollectionNo = function () {
-        return self._getItemData('collectionno');
+        return "" + self._getItemData('collectionno');
     };
 
     self.getDateCreated = function () {
-        return self._getItemData('datecreated');
+        return "" + self._getItemData('datecreated');
     };
 
     self.getDateModified = function () {
-        return self._getItemData('datemodified');
+        return "" + self._getItemData('datemodified');
     };
 
     self.getLastRead = function () {
-        return self._getItemData('lastread');
+        return "" + self._getItemData('lastread');
     };
 
     self.getL1Title = function () {
-        return self._getItemData('l1title');
+        return "" + self._getItemData('l1title');
     };
 
     self.getL2Title = function () {
-        return self._getItemData('l2title');
+        return "" + self._getItemData('l2title');
     };
 
     self.getLanguage1Id = function () {
-        return self._getItemData('l1id');
+        return "" + self._getItemData('l1id');
     };
 
     self.getLanguage2Id = function () {
-        return self._getItemData('l2id');
+        return "" + self._getItemData('l2id');
     };
 
     self.getL1Direction = function () {
-        return self._getItemData('l1Direction');
+        return "" + self._getItemData('l1Direction');
     };
 
     self.getL2Direction = function () {
-        return self._getItemData('l2Direction');
+        return "" + self._getItemData('l2Direction');
     };
 
     self.getCommonness = function () {
