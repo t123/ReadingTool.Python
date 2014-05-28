@@ -42,7 +42,7 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QObject.connect(self.ui.action_New_item, QtCore.SIGNAL("triggered(bool)"), self.addItem)
         QtCore.QObject.connect(self.ui.actionNew_Language, QtCore.SIGNAL("triggered(bool)"), self.addLanguage)
         QtCore.QObject.connect(self.ui.actionQuit, QtCore.SIGNAL("triggered(bool)"), self.close)
-        QtCore.QObject.connect(self.ui.actionCheck_for_updates, QtCore.SIGNAL("triggered(bool)"), self.checkForUpdates)
+        QtCore.QObject.connect(self.ui.actionCheck_for_updates, QtCore.SIGNAL("triggered(bool)"), lambda: self.checkForUpdates(True))
         QtCore.QObject.connect(self.ui.actionDelete_language, QtCore.SIGNAL("triggered(bool)"), self.deleteLanguage)
         QtCore.QObject.connect(self.ui.actionSettings, QtCore.SIGNAL("triggered(bool)"), self.manageSettings)
         QtCore.QObject.connect(self.ui.actionManage_Plugins, QtCore.SIGNAL("triggered(bool)"), self.managePlugins)
@@ -358,13 +358,15 @@ class MainWindow(QtGui.QMainWindow):
             self.bindLanguages()
             self.bindCollectionNames()
             
-    def checkForUpdates(self):
+    def checkForUpdates(self, forced=False):
         try:
             storageService = StorageService()
-            checkForUpdate = storageService.find(StorageService.SOFTWARE_CHECK_UPDATES, "true")
-             
-            if not StringUtil.isTrue(checkForUpdate):
-                return
+            
+            if not forced:
+                checkForUpdate = storageService.find(StorageService.SOFTWARE_CHECK_UPDATES, "true")
+                 
+                if not StringUtil.isTrue(checkForUpdate):
+                    return
          
             softwareVersion = storageService.find(StorageService.SOFTWARE_VERSION, "0.0")
             webService = WebService()
