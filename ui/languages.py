@@ -126,6 +126,8 @@ class LanguagesForm(QtGui.QDialog):
         self.ui.leName.setFocus()
                      
     def saveLanguage(self):
+        previousSource = self.language.sourceCode
+        
         self.language.name = self.ui.leName.text()
         self.language.termRegex = self.ui.cbTermRegex.lineEdit().text()
         self.language.isArchived = self.ui.cbIsArchived.isChecked()
@@ -145,7 +147,9 @@ class LanguagesForm(QtGui.QDialog):
                  
         self.language = self.languageService.save(self.language, plugins)
         self.setLanguage(self.language.languageId)
-        StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, 0, Application.user.userId)
+        
+        if previousSource!=self.language.sourceCode:
+            StorageService.ssave(StorageService.SHARE_TERMS_LAST_SYNC, 0, Application.user.userId)
         
         Application.myApp.bindLanguages()
         
