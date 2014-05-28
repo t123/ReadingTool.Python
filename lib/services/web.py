@@ -9,14 +9,16 @@ from lib.services.parser import LatexParser
 from lib.services.service import ItemService, LanguageService, TermService
 
 class WebService:
-    def getStandardDictionary(self, uri, verb="POST", accessKey=None):
-        return {
-                    "Uri": uri,
-                    "Verb": verb,
-                    "Time": time.time(),
-                    "Nonce": str(uuid.uuid1()),
-                    "AccessKey": Application.user.accessKey if accessKey is None else accessKey
-                }
+    #===========================================================================
+    # def getStandardDictionary(self, uri, verb="POST", accessKey=None):
+    #     return {
+    #                 "Uri": uri,
+    #                 "Verb": verb,
+    #                 "Time": time.time(),
+    #                 "Nonce": str(uuid.uuid1()),
+    #                 "AccessKey": Application.user.accessKey if accessKey is None else accessKey
+    #             }
+    #===========================================================================
         
     def logError(self, response):
         try:
@@ -27,7 +29,11 @@ class WebService:
             logging.debug(str(e))
             logging.debug(response.content)
              
-    def createJsonSignatureHeaders(self, dictionary, contentType="application/json", accessKey=None, accessSecret=None, headers=None):
+    def createRequest(self, dictionary, uri, compress=False, verb="POST", contentType="application/json", accessKey=None, accessSecret=None, headers=None):
+        nonce = str(uuid.uuid1())
+        ts = str(time.time())
+        concat = (nonce+ts+verb+uri).encode('utf-8')
+        
         data = json.dumps(dictionary, sort_keys=True)
         message = data.encode('utf-8')
         
@@ -36,19 +42,29 @@ class WebService:
         else:
             accessSecret = accessSecret.encode('utf-8')
              
-        signature = base64.b64encode(hmac.new(accessSecret, message, digestmod=hashlib.sha256).digest())
+        if compress:
+            message = gzip.compress(message)
+            
+        signature = base64.b64encode(hmac.new(accessSecret, message+concat, digestmod=hashlib.sha256).digest())
         
         h = {
                "Content-Type": contentType,
                "X-Client": "RT",
+               "X-AccessKey": Application.user.accessKey if accessKey is None else accessKey,
                "X-Signature": signature,
-               "X-AccessKey": Application.user.accessKey if accessKey is None else accessKey
+               "X-Uri": uri,
+               "X-Verb": verb,
+               "X-Time": ts,
+               "X-Nonce": nonce
                }
         
+        if compress:
+            h["Content-Encoding"] = "gzip"
+            
         if headers is not None:
             h.update(headers)
             
-        return (data, signature, h)
+        return (message, h)
         
     def segmentText(self, languageCode, content):
         uri = Application.remoteServer + "/api/v1/segment"
@@ -73,9 +89,9 @@ class WebService:
     
     def validateCredentials(self, accessKey, accessSecret):
         uri = Application.remoteServer + "/api/v1/validatecredentials"
-        data = self.getStandardDictionary(uri, accessKey=accessKey)
+        data = { }
         
-        content, signature, headers = self.createJsonSignatureHeaders(data, accessKey=accessKey, accessSecret=accessSecret)
+        content, headers = self.createRequest(data, uri, compress=False, accessKey=accessKey, accessSecret=accessSecret)
         
         try:
             r = requests.post(uri, headers=headers, data=content)
@@ -142,8 +158,7 @@ class WebService:
     def getAvailablePlugins(self):
         uri = Application.remoteServer + "/api/v1/plugins"
         
-        data = self.getStandardDictionary(uri)
-        content, signature, headers = self.createJsonSignatureHeaders(data)
+        content, headers = self.createRequest({}, uri, compress=False)
         
         try:
             r = requests.get(uri, headers=headers)
@@ -161,9 +176,8 @@ class WebService:
     def getPlugins(self, uuids):
         uri = Application.remoteServer + "/api/v1/plugins"
         
-        data = self.getStandardDictionary(uri)
-        data["uuids"] = uuids
-        content, signature, headers = self.createJsonSignatureHeaders(data)
+        data = { "uuids": uuids }
+        content, headers = self.createRequest(data, uri, compress=False)
         
         try:
             r = requests.post(uri, headers=headers, data=content)
@@ -190,35 +204,32 @@ class WebService:
         
         uri = Application.remoteServer + "/api/v1/report"
         
-        data =  { }
+        data = { }
         data["Stacktrace"] = details
         data["Version"] = StorageService.sfind(StorageService.SOFTWARE_VERSION, "Unknown")
         data["OS"] = os.name
-        data["AccessKey"] = Application.user.accessKey
+        data["AccessKey"] = Application.user.accessKey or ""
         
-        content = json.dumps(data, sort_keys=True)
+        content, headers = self.createRequest(data, uri, compress=True)
         
         try:
-            r = requests.post(uri, headers={"X-Client": "RT"}, data=content)
+            r = requests.post(uri, headers=headers, data=content)
         except requests.exceptions.RequestException:
             pass
 
     def syncTerms(self, terms, lastSync, codes, acceptable):
         uri = Application.remoteServer + "/api/v1/syncterms"
         
-        data = self.getStandardDictionary(uri)
+        data =  { }
         data["Terms"] = terms
         data["LastSync"] = lastSync
         data["Codes"] = codes
         data["Acceptable"] = acceptable
         
-        content, signature, headers = self.createJsonSignatureHeaders(data, headers={ "Content-Encoding": "gzip"})
-        data = gzip.compress(content.encode())
-    
-        logging.debug("Content size={0}; Compressed={1}".format(len(content), len(data)))
+        content, headers = self.createRequest(data, uri, compress=True)
     
         try:
-            r = requests.post(uri, headers=headers, data=data)
+            r = requests.post(uri, headers=headers, data=content)
             
             if r.status_code==200:
                 return json.loads(r.content.decode('utf8'))

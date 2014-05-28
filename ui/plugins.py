@@ -55,8 +55,8 @@ class PluginsForm(QtGui.QDialog):
     def getRemotePlugins(self):
         webService = WebService()
         available = webService.getAvailablePlugins()
-        StorageService.ssave(StorageService.PLUGIN_LAST_CHECK, time.time(), "")
-        StorageService.ssave(StorageService.PLUGIN_CACHE, json.dumps(available, sort_keys=True), "")
+        StorageService.ssave(StorageService.PLUGIN_LAST_CHECK, time.time(), None)
+        StorageService.ssave(StorageService.PLUGIN_CACHE, json.dumps(available, sort_keys=True), None)
         
         return available
     
