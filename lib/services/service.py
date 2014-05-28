@@ -1091,14 +1091,17 @@ class StorageService:
         
     def save(self, key, value, uuid=None):
         """Inserts a new value or replaces an existing if the key already exists"""
-        uuid = toUuid(uuid)
-        
         s = self.findOne(key, uuid)
+        
+        uuid = toUuid(uuid)
             
-        if s==None:
+        if s is None:
             self.db.execute("INSERT INTO storage (uuid, k, v) VALUES (:uuid, :key, :value)", uuid=uuid, key=key, value=value)
         else:
-            self.db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
+            if uuid is None:
+                self.db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid is null", key=key, value=value)
+            else:
+                self.db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
     
     def findOne(self, key, uuid=None):
         """Returns the storage object for a given key and UUID"""
@@ -1176,10 +1179,13 @@ class StorageService:
         else:
             s = db.one(Storage, "SELECT uuid, k as key, v as value FROM storage WHERE k=:key AND uuid=:uuid", key=key, uuid=uuid)
             
-        if s==None:
+        if s is None:
             db.execute("INSERT INTO storage (uuid, k, v) VALUES (:uuid, :key, :value)", uuid=uuid, key=key, value=value)
         else:
-            db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
+            if uuid is None:
+                db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid is null", key=key, value=value)
+            else:
+                db.execute("UPDATE storage SET v=:value WHERE k=:key AND uuid=:uuid", uuid=uuid, key=key, value=value)
             
         db.close()
     
