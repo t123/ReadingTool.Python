@@ -9,17 +9,6 @@ from lib.services.parser import LatexParser
 from lib.services.service import ItemService, LanguageService, TermService
 
 class WebService:
-    #===========================================================================
-    # def getStandardDictionary(self, uri, verb="POST", accessKey=None):
-    #     return {
-    #                 "Uri": uri,
-    #                 "Verb": verb,
-    #                 "Time": time.time(),
-    #                 "Nonce": str(uuid.uuid1()),
-    #                 "AccessKey": Application.user.accessKey if accessKey is None else accessKey
-    #             }
-    #===========================================================================
-        
     def logError(self, response):
         try:
             data = json.loads(response.content.decode("utf8"))
@@ -69,10 +58,10 @@ class WebService:
     def segmentText(self, languageCode, content):
         uri = Application.remoteServer + "/api/v1/segment"
         
-        data = self.getStandardDictionary(uri)
+        data =  { }
         data["LanguageCode"] = languageCode
         data["Content"] = content
-        content, signature, headers = self.createJsonSignatureHeaders(data)
+        content, headers = self.createRequest(data, uri, compress=True)
         
         try:
             r = requests.post(uri, headers=headers, data=content)
@@ -135,15 +124,14 @@ class WebService:
     
         uri = Application.remoteServer + "/api/v1/createpdf"
         
-        data = self.getStandardDictionary(uri)
+        data= { }
         data["Latex"] = self.po.html
         data["Title"] = item.name()
         
-        content, signature, headers = self.createJsonSignatureHeaders(data, headers={ "Content-Encoding": "gzip"})
-        data = gzip.compress(content.encode())
+        content, headers = self.createRequest(data, uri, compress=True)
         
         try:
-            r = requests.post(uri, headers=headers, data=data)
+            r = requests.post(uri, headers=headers, data=content)
             
             if r.status_code==200:
                 return r.content 
