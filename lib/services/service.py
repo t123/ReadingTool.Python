@@ -894,12 +894,14 @@ class ItemService:
         if languageIds is None or languageIds==[]:
             return self.db.list("SELECT DISTINCT(CollectionName) as X FROM item WHERE X<>'' AND userId=:userId ORDER BY x COLLATE NOCASE", userId=Application.user.userId)
             
+        ids = [toUuid(id) for id in languageIds]
+        
         stmt = """SELECT DISTINCT(item.collectionName) as X  
 FROM item item, language language
 WHERE X<>'' AND item.userId=:userId AND item.l1LanguageId=language.languageId AND item.l1LanguageId IN (%s)
 ORDER BY language.name COLLATE NOCASE, X COLLATE NOCASE""" % ("?," * len(languageIds))[:-1]
         
-        return self.db.list(stmt, Application.user.userId, *languageIds)
+        return self.db.list(stmt, Application.user.userId, *ids)
         
     def changeState(self, itemId, type, value):
         if value<0:
