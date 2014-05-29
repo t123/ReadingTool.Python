@@ -48,6 +48,7 @@ class FilterParser():
         self.modified = None
     
     def parseTime(self, string):
+        string = string.lower()
         string = string.replace("created:", "")
         string = string.replace("modified:", "")
         
@@ -86,24 +87,27 @@ class FilterParser():
     def append(self):
         if not StringUtil.isEmpty(self.current):
             if self.isTag:
-                self.tags.append(self.current)
+                self.tags.append(self.current.lower())
                 self.current = ""
                 self.isTag = False
                 self.inQuote = False
             else:
-                if self.current in self.languageNames:
+                if self.current.lower() in self.languageNames:
                     self.languages.append(self.current)
                 else:
-                    if self.current.startswith("limit:"):
-                        self.limit = int(self.current[6:])
-                    elif self.current.startswith("created:"):
+                    if self.current.lower().startswith("limit:"):
+                        try:
+                            self.limit = int(self.current[6:])
+                        except:
+                            self.limit = 0
+                    elif self.current.lower().startswith("created:"):
                         result = self.parseTime(self.current)
                         
                         if result is not None:
                             self.createdSign = result[0]
                             self.created = result[1]
                             
-                    elif self.current.startswith("modified:"):
+                    elif self.current.lower().startswith("modified:"):
                         result = self.parseTime(self.current)
                         
                         if result is not None:
@@ -120,7 +124,7 @@ class FilterParser():
         if StringUtil.isEmpty(text):
             return
         
-        text = text.strip().lower()
+        text = text.strip()
         
         for char in text:
             if char=="#":
