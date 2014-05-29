@@ -19,7 +19,7 @@ class Application:
     pathOutput = os.path.join(path, "output")
     pathDatabase = os.path.join(path, "database")
 
-    connectionString = os.path.join(pathDatabase, "rtwin.sqlite")
+    connectionString = os.path.join(pathDatabase, "rt.sqlite")
     
     apiServer = None
     remoteServer = None

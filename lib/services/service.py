@@ -1231,7 +1231,7 @@ class DatabaseService:
         logging.debug("creating db")
         sql = ""
         
-        with open (os.path.join(Application.pathDatabase, "rtwin.sql"), "r") as file:
+        with open (os.path.join(Application.pathDatabase, "rt.sql"), "r") as file:
             sql = file.read()
                   
         self.db.script(sql)
