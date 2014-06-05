@@ -343,10 +343,14 @@ class ApiV1Controller(object):
         
         return json.dumps(language.toDict()).encode()
     
-    def getItems(self):
+    def getItems(self, filter=""):
         itemService = ItemService()
-        items = itemService.findAll()
-        
+
+        if(StringUtil.isEmpty(filter)):
+            items = itemService.findAll()
+        else:
+            items = itemService.search(filter)
+
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
         
@@ -372,9 +376,13 @@ class ApiV1Controller(object):
         
         return json.dumps(item.toDict()).encode()
         
-    def getTerms(self):
+    def getTerms(self, filter=""):
         termService = TermService()
-        terms = termService.findAll()
+
+        if(StringUtil.isEmpty(filter)):
+            terms = termService.findAll()
+        else:
+            terms = termService.search(filter)
         
         cherrypy.response.status = 200
         cherrypy.response.headers["Content-Type"] = "application/json"
