@@ -297,6 +297,7 @@ class PluginsForm(QtGui.QDialog):
             self.pluginService.save(p)
              
         self.bindPlugins()
+        self.updateRemotePlugins()
         
     def remove(self):
         for index in range(0, self.ui.lwInstalled.count()):
