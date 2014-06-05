@@ -129,7 +129,7 @@ $(function() {
 					//warningAlerts: true,
 					//errorAlerts: true,
 					solution: "html,flash",
-					wmode : "window",
+					wmode : "opaque",
 					size : {
 						width : "720px",
 						height : "405px"
