@@ -1,4 +1,4 @@
-import sys, logging
+import sys, logging, atexit
 from PyQt4 import QtGui
 from ui.main import MainWindow
 from lib.misc import Application
@@ -21,6 +21,12 @@ except Exception as e:
     logging.basicConfig(level=logging.ERROR, format="%(asctime)s - %(levelname)s - %(message)s")
     logging.info("Debug failed: {}".format(str(e)))
 
+def cleanup(start=None):
+    logging.debug("Cleaning up at exit")
+
+    if start is not None:
+        start.backupDb("stop")
+
 if __name__=="__main__":
     try:
         start = Startup()
@@ -30,6 +36,8 @@ if __name__=="__main__":
         start.checkDbForUpgrade()
         start.compact()
 
+        atexit.register(cleanup, start)
+
         Application.server = Server(embed=True)
         app = QtGui.QApplication(sys.argv)
         Application.myApp = MainWindow()
@@ -37,9 +45,6 @@ if __name__=="__main__":
                
         Application.server.start()
         ret = app.exec_()
-        Application.server.stop()
-        start.backupDb("stop")
-        sys.exit(ret)
     except Exception as e:
         try:
             logging.error(e)

@@ -409,3 +409,7 @@ class MainWindow(QtGui.QMainWindow):
     def showAbout(self):
         self.dialog = AboutForm(self)
         self.dialog.exec_()
+
+    def closeEvent(self, event):
+        logging.debug("Stopping server")
+        Application.server.stop()
