@@ -15,7 +15,7 @@ class Startup:
         databaseService.createDb()
         
     def setServers(self):
-        local = self.storage.find(StorageService.SERVER_LOCAL, "http://localhost:8080") 
+        local = self.storage.find(StorageService.SERVER_LOCAL, "http://localhost:8999")
         remote = self.storage.find(StorageService.SERVER_REMOTE, "http://api.readingtool.net")
         
         Application.apiServer = local 
