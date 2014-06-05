@@ -17,20 +17,20 @@ function Lib(options) {
     self.getOptions = function () {
         return self.options;
     };
-    
-    self.empty = function(element) {
-        if(element===undefined) {
+
+    self.empty = function (element) {
+        if (element === undefined) {
             return true;
         }
-        
-        if(element===null) {
+
+        if (element === null) {
             return true;
         }
-        
-        if(!element.any()) {
+
+        if (!element.any()) {
             return true;
         }
-        
+
         return false;
     };
 
@@ -46,7 +46,7 @@ function Lib(options) {
         if (self.empty(current)) {
             return;
         }
-        
+
         var lower = current.data('lower');
 
         if (elements.length <= 1) {
@@ -158,7 +158,7 @@ function Lib(options) {
     };
 
     self.isFragment = function (element) {
-        if(self.empty(element)) {
+        if (self.empty(element)) {
             return false;
         }
 
@@ -200,7 +200,7 @@ function Lib(options) {
     };
 
     self.getCurrentElementAsText = function (element) {
-        if(self.empty(element)) {
+        if (self.empty(element)) {
             return '';
         }
 
@@ -237,7 +237,7 @@ function Lib(options) {
     self.getSentence = function () {
         var current = self.getCurrentElement();
 
-        if(self.empty(current)) {
+        if (self.empty(current)) {
             return '';
         }
 
@@ -555,7 +555,7 @@ function Lib(options) {
     self.getCommonness = function () {
         var ce = self.getCurrentElement();
 
-        if(self.empty(ce)) {
+        if (self.empty(ce)) {
             return '';
         }
 
@@ -568,8 +568,8 @@ function Lib(options) {
 
     self.getFrequency = function () {
         var ce = self.getCurrentElement();
-        
-        if(self.empty(ce)) {
+
+        if (self.empty(ce)) {
             return '';
         }
 
@@ -579,7 +579,7 @@ function Lib(options) {
     self.getOccurrences = function () {
         var ce = self.getCurrentElement();
 
-        if(self.empty(ce)) {
+        if (self.empty(ce)) {
             return 0;
         }
 
@@ -589,10 +589,10 @@ function Lib(options) {
     self.getLowerPhrase = function () {
         var ce = self.getCurrentElement();
 
-        if(self.empty(ce)) {
+        if (self.empty(ce)) {
             return '';
         }
-        
+
         return ce.data('lower');
     };
 
@@ -866,31 +866,31 @@ function Lib(options) {
 
         element.remove();
     };
-    
-    self.registerPlugin = function(key, value) {
+
+    self.registerPlugin = function (key, value) {
         self.pluginRegistry[key] = value;
     };
-    
-    self.unregisterPlugin = function(key) {
-        if(!self.pluginRegistry.hasOwnProperty(key)) {
+
+    self.unregisterPlugin = function (key) {
+        if (!self.pluginRegistry.hasOwnProperty(key)) {
             return;
         }
-        
+
         delete self.pluginRegistry[key];
     };
-    
-    self.getPlugin = function(key) {
-        if(!self.pluginRegistry.hasOwnProperty(key)) {
+
+    self.getPlugin = function (key) {
+        if (!self.pluginRegistry.hasOwnProperty(key)) {
             return null;
         }
-        
+
         return self.pluginRegistry[key];
     };
-    
-    self.getAbbreviations = function() {
+
+    self.getAbbreviations = function () {
         var abbreviations = self.getPlugin('Abbreviations');
 
-        if(abbreviations===null) {
+        if (abbreviations === null) {
             return [];
         }
 
