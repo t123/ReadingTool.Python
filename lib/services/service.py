@@ -449,7 +449,7 @@ class TermService:
         
         if len(fp.tags)>0:
             tagList = []
-            
+
             for exp in fp.tags:
                 if exp == "know" or exp=="known":
                     tagList.append("term.state=" + str(TermState.Known))
@@ -457,12 +457,21 @@ class TermService:
                     tagList.append("term.state=" + str(TermState.Unknown))
                 elif exp == "ignore" or exp == "ignored":
                     tagList.append("term.state=" + str(TermState.Ignored))
-                elif exp == "word":
+
+            if len(tagList)>0:
+                query += " AND ( " + " OR ".join(tagList) + " )"
+
+        if len(fp.tags)>0:
+            tagList = []
+
+            for exp in fp.tags:
+                if exp == "word":
                     tagList.append("term.isFragment=0")
                 elif exp == "phrase":
                     tagList.append("term.isFragment=1")
-                    
-            query += " AND ( " + " OR ".join(tagList) + " )"
+
+            if len(tagList)>0:
+                query += " AND ( " + " OR ".join(tagList) + " )"
             
         if len(fp.languages)>0:
             t = []
