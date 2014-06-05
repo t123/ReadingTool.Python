@@ -18,11 +18,18 @@
     <number>0</number>
    </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
      <item>
       <widget class="QLineEdit" name="leFilter">
        <property name="placeholderText">
         <string>Type to filter, search executes on return</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbExport">
+       <property name="text">
+        <string>Export</string>
        </property>
       </widget>
      </item>
@@ -83,6 +90,14 @@
     <string>Esc</string>
    </property>
   </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections>
@@ -95,6 +110,22 @@
     <hint type="sourcelabel">
      <x>341</x>
      <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pbExport</sender>
+   <signal>clicked()</signal>
+   <receiver>actionExport</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>644</x>
+     <y>12</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>
