@@ -573,7 +573,7 @@ function Lib(options) {
             return '';
         }
 
-        return 0;
+        return ce.data('frequency');
     };
 
     self.getOccurrences = function () {
