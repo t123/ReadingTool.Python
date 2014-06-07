@@ -336,7 +336,8 @@ class TextParser(BaseParser):
         self.po.html = htmlContent.replace("<!-- table -->", transform) \
                 .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \
                 .replace('<!-- theme -->', theme) \
-                .replace("<!-- webapi -->", Application.apiServer)
+                .replace("<!-- webapi -->", Application.apiServer) \
+                .replace("<!-- time -->", "?" + str(time.time()))
                 
         time5 = time.time()
         logging.debug("\tparse (html+xslt)={}".format(time5-time4))
@@ -520,7 +521,8 @@ class VideoParser(BaseParser):
                         .replace("<!-- table -->", str(self.applyTransform(root))) \
                         .replace('<!-- theme -->', theme) \
                         .replace('<!-- plugins -->', "<script src=\"<!-- webapi -->/resource/v1/plugins/" + str(self.pi.language1.languageId) + "\"></script>") \
-                        .replace("<!-- webapi -->", Application.apiServer)
+                        .replace("<!-- webapi -->", Application.apiServer) \
+                        .replace("<!-- time -->", "?" + str(time.time()))
                         
         self.po.html = re.sub("span>\s+<span", "span><span", self.po.html)
         

@@ -286,7 +286,7 @@ class ResourceController(object):
         
         return htmlContent.encode()
         
-    def getLocalResource(self, name):
+    def getLocalResource(self, name, **params):
         from cherrypy.lib import static
         file = os.path.join(Application.path, "resources", name)
         
