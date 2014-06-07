@@ -263,11 +263,11 @@ class TextParser(BaseParser):
         
         time1 = time.time()        
         
-        l1Content = self.pi.item.getL1Content()
+        l1Content = self.pi.item.l1Title + "\n\n" + self.pi.item.getL1Content()
         l1Content, fragments = self.parseFragments(l1Content)
         
         l1Paragraphs = self.splitIntoParagraphs(l1Content)
-        l2Paragraphs = self.splitIntoParagraphs(self.pi.item.getL2Content())
+        l2Paragraphs = self.splitIntoParagraphs(self.pi.item.l2Title + "\n\n" + self.pi.item.getL2Content())
         
         root = etree.Element("root")
         contentNode = self.createContentNode()

@@ -31,40 +31,6 @@
         <xsl:value-of select="/root/content/@l2Code"/>
       </xsl:attribute>
 
-      <tr class="header">
-        <xsl:choose>
-          <xsl:when test="/root/content/@isParallel='True'">
-            <td colspan="2">
-              <!--BLANK-->
-            </td>
-          </xsl:when>
-          <xsl:otherwise>
-            <td>
-              <!--BLANK-->
-            </td>
-          </xsl:otherwise>
-        </xsl:choose>
-      </tr>
-
-      <xsl:choose>
-        <xsl:when test="/root/content/@isParallel='True'">
-          <tr>
-            <td class="__active" width="49%">
-              <xsl:value-of select="/root/content/@collectionNo"/> - <xsl:value-of select="/root/content/@collectionName"/> : <xsl:value-of select="/root/content/@l1Title"/>
-            </td>
-            <td class="disabled" width="50%">
-              <xsl:value-of select="/root/content/@l2Title"/>
-            </td>
-          </tr>
-        </xsl:when>
-        <xsl:otherwise>
-          <tr>
-            <td class="__active" width="100%">
-              <xsl:value-of select="/root/content/@collectionNo"/> - <xsl:value-of select="/root/content/@collectionName"/> : <xsl:value-of select="/root/content/@l1Title"/>
-            </td>
-          </tr>
-        </xsl:otherwise>
-      </xsl:choose>
       <xsl:apply-templates select="join"/>
       <tr class="footer">
         <xsl:choose>
