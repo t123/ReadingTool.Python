@@ -28,7 +28,12 @@ class Javascript(QtCore.QObject):
             return
         
         self.messageLabel.setText(message)
+        self.messageLabel.setStyleSheet("QLabel { background-color : red; }")
+        threading.Timer(1.5, self.resetBackground, [self.messageLabel]).start()
         
+    def resetBackground(self, label):
+        label.setStyleSheet("")
+
     @QtCore.pyqtSlot(float, result=int)
     def getSrtL1(self, message):
         if self.po is None or self.po.l1Srt is None:
