@@ -392,7 +392,8 @@ function Reading(options) {
 
     self._doneMarkRemainingAsKnown = function (data, status, xhr) {
         $('body').css('cursor', 'auto');
-        self._setOverlayModalContent('Marked <strong>' + data + '</strong> words as known.<br/><button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
+        self._setOverlayModalContent('<button href="#" onclick="window.reading._hideOverlayModal()">OK</button>');
+        window.lib.sendMessage("Words marked as known.");
     };
 
     self._failMarkRemainingAsKnown = function (data, status, xhr) {
