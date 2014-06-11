@@ -711,8 +711,9 @@ function Lib(options) {
     };
 
     self._updateFragmentState = function (element, phrase, state, definition) {
-        if (element.data('termid') !== null) {
-            var termId = element.data('termid');
+        var termId = element.data('termid');
+        
+        if (typeof(termId)!=='undefined') {
             $('.__' + termId).removeClass('__known __unknown __ignored').addClass('__' + state);
 
             if (definition.length > 0) {
@@ -723,7 +724,8 @@ function Lib(options) {
                         element.html(tooltip.contents());
                     }
 
-                    element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');
+                    var anchor = "<a rel='tooltip'' title='" + definition + "'></a>";
+                    element.wrapInner(anchor);
                 });
             }
         } else {
@@ -732,7 +734,8 @@ function Lib(options) {
                     var tooltip = element.children('a').first();
                     tooltip.prop('title', definition);
                 } else {
-                    element.html('<a rel="tooltip" title="' + definition + '">' + element.html() + '</a>');
+                    var anchor = "<a rel='tooltip'' title='" + definition + "'></a>";
+                    element.wrapInner(anchor);
                 }
             }
 
