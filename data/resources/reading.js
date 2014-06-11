@@ -349,6 +349,7 @@ function Reading(options) {
         self._setOverlayModalContent(content);
         $('#modalOverlay').show();
         $('#modalContent').show();
+        $('#modalOverlay').css('height', $('body').height());
     };
 
     self._setOverlayModalContent = function (content) {
