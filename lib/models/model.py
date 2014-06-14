@@ -176,6 +176,9 @@ class Term():
         self.language = ""
         self.itemSource = ""
         self.sourceCode = ""
+
+        self.itemSourceCollection = "" #only for search
+        self.itemSourceTitle  = "" #only for search
         
     def fullDefinition(self, joinString="<br/>"):
         fullDef = ""

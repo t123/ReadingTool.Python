@@ -434,7 +434,7 @@ class TermService:
         self.db.execute("DELETE FROM term WHERE termId=:termId and userId=:userId", termId=term.termId, userId=Application.user.userId)
         
     def search(self, filter):
-        query = """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource
+        query = """SELECT term.*, b.name as language, c.collectionNo || ' - ' || c.CollectionName || ' ' || c.L1Title as itemSource, c.collectionName as itemSourceCollection, c.L1Title as itemSourceTitle
                     FROM term term
                     LEFT JOIN language b on term.languageId=b.LanguageId
                     LEFT JOIN item c on term.itemSourceId=c.itemId
@@ -495,6 +495,18 @@ class TermService:
                 
             query += " AND ( " + " OR ".join(t) + " )"
                 
+        if len(fp.source)>0:
+            t = []
+            counter = 0
+
+            for exp in fp.source:
+                print(exp)
+                t.append("(itemSourceCollection LIKE :s{0} OR itemSourceTitle LIKE :s{0}) ".format(counter))
+                args["s%d" % counter] = exp + "%"
+                counter += 1
+
+            query += " AND ( " + " OR ".join(t) + " )"
+
         if fp.created is not None:
             if fp.createdSign=="=":
                 query += " AND term.created>=:created1 and term.created<=:created2"

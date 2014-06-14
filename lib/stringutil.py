@@ -36,7 +36,8 @@ class FilterParser():
         self.normal = []
         self.special = []
         self.languages = []
-        
+        self.source = []
+
         self.current = ""
         self.isTag = False
         self.inQuote = False
@@ -47,6 +48,10 @@ class FilterParser():
         self.created = None
         self.modified = None
     
+    def parseSource(self, string):
+        string = string.replace("source:", "")
+        self.source.append(string)
+
     def parseTime(self, string):
         string = string.lower()
         string = string.replace("created:", "")
@@ -113,6 +118,8 @@ class FilterParser():
                         if result is not None:
                             self.modifiedSign = result[0]
                             self.modified = result[1]
+                    elif self.current.lower().startswith("source:"):
+                        self.source.append(self.current[7:])
                     else:
                         self.normal.append(self.current)
                     
