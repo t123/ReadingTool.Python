@@ -33,6 +33,11 @@
     padding: 0 10px 10px 10px;
 }
 
+#reading tr.header td
+{
+    height: 70px;
+}
+
 #reading tr.footer td
 {
     height: 300px;

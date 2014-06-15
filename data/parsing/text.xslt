@@ -31,6 +31,21 @@
         <xsl:value-of select="/root/content/@l2Code"/>
       </xsl:attribute>
 
+      <tr class="header">
+        <xsl:choose>
+          <xsl:when test="/root/content/@isParallel='True'">
+            <td colspan="2">
+              <!--BLANK-->
+            </td>
+          </xsl:when>
+          <xsl:otherwise>
+            <td>
+              <!--BLANK-->
+            </td>
+          </xsl:otherwise>
+        </xsl:choose>
+      </tr>
+
       <xsl:apply-templates select="join"/>
       <tr class="footer">
         <xsl:choose>
