@@ -59,7 +59,7 @@ class TermsForm(QtGui.QDialog):
         
     def bindTerms(self):
         self.ui.twTerms.clear()
-        headers = ["State", "Language", "Phrase", "Base Phrase", "Sentence"]
+        headers = ["State", "Language", "Created", "Modified", "Phrase", "Base Phrase", "Sentence"]
         
         self.ui.twTerms.setColumnCount(len(headers))
         self.ui.twTerms.setHorizontalHeaderLabels(headers)
@@ -76,6 +76,7 @@ class TermsForm(QtGui.QDialog):
         for term in terms:
             i = QtGui.QTableWidgetItem(TermState.ToString(term.state))
             i.setData(QtCore.Qt.UserRole, term)
+            i.setToolTip(term.itemSource)
             
             if term.state==TermState.Known:
                 i.setBackgroundColor(Qt.QColor("#dae5eb"))
@@ -83,12 +84,36 @@ class TermsForm(QtGui.QDialog):
                 i.setBackgroundColor(Qt.QColor("#f5b8a9"))
             elif term.state==TermState.Ignored:
                 i.setBackgroundColor(Qt.QColor("#ffe97f"))
- 
+
             self.ui.twTerms.setItem(index, 0, i)
-            self.ui.twTerms.setItem(index, 1, QtGui.QTableWidgetItem(term.language))
-            self.ui.twTerms.setItem(index, 2, QtGui.QTableWidgetItem(term.phrase))
-            self.ui.twTerms.setItem(index, 3, QtGui.QTableWidgetItem(term.basePhrase))
-            self.ui.twTerms.setItem(index, 4, QtGui.QTableWidgetItem(term.sentence))
+
+            i = QtGui.QTableWidgetItem(term.language)
+            i.setToolTip(term.itemSource)
+            self.ui.twTerms.setItem(index, 1, i)
+
+            i = QtGui.QTableWidgetItem(Time.toHuman(term.created))
+            i.setToolTip(term.itemSource)
+            self.ui.twTerms.setItem(index, 2, i)
+
+            i = QtGui.QTableWidgetItem(Time.toHuman(term.modified))
+            i.setToolTip(term.itemSource)
+
+            if term.created!=term.modified:
+                i.setBackgroundColor(Qt.QColor("#ffe97f"))
+
+            self.ui.twTerms.setItem(index, 3, i)
+
+            i = QtGui.QTableWidgetItem(term.phrase)
+            i.setToolTip(term.itemSource)
+            self.ui.twTerms.setItem(index, 4, i)
+
+            i = QtGui.QTableWidgetItem(term.basePhrase)
+            i.setToolTip(term.itemSource)
+            self.ui.twTerms.setItem(index, 5, i)
+
+            i = QtGui.QTableWidgetItem(term.sentence)
+            i.setToolTip(term.itemSource)
+            self.ui.twTerms.setItem(index, 6, i)
              
             index +=1
          
