@@ -473,6 +473,9 @@ class TermService:
             if len(tagList)>0:
                 query += " AND ( " + " OR ".join(tagList) + " )"
             
+        if "sentence" in fp.tags:
+            query += " AND LENGTH(term.sentence)>0 "
+
         if len(fp.languages)>0:
             t = []
             counter = 0
@@ -500,7 +503,6 @@ class TermService:
             counter = 0
 
             for exp in fp.source:
-                print(exp)
                 t.append("(itemSourceCollection LIKE :s{0} OR itemSourceTitle LIKE :s{0}) ".format(counter))
                 args["s%d" % counter] = exp + "%"
                 counter += 1
