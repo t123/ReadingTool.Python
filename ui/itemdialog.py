@@ -22,7 +22,9 @@ class ItemDialogForm(QtGui.QDialog):
         self.updateLanguages()
         
         self.ui.leCollectionNo.setValidator(QtGui.QIntValidator())
-        
+
+        QtCore.QObject.connect(self.ui.pbPrevious, QtCore.SIGNAL("clicked()"), self.previousItem)
+        QtCore.QObject.connect(self.ui.pbNext, QtCore.SIGNAL("clicked()"), self.nextItem)
         QtCore.QObject.connect(self.ui.pbSave, QtCore.SIGNAL("clicked()"), self.saveItem)
         QtCore.QObject.connect(self.ui.pbCopy, QtCore.SIGNAL("clicked()"), self.copyItem)
         QtCore.QObject.connect(self.ui.pbSplit, QtCore.SIGNAL("clicked()"), self.splitItem)
@@ -127,6 +129,24 @@ class ItemDialogForm(QtGui.QDialog):
         self.setItem(item.itemId)
         self.hasChange = True
         
+    def nextItem(self):
+        next = self.itemService.findNext(self.item)
+
+        if len(next)==0:
+            return
+
+        self.hasChange = False
+        self.setItem(next[0].itemId)
+
+    def previousItem(self):
+        previous = self.itemService.findPrevious(self.item)
+
+        if len(previous)==0:
+            return
+
+        self.hasChange = False
+        self.setItem(previous[0].itemId)
+
     def setItem(self, itemId):
         if itemId is None:
             self.ui.lblDate.setText("Unsaved item")
@@ -137,6 +157,7 @@ class ItemDialogForm(QtGui.QDialog):
             self.setWindowTitle("New item")
             self.checkLanguageCode(-1)
             self.item = None
+            self.setNextPrevious(self.item)
             return
         
         self.item = self.itemService.findOne(itemId)
@@ -170,7 +191,27 @@ class ItemDialogForm(QtGui.QDialog):
         self.ui.cbL2Language.setCurrentIndex(index2)
         
         self.checkLanguageCode(index1)
-        
+        self.setNextPrevious(self.item)
+
+    def setNextPrevious(self, item):
+        if item is None:
+            self.ui.pbPrevious.setEnabled(False)
+            self.ui.pbNext.setEnabled(False)
+            return
+
+        previous = self.itemService.findPrevious(self.item)
+        next = self.itemService.findNext(self.item)
+
+        if len(previous)==0:
+            self.ui.pbPrevious.setEnabled(False)
+        else:
+            self.ui.pbPrevious.setEnabled(True)
+
+        if len(next)==0:
+            self.ui.pbNext.setEnabled(False)
+        else:
+            self.ui.pbNext.setEnabled(True)
+
     def findIndex(self, cb, data):
         if cb is None or not isinstance(cb, QtGui.QComboBox):
             return -1
@@ -217,6 +258,10 @@ class ItemDialogForm(QtGui.QDialog):
         font.setFamily("Arial Unicode MS")
         font.setFixedPitch(True)
         font.setPointSize(10)
+
+        self.ui.teL1Content.setUtf8(True)
+        self.ui.teL2Content.setUtf8(True)
+
         self.ui.teL1Content.setFont(font)
         self.ui.teL1Content.setMarginsFont(font)
         self.ui.teL2Content.setFont(font)
