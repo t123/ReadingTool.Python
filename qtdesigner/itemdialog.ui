@@ -319,6 +319,27 @@
    <header>Qsci/qsciscintilla.h</header>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>rbText</tabstop>
+  <tabstop>rbVideo</tabstop>
+  <tabstop>leCollectionName</tabstop>
+  <tabstop>leCollectionNo</tabstop>
+  <tabstop>leMediaURI</tabstop>
+  <tabstop>pbChoose</tabstop>
+  <tabstop>leL1Title</tabstop>
+  <tabstop>leL2Title</tabstop>
+  <tabstop>cbL1Language</tabstop>
+  <tabstop>cbL2Language</tabstop>
+  <tabstop>teL1Content</tabstop>
+  <tabstop>teL2Content</tabstop>
+  <tabstop>pbSave</tabstop>
+  <tabstop>pbPrevious</tabstop>
+  <tabstop>pbNext</tabstop>
+  <tabstop>pbSegment</tabstop>
+  <tabstop>pbCopy</tabstop>
+  <tabstop>pbSplit</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

@@ -277,6 +277,19 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>leBasePhrase</tabstop>
+  <tabstop>leSentence</tabstop>
+  <tabstop>pteDefinition</tabstop>
+  <tabstop>cbState</tabstop>
+  <tabstop>pbCancel</tabstop>
+  <tabstop>pbSave</tabstop>
+  <tabstop>lePhrase</tabstop>
+  <tabstop>leLanguage</tabstop>
+  <tabstop>leItemSource</tabstop>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>twHistory</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

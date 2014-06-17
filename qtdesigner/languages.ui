@@ -184,10 +184,6 @@
        </item>
       </layout>
       <zorder>verticalSpacer</zorder>
-      <zorder>label_4</zorder>
-      <zorder>label_7</zorder>
-      <zorder>cbSourceLanguage</zorder>
-      <zorder>label_9</zorder>
      </widget>
      <widget class="QWidget" name="tabPlugins">
       <attribute name="title">
@@ -272,6 +268,20 @@
    </property>
   </action>
  </widget>
+ <tabstops>
+  <tabstop>tabWidget</tabstop>
+  <tabstop>leName</tabstop>
+  <tabstop>cbLanguageCodes</tabstop>
+  <tabstop>cbSourceLanguage</tabstop>
+  <tabstop>rbLTR</tabstop>
+  <tabstop>rbRTL</tabstop>
+  <tabstop>cbTermRegex</tabstop>
+  <tabstop>leTheme</tabstop>
+  <tabstop>cbIsArchived</tabstop>
+  <tabstop>pbCancel</tabstop>
+  <tabstop>pbSave</tabstop>
+  <tabstop>lwPlugins</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>
