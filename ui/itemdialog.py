@@ -90,14 +90,14 @@ class ItemDialogForm(QtGui.QDialog):
             self.ui.leMediaURI.setText(filename)
         
     def splitItem(self):
-        if self.item is None or not self.isValid:
+        if self.item is None:
             return
         
         self.itemService.splitItem(self.item.itemId)
         self.hasChange = True
         
     def copyItem(self):
-        if self.item is None or not self.isValid:
+        if self.item is None:
             return
         
         copy = self.itemService.copyItem(self.item.itemId)
