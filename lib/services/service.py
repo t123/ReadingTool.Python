@@ -877,8 +877,8 @@ class ItemService:
         copy.collectionName = item.collectionName
         copy.collectionNo = item.collectionNo
         copy.itemType = item.itemType
-        copy.l1Content = item.l1Content
-        copy.l2Content = item.l2Content
+        copy.setL1Content(item.getL1Content())
+        copy.setL2Content(item.getL2Content())
         copy.l1LanguageId = item.l1LanguageId
         copy.l2LanguageId = item.l2LanguageId
         copy.l1Title = item.l1Title + " (copy)"
@@ -893,14 +893,18 @@ class ItemService:
         if item is None:
             return
         
-        l1Split = re.split("===", item.l1Content)
-        l2Split = re.split("===", item.l2Content)
+        l1Split = re.split("===", item.getL1Content())
+        l2Split = re.split("===", item.getL2Content())
         
         for i in range(0, len(l1Split)):
             copy = self.copyItem(item.itemId)
-            copy.l1Content = l1Split[i].strip()
-            copy.l2Content = l2Split[i].strip() if i < len(l2Split) else ""
-            
+            copy.setL1Content(l1Split[i].strip())
+
+            if i<len(l2Split):
+                copy.setL2Content(l2Split[i].strip())
+            else:
+                copy.l2Content = None
+
             if item.collectionNo is not None:
                 copy.collectionNo = item.collectionNo + i
             else:
